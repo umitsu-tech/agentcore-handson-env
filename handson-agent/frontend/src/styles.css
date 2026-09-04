@@ -1,0 +1,294 @@
+:root {
+  --bg: #f2f5f7;
+  --panel: #ffffff;
+  --panel-soft: #f7f9fa;
+  --ink: #15212b;
+  --muted: #64757f;
+  --faint: #93a3ad;
+  --line: #dde4e9;
+  --accent: #00897b;
+  --accent-soft: #e2f1ee;
+  --tool: #c25a00;
+  --tool-soft: #fdf2e8;
+  --result: #1f7a5c;
+  --result-soft: #e9f5f0;
+  --danger: #b3261e;
+  --radius: 10px;
+  --sans: 'Zen Kaku Gothic New', -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0e1419;
+    --panel: #161e25;
+    --panel-soft: #1a232b;
+    --ink: #e3eaf0;
+    --muted: #94a5b1;
+    --faint: #6b7d89;
+    --line: #253039;
+    --accent: #35c9ae;
+    --accent-soft: #11312c;
+    --tool: #f0913f;
+    --tool-soft: #2c1f12;
+    --result: #4fd1a5;
+    --result-soft: #102a22;
+    --danger: #f2857d;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  line-height: 1.8;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app { max-width: 940px; margin: 0 auto; padding: 40px 20px 120px; }
+
+.masthead { margin-bottom: 28px; }
+.masthead h1 { font-size: 24px; font-weight: 700; margin: 0 0 6px; letter-spacing: -0.01em; }
+.masthead p { margin: 0; color: var(--muted); font-size: 14px; }
+
+/* モデルに渡しているもの */
+.context {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.context > summary {
+  cursor: pointer;
+  padding: 14px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.context > summary::-webkit-details-marker { display: none; }
+.context > summary::before {
+  content: '';
+  width: 0; height: 0;
+  border-left: 5px solid var(--faint);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  transition: transform .15s ease;
+}
+.context[open] > summary::before { transform: rotate(90deg); }
+.context-body { padding: 0 18px 18px; font-size: 13px; }
+.context-row { display: flex; gap: 8px; align-items: baseline; margin-bottom: 14px; }
+.context-row .key { color: var(--muted); font-size: 12px; }
+.context-body h3 {
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin: 18px 0 8px;
+  font-weight: 700;
+}
+.block {
+  background: var(--panel-soft);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 12px 14px;
+  font-size: 12.5px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  margin: 0;
+  overflow-x: auto;
+}
+.tool-def { border-left: 3px solid var(--tool); padding-left: 12px; margin-bottom: 14px; }
+.tool-def .name { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--tool); }
+.tool-def .desc { color: var(--muted); font-size: 12.5px; white-space: pre-wrap; margin: 2px 0 0; }
+.hint { color: var(--faint); font-size: 12px; margin: 14px 0 0; }
+
+/* 入力 */
+.ask { display: flex; gap: 10px; margin-bottom: 14px; }
+.ask input {
+  flex: 1;
+  padding: 13px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font-size: 15px;
+  font-family: inherit;
+  background: var(--panel);
+  color: var(--ink);
+  transition: border-color .15s ease;
+}
+.ask input:focus { outline: none; border-color: var(--accent); }
+.ask button {
+  padding: 0 24px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #fff;
+  font-size: 15px;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity .15s ease;
+}
+.ask button:disabled { opacity: .45; cursor: default; }
+
+.examples { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 30px; }
+.examples button {
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 12.5px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color .15s ease, color .15s ease;
+}
+.examples button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.examples button:disabled { opacity: .4; cursor: default; }
+
+/* タイムライン */
+.timeline { position: relative; padding-left: 30px; }
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 9px; top: 8px; bottom: 8px;
+  width: 2px;
+  background: var(--line);
+}
+.step { position: relative; margin-bottom: 16px; animation: rise .28s ease both; }
+.step::before {
+  content: '';
+  position: absolute;
+  left: -26px; top: 16px;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--line);
+  border: 2px solid var(--bg);
+  box-sizing: content-box;
+}
+.step.tool_use::before { background: var(--tool); }
+.step.tool_result::before { background: var(--result); }
+.step.answer::before { background: var(--accent); }
+.step.error::before { background: var(--danger); }
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+}
+.card .label {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.card .text { font-size: 15px; white-space: pre-wrap; word-break: break-word; }
+
+.step.question .card { background: var(--panel-soft); }
+.step.tool_use .card { border-color: var(--tool); background: var(--tool-soft); }
+.step.tool_use .label { color: var(--tool); }
+.step.tool_result .card { border-color: var(--result); background: var(--result-soft); }
+.step.tool_result .label { color: var(--result); }
+.step.answer .card { border-width: 2px; border-color: var(--accent); }
+.step.answer .label { color: var(--accent); }
+.step.error .card { border-color: var(--danger); }
+.step.error .label { color: var(--danger); }
+
+.tool-name { font-family: var(--mono); font-size: 14px; font-weight: 500; }
+.args {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin-top: 8px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* 待っている間 */
+.waiting { display: flex; align-items: center; gap: 12px; color: var(--muted); }
+.dots { display: inline-flex; gap: 5px; }
+.dots i {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: bounce 1.3s infinite ease-in-out both;
+}
+.dots i:nth-child(1) { animation-delay: -.32s; }
+.dots i:nth-child(2) { animation-delay: -.16s; }
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(.55); opacity: .3; }
+  40% { transform: scale(1); opacity: 1; }
+}
+.elapsed { font-size: 12px; font-variant-numeric: tabular-nums; color: var(--faint); }
+
+.caret::after {
+  content: '▌';
+  color: var(--faint);
+  animation: blink 1s steps(2) infinite;
+}
+@keyframes blink { 0%, 50% { opacity: 1 } 50.01%, 100% { opacity: 0 } }
+
+/* 生データ */
+.raw { margin-top: 10px; }
+.raw > summary {
+  cursor: pointer;
+  font-size: 11.5px;
+  color: var(--faint);
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.raw > summary::-webkit-details-marker { display: none; }
+.raw > summary::before {
+  content: '';
+  width: 0; height: 0;
+  border-left: 4px solid currentColor;
+  border-top: 3px solid transparent;
+  border-bottom: 3px solid transparent;
+  transition: transform .15s ease;
+}
+.raw[open] > summary::before { transform: rotate(90deg); }
+.raw pre {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  line-height: 1.6;
+  background: var(--panel-soft);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin: 8px 0 0;
+  overflow-x: auto;
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+/* サマリ */
+.step.summary .card { background: none; border-style: dashed; }
+.metrics { display: flex; flex-wrap: wrap; gap: 20px; }
+.metric .value { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.metric .name { font-size: 11px; color: var(--faint); }
+.tool-usage { margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+.tool-usage code { font-family: var(--mono); color: var(--tool); }
+
+@media (prefers-reduced-motion: reduce) {
+  .dots i, .caret::after { animation: none; }
+  .dots i { opacity: .6; }
+  .step { animation: none; }
+}

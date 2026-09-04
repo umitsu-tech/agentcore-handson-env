@@ -10,8 +10,8 @@
 | `agent.py` | エージェントの定義。モデル、システムプロンプト、使えるツールの一覧 |
 | `tools.py` | ツールの中身。ハンズオンではここに関数を足す |
 | `events.py` | Strands のイベントを画面に出す形へ変換する。手元でも Runtime でも共通 |
-| `ui.py` | ハンズオン UI のサーバー。エージェントの動きを画面に流す |
-| `static/index.html` | ハンズオン UI の画面 |
+| `ui.py` | ハンズオン UI のサーバー。API と画面の配信 |
+| `frontend/` | ハンズオン UI の画面（React + Vite） |
 | `local.py` | 手元で動かすときの入口（前半で使う） |
 | `runtime.py` | AgentCore Runtime に載せるときの入口（後半で使う） |
 | `data/equipment.json` | 備品のデータ |
@@ -27,13 +27,22 @@ uv sync
 uv run python local.py
 ```
 
-ブラウザで見るときはこちらです。
+ブラウザで見るときはこちらです。画面は React で書いてあるので、先にビルドします。
 
 ```bash
+npm --prefix frontend install
+npm --prefix frontend run build
 uv run uvicorn ui:app --host 0.0.0.0 --port 3000
 ```
 
 code-server の `/proxy/3000/` から開きます。
+
+画面を触りながら開発するときは、別のターミナルで Vite の開発サーバーを立てると
+保存のたびに反映されます。API は 3000 番のサーバーに転送されます。
+
+```bash
+npm --prefix frontend run dev
+```
 
 聞いてみる例です。
 
