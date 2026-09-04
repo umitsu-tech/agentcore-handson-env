@@ -1,0 +1,30 @@
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# 例示用の tfvars はコミットする
+!*.tfvars.example
+
+# 認証情報・秘密情報
+*.pem
+*.key
+secrets/
+credentials
+
+# macOS
+.DS_Store
+
+# エディタ
+.vscode/
+.idea/
