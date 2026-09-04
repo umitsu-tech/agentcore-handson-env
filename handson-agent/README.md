@@ -44,4 +44,18 @@ uv run python local.py
 オンデマンド呼び出しに対応していないため、推論プロファイル経由で呼びます。
 素の `amazon.nova-2-lite-v1:0` を指定すると失敗します。
 
-環境変数 `MODEL_ID` で差し替えられます。
+環境変数 `MODEL_ID` で差し替えられます。リージョンは `AWS_REGION` を見ますが、
+指定がなければ `ap-northeast-1` を使います。Strands は既定で us-east-1 を使うため、
+`region_name` を明示的に渡さないと `jp.` から始まる推論プロファイルが弾かれます。
+
+## 手元で動かすときの注意
+
+`aws login` で入れた認証情報をそのまま使うと、botocore が追加の依存を要求して
+止まることがあります。その場合は一時的な認証情報を環境変数に展開してから実行してください。
+
+```bash
+eval "$(aws configure export-credentials --format env)"
+uv run python local.py "ノートPCの空きある？"
+```
+
+受講者用の EC2 ではインスタンスプロファイルを使うので、この手順は要りません。
