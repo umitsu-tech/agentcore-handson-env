@@ -28,3 +28,6 @@ credentials
 # エディタ
 .vscode/
 .idea/
+
+# Terraform の作業ディレクトリ
+terraform/.terraform/

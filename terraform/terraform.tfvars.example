@@ -1,0 +1,16 @@
+# 実際の値を入れて terraform.tfvars という名前で保存する（tfvars は git 管理しない）
+
+# 受講者ごとのサブドメインを生やす親ドメイン
+base_domain = "handson.example.com"
+
+# *.handson.example.com のワイルドカード証明書。ALB と同じリージョンで発行しておく
+certificate_arn = "arn:aws:acm:ap-northeast-1:123456789012:certificate/00000000-0000-0000-0000-000000000000"
+
+# まずは 1 人で通す。増やすときはここに足す
+participants = ["user01"]
+
+# 会場の固定 IP が分かっているなら絞る
+# allowed_cidr_blocks = ["203.0.113.0/24"]
+
+# #5 で受講環境を焼いた AMI ができたら指定する。未指定なら AL2023 の最新版に user_data でセットアップする
+# ami_id = "ami-xxxxxxxxxxxxxxxxx"
