@@ -29,11 +29,11 @@ npx cdk bootstrap aws://<アカウントID>/ap-northeast-1
 受講者用の EC2 を 1 台起動して、次のものをセットアップします。
 
 - code-server（8080 番で待ち受け）
-- ハンズオン用チャット UI（3000 番）
+- ハンズオン UI（3000 番。エージェントの動きを可視化する画面）
 - Strands Agent の雛形プロジェクト
 - Node.js、Python、uv、AWS CLI、AWS CDK、AgentCore CLI（`npm install -g @aws/agentcore`）
 
-セットアップが終わったら通しで動作確認をします。code-server にブラウザから入れること、`agentcore deploy` が最後まで通ること、デプロイしたエージェントをチャット UI から呼べることの 3 点を確認してから AMI を作成します。
+セットアップが終わったら通しで動作確認をします。code-server にブラウザから入れること、`agentcore deploy` が最後まで通ること、デプロイしたエージェントをハンズオン UI から呼んで動きが画面に出ることの 3 点を確認してから AMI を作成します。
 
 AMI の ID は Terraform の変数に渡します。
 
@@ -61,6 +61,8 @@ terraform apply
 ### 受講者に配る
 
 URL とパスワードを配布します。受講者側で必要なのはブラウザだけです。
+
+配ったあとの進行は [curriculum.md](curriculum.md) を参照してください。
 
 ### トラブル対応
 

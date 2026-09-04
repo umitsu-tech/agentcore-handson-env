@@ -6,7 +6,9 @@ Amazon Bedrock AgentCore のハンズオンを開催するための環境を Ter
 
 ## この環境でできること
 
-受講者は配布された URL を開いてパスワードを入力すると、ブラウザ上で VS Code（code-server）が立ち上がります。そこには Strands Agent の雛形と AgentCore CLI が用意してあるので、コードを編集して `agentcore deploy` を実行すれば、自分のエージェントが Amazon Bedrock AgentCore Runtime にデプロイされます。デプロイしたエージェントは同じ画面のチャット UI から呼び出して動作を確認できます。
+受講者は配布された URL を開いてパスワードを入力すると、ブラウザ上で VS Code（code-server）が立ち上がります。そこには Strands Agent の雛形と、エージェントの動きを可視化する画面が用意してあります。
+
+まず手元でエージェントを動かしてループの仕組みを掴み、ツールを足して挙動が変わることを確かめ、最後に `agentcore deploy` の 1 行で自分のエージェントを Amazon Bedrock AgentCore Runtime に載せます。載せたあとも、呼び出しの様子は同じ画面で見られます。
 
 主催者は開催前に `terraform apply` で受講者数ぶんの環境をまとめて作り、終わったら `terraform destroy` で消します。EC2 は起動している時間だけの課金なので、半日のハンズオンなら短時間の利用料で済みます。
 
@@ -52,4 +54,4 @@ Terraform のコードと受講者に配る教材はこれから追加します�
 
 ## ステータス
 
-設計フェーズです。構成図とドキュメントが先行していて、Terraform のコードはまだありません。
+設計フェーズです。構成図とドキュメントが先行していて、Terraform のコードと教材はこれから作ります。作業は [Issue](../../issues) で管理しています。
