@@ -10,6 +10,8 @@
 | `agent.py` | エージェントの定義。モデル、システムプロンプト、使えるツールの一覧 |
 | `tools.py` | ツールの中身。ハンズオンではここに関数を足す |
 | `events.py` | Strands のイベントを画面に出す形へ変換する。手元でも Runtime でも共通 |
+| `ui.py` | ハンズオン UI のサーバー。エージェントの動きを画面に流す |
+| `static/index.html` | ハンズオン UI の画面 |
 | `local.py` | 手元で動かすときの入口（前半で使う） |
 | `runtime.py` | AgentCore Runtime に載せるときの入口（後半で使う） |
 | `data/equipment.json` | 備品のデータ |
@@ -24,6 +26,14 @@
 uv sync
 uv run python local.py
 ```
+
+ブラウザで見るときはこちらです。
+
+```bash
+uv run uvicorn ui:app --host 0.0.0.0 --port 3000
+```
+
+code-server の `/proxy/3000/` から開きます。
 
 聞いてみる例です。
 

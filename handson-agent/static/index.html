@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>エージェントの動きを見る</title>
+<style>
+  :root {
+    --bg: #f4f6f8;
+    --panel: #ffffff;
+    --ink: #16212b;
+    --muted: #64757f;
+    --line: #dde4e9;
+    --tool: #c25a00;
+    --tool-bg: #fdf3e9;
+    --result: #1f7a5c;
+    --result-bg: #eaf6f1;
+    --accent: #00897b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+    line-height: 1.8;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 32px 20px 80px; }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  .sub { color: var(--muted); font-size: 14px; margin: 0 0 24px; }
+
+  details.context {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    margin-bottom: 20px;
+  }
+  details.context > summary {
+    cursor: pointer;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .context-body { padding: 0 16px 16px; font-size: 13px; }
+  .context-body h3 { font-size: 13px; margin: 14px 0 6px; color: var(--muted); }
+  .context-body pre {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 10px 12px;
+    overflow-x: auto;
+    font-size: 12px;
+    line-height: 1.6;
+    margin: 0;
+    white-space: pre-wrap;
+  }
+  .tool-def { border-left: 3px solid var(--tool); padding-left: 10px; margin-bottom: 10px; }
+  .tool-def code { font-weight: 700; color: var(--tool); }
+  .tool-def p { margin: 2px 0; color: var(--muted); font-size: 12px; white-space: pre-wrap; }
+
+  form { display: flex; gap: 8px; margin-bottom: 24px; }
+  input[type=text] {
+    flex: 1;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font-size: 15px;
+    font-family: inherit;
+    background: var(--panel);
+    color: var(--ink);
+  }
+  input[type=text]:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  button {
+    padding: 12px 22px;
+    border: none;
+    border-radius: 6px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 15px;
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button:disabled { background: #b6c2ca; cursor: default; }
+
+  .examples { font-size: 13px; color: var(--muted); margin: -16px 0 24px; }
+  .examples button {
+    background: none;
+    border: 1px solid var(--line);
+    color: var(--muted);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 400;
+    margin-right: 6px;
+    cursor: pointer;
+  }
+
+  .timeline { display: flex; flex-direction: column; gap: 14px; }
+  .step {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 14px 16px;
+  }
+  .step .label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    margin-bottom: 6px;
+  }
+  .step .body { font-size: 15px; white-space: pre-wrap; }
+
+  .step.question { background: #eef2f5; }
+  .step.question .label { color: var(--muted); }
+  .step.think .label { color: var(--muted); }
+  .step.think .body { color: var(--muted); font-size: 14px; }
+  .step.tool { border-color: var(--tool); background: var(--tool-bg); }
+  .step.tool .label { color: var(--tool); }
+  .step.tool code { font-size: 13px; }
+  .step.result { border-color: var(--result); background: var(--result-bg); }
+  .step.result .label { color: var(--result); }
+  .step.result .body { font-size: 14px; }
+  .step.answer { border-width: 2px; border-color: var(--ink); }
+  .step.answer .label { color: var(--ink); }
+
+  .args {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+    background: rgba(255,255,255,.7);
+    border: 1px solid rgba(0,0,0,.08);
+    border-radius: 4px;
+    padding: 6px 10px;
+    margin-top: 6px;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  .cursor::after {
+    content: "▌";
+    animation: blink 1s steps(2) infinite;
+    color: var(--muted);
+  }
+  @keyframes blink { 0%,50% { opacity: 1 } 50.01%,100% { opacity: 0 } }
+  .error { color: #b3261e; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>エージェントの動きを見る</h1>
+  <p class="sub">質問を投げると、モデルが何を考えて、どのツールを呼んで、何が返ってきたのかが順番に出ます。</p>
+
+  <details class="context">
+    <summary>モデルに渡しているもの</summary>
+    <div class="context-body" id="context">読み込み中…</div>
+  </details>
+
+  <form id="form">
+    <input type="text" id="prompt" placeholder="備品について聞いてみる" autocomplete="off">
+    <button type="submit" id="send">送る</button>
+  </form>
+
+  <p class="examples">
+    <button type="button" data-q="ノートPCで今借りられるものある？">ノートPCの空き</button>
+    <button type="button" data-q="PC-001って誰が借りてるの？">PC-001の状況</button>
+    <button type="button" data-q="モニター借りたいんだけど">モニターを借りたい</button>
+  </p>
+
+  <div class="timeline" id="timeline"></div>
+</div>
+
+<script>
+const timeline = document.getElementById('timeline');
+const form = document.getElementById('form');
+const promptInput = document.getElementById('prompt');
+const sendButton = document.getElementById('send');
+
+// code-server の /proxy/3000/ 配下で開くので、パスは相対で組む
+const base = location.pathname.endsWith('/') ? location.pathname : location.pathname + '/';
+
+function addStep(kind, label, body) {
+  const step = document.createElement('div');
+  step.className = 'step ' + kind;
+  const labelEl = document.createElement('div');
+  labelEl.className = 'label';
+  labelEl.textContent = label;
+  const bodyEl = document.createElement('div');
+  bodyEl.className = 'body';
+  if (body !== undefined) bodyEl.textContent = body;
+  step.append(labelEl, bodyEl);
+  timeline.append(step);
+  step.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  return bodyEl;
+}
+
+async function loadContext() {
+  const box = document.getElementById('context');
+  try {
+    const res = await fetch(base + 'api/context');
+    const ctx = await res.json();
+    box.innerHTML = '';
+
+    const model = document.createElement('p');
+    model.innerHTML = 'モデル: <code>' + ctx.model_id + '</code>';
+    box.append(model);
+
+    const sysTitle = document.createElement('h3');
+    sysTitle.textContent = 'システムプロンプト';
+    const sys = document.createElement('pre');
+    sys.textContent = ctx.system_prompt.trim();
+    box.append(sysTitle, sys);
+
+    const toolTitle = document.createElement('h3');
+    toolTitle.textContent = 'モデルが使えるツール（' + ctx.tools.length + '個）';
+    box.append(toolTitle);
+
+    for (const tool of ctx.tools) {
+      const def = document.createElement('div');
+      def.className = 'tool-def';
+      const name = document.createElement('code');
+      name.textContent = tool.name;
+      const desc = document.createElement('p');
+      desc.textContent = tool.description;
+      def.append(name, desc);
+      box.append(def);
+    }
+
+    const note = document.createElement('p');
+    note.style.marginTop = '12px';
+    note.style.color = 'var(--muted)';
+    note.textContent = 'ツールの説明文は tools.py の docstring がそのまま渡っています。書き換えるとモデルの選び方が変わります。';
+    box.append(note);
+  } catch (e) {
+    box.textContent = '読み込みに失敗しました: ' + e;
+  }
+}
+
+async function ask(prompt) {
+  timeline.innerHTML = '';
+  addStep('question', 'あなたの質問', prompt);
+
+  sendButton.disabled = true;
+  promptInput.value = '';
+
+  const toolCards = new Map();
+  let answerBody = null;
+  let thinking = addStep('think', 'モデルが考えています', '');
+  thinking.parentElement.classList.add('cursor');
+
+  try {
+    const res = await fetch(base + 'api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt }),
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+
+      for (const line of lines) {
+        if (!line.startsWith('data:')) continue;
+        const payload = line.slice(5).trim();
+        if (!payload) continue;
+
+        let event;
+        try { event = JSON.parse(payload); } catch { continue; }
+        handle(event);
+      }
+    }
+  } catch (e) {
+    addStep('answer', 'エラー', String(e)).classList.add('error');
+  } finally {
+    if (thinking) thinking.parentElement.classList.remove('cursor');
+    sendButton.disabled = false;
+    promptInput.focus();
+  }
+
+  function handle(event) {
+    if (event.type === 'loop_start') return;
+
+    if (event.type === 'tool_use') {
+      if (thinking) {
+        thinking.parentElement.remove();
+        thinking = null;
+      }
+      let card = toolCards.get(event.id);
+      if (!card) {
+        const body = addStep('tool', 'モデルがツールを呼びました', '');
+        const name = document.createElement('code');
+        name.textContent = event.name;
+        body.append(name);
+        const args = document.createElement('div');
+        args.className = 'args';
+        body.append(args);
+        card = { args };
+        toolCards.set(event.id, card);
+      }
+      if (event.input) card.args.textContent = event.input;
+      return;
+    }
+
+    if (event.type === 'tool_result') {
+      for (const result of event.results) {
+        addStep('result', 'ツールが返した結果', result.text);
+      }
+      return;
+    }
+
+    if (event.type === 'text') {
+      if (thinking) {
+        thinking.parentElement.remove();
+        thinking = null;
+      }
+      if (!answerBody) {
+        answerBody = addStep('answer', 'モデルの答え', '');
+        answerBody.parentElement.classList.add('cursor');
+      }
+      answerBody.textContent += event.text;
+      return;
+    }
+
+    if (event.type === 'done') {
+      if (answerBody) answerBody.parentElement.classList.remove('cursor');
+      return;
+    }
+
+    if (event.type === 'error') {
+      addStep('answer', 'エラー', event.message).classList.add('error');
+    }
+  }
+}
+
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const prompt = promptInput.value.trim();
+  if (prompt) ask(prompt);
+});
+
+for (const button of document.querySelectorAll('.examples button')) {
+  button.addEventListener('click', () => ask(button.dataset.q));
+}
+
+loadContext();
+promptInput.focus();
+</script>
+</body>
+</html>
