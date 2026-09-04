@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" agent="claude-code" version="26.0.0">
+  <diagram id="agentcore-handson-architecture" name="構成図">
+    <mxGraphModel dx="1600" dy="1000" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1660" pageHeight="1010" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="AgentCore ハンズオン環境" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=26;fontStyle=1;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="900" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="受講者はブラウザだけで参加する。EC2 上の code-server で Strands Agent を編集し、AgentCore CLI で Amazon Bedrock AgentCore Runtime へデプロイする。" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=13;fontColor=#5A6C74;" vertex="1" parent="1">
+          <mxGeometry x="40" y="62" width="1300" height="24" as="geometry" />
+        </mxCell>
+
+        <mxCell id="awscloud" value="AWS Cloud" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];sketch=0;outlineConnect=0;gradientColor=none;html=1;whiteSpace=wrap;fontSize=14;fontStyle=0;shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_aws_cloud;strokeColor=#232F3E;fillColor=none;verticalAlign=top;align=left;spacingLeft=30;fontColor=#232F3E;dashed=0;" vertex="1" parent="1">
+          <mxGeometry x="390" y="110" width="1230" height="800" as="geometry" />
+        </mxCell>
+        <mxCell id="region" value="Region: ap-northeast-1（東京）" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];sketch=0;outlineConnect=0;gradientColor=none;html=1;whiteSpace=wrap;fontSize=14;fontStyle=0;shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_region;strokeColor=#879196;fillColor=none;verticalAlign=top;align=left;spacingLeft=30;fontColor=#879196;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="420" y="160" width="1170" height="730" as="geometry" />
+        </mxCell>
+
+        <mxCell id="crossband" value="横断サービス（個別の線は引かない）" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;dashPattern=8 8;strokeColor=#B0BEC5;fillColor=none;verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;fontSize=12;fontColor=#78909C;" vertex="1" parent="1">
+          <mxGeometry x="450" y="205" width="1110" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="iam" value="IAM" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#DD344C;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.identity_and_access_management;" vertex="1" parent="1">
+          <mxGeometry x="490" y="240" width="60" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="acm" value="Certificate Manager" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#DD344C;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.certificate_manager;" vertex="1" parent="1">
+          <mxGeometry x="640" y="240" width="60" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ssm" value="Systems Manager" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#E7157B;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.systems_manager_session_manager;" vertex="1" parent="1">
+          <mxGeometry x="810" y="240" width="60" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="cw" value="CloudWatch" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#E7157B;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.cloudwatch_2;" vertex="1" parent="1">
+          <mxGeometry x="960" y="240" width="60" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="crosstext" value="&lt;b&gt;IAM&lt;/b&gt; — EC2 インスタンスプロファイル（AgentCore のデプロイと呼び出し / Bedrock / SSM）&lt;br&gt;&lt;b&gt;ACM&lt;/b&gt; — ワイルドカード証明書。ALB で TLS を終端する&lt;br&gt;&lt;b&gt;Systems Manager&lt;/b&gt; — 管理者のトラブル対応用。受講者は使わない&lt;br&gt;&lt;b&gt;CloudWatch&lt;/b&gt; — AgentCore Runtime のログとトレース（任意）" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="1055" y="230" width="480" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="vpc" value="VPC" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];sketch=0;outlineConnect=0;gradientColor=none;html=1;whiteSpace=wrap;fontSize=14;fontStyle=0;shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_vpc2;strokeColor=#8C4FFF;fillColor=none;verticalAlign=top;align=left;spacingLeft=30;fontColor=#8C4FFF;dashed=0;" vertex="1" parent="1">
+          <mxGeometry x="450" y="390" width="690" height="480" as="geometry" />
+        </mxCell>
+        <mxCell id="subnet" value="Public subnet（2 AZ）" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];sketch=0;outlineConnect=0;gradientColor=none;html=1;whiteSpace=wrap;fontSize=13;fontStyle=0;shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_subnet;strokeColor=#7AA116;fillColor=#F2F6E8;verticalAlign=top;align=left;spacingLeft=30;fontColor=#248814;dashed=0;" vertex="1" parent="1">
+          <mxGeometry x="480" y="425" width="630" height="430" as="geometry" />
+        </mxCell>
+        <mxCell id="sg" value="Security group — ALB からの 8080 のみ" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];sketch=0;outlineConnect=0;gradientColor=none;html=1;whiteSpace=wrap;fontSize=12;fontStyle=0;shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_security_group;strokeColor=#DD344C;fillColor=none;verticalAlign=top;align=left;spacingLeft=30;fontColor=#DD344C;dashed=0;" vertex="1" parent="1">
+          <mxGeometry x="510" y="585" width="570" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="alb" value="Elastic Load Balancing&lt;br&gt;インターネット向け ALB / HTTPS 443" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#8C4FFF;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.elastic_load_balancing;" vertex="1" parent="1">
+          <mxGeometry x="770" y="464" width="60" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ec2" value="EC2 t4g.small" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#ED7100;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.ec2;" vertex="1" parent="1">
+          <mxGeometry x="770" y="610" width="60" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ec2box" value="&lt;b&gt;事前セットアップ済み（AMI から起動）&lt;/b&gt;&lt;br&gt;Amazon Linux 2023 / ARM64 / 受講者 1 人につき 1 台&lt;br&gt;&lt;br&gt;code-server（8080）— コードを書く&lt;br&gt;ハンズオン UI（/proxy/3000/）— 前半も後半もこの画面で動きを見る&lt;br&gt;Strands Agent の雛形 / AgentCore CLI / AWS CDK / uv" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#ED7100;fillColor=#FFFFFF;align=left;verticalAlign=top;spacingLeft=12;spacingTop=6;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="520" y="715" width="540" height="125" as="geometry" />
+        </mxCell>
+
+        <mxCell id="s3" value="Amazon S3&lt;br&gt;コード ZIP" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#7AA116;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.s3;" vertex="1" parent="1">
+          <mxGeometry x="1230" y="450" width="60" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="agentcore" value="Bedrock AgentCore Runtime&lt;br&gt;受講者ごとに 1 つ" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#01A88D;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.bedrock_agentcore;" vertex="1" parent="1">
+          <mxGeometry x="1230" y="625" width="60" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="bedrock" value="Amazon Bedrock&lt;br&gt;Nova 2 Lite" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#01A88D;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.bedrock;" vertex="1" parent="1">
+          <mxGeometry x="1460" y="625" width="60" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="acbox" value="受講者が自分でデプロイする（1 人 1 つ）&lt;br&gt;Direct Code Deployment / マネージド microVM / ARM64&lt;br&gt;実行ロールは AgentCore CLI が自動で作る&lt;br&gt;モデルは jp.amazon.nova-2-lite-v1:0" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#01A88D;fillColor=#FFFFFF;align=left;verticalAlign=top;spacingLeft=12;spacingTop=6;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="1190" y="770" width="370" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="students" value="受講者&lt;br&gt;ブラウザのみ" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#7D8998;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.users;" vertex="1" parent="1">
+          <mxGeometry x="130" y="464" width="60" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="cloudflare" value="&lt;b&gt;Cloudflare DNS&lt;/b&gt;&lt;br&gt;*.handson.example.com&lt;br&gt;CNAME → ALB（DNS only）" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#F38020;fillColor=#FFF6EE;align=center;verticalAlign=middle;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="40" y="660" width="240" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-dns" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#879196;dashed=1;endArrow=blockThin;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=12;fontColor=#5A6C74;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="students" target="cloudflare">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-dns-label" value="① 名前解決" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;fontColor=#5A6C74;labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="e-dns">
+          <mxGeometry x="0" y="0" relative="1" as="geometry"><mxPoint x="46" y="0" as="offset" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e-in" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#232F3E;endArrow=blockThin;endFill=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="students" target="alb">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-in-label" value="② HTTPS 443" style="edgeLabel;html=1;align=center;verticalAlign=bottom;resizable=0;points=[];fontSize=12;fontColor=#232F3E;labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="e-in">
+          <mxGeometry x="0" y="-1" relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-alb-ec2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#232F3E;endArrow=blockThin;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="alb" target="ec2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-alb-ec2-label" value="③ HTTP 8080&lt;br&gt;ホスト名で受講者ごとに振り分け" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;fontColor=#232F3E;labelBackgroundColor=#F2F6E8;" vertex="1" connectable="0" parent="e-alb-ec2">
+          <mxGeometry x="0.9" y="0" relative="1" as="geometry">
+            <mxPoint x="-195" y="70" as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="e-deploy" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#ED7100;endArrow=blockThin;endFill=1;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="ec2" target="s3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-deploy-label" value="④ agentcore deploy&lt;br&gt;コード ZIP をアップロード" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;fontColor=#ED7100;labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="e-deploy">
+          <mxGeometry x="0.2" relative="1" as="geometry">
+            <mxPoint x="60" y="-24" as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="e-code" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#7AA116;endArrow=blockThin;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="s3" target="agentcore">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-code-label" value="⑤ コード読み取り" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontSize=12;fontColor=#7AA116;labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="e-code">
+          <mxGeometry x="0" relative="1" as="geometry">
+            <mxPoint x="10" y="0" as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="e-invoke" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#0073BB;endArrow=blockThin;endFill=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="ec2" target="agentcore">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-invoke-label" value="⑥ InvokeAgentRuntime&lt;br&gt;返ってきたイベントを UI に流す" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;fontColor=#0073BB;labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="e-invoke">
+          <mxGeometry x="0.28" relative="1" as="geometry">
+            <mxPoint y="-18" as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="e-model" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#01A88D;endArrow=blockThin;endFill=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="agentcore" target="bedrock">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-model-label" value="⑦ InvokeModel" style="edgeLabel;html=1;align=center;verticalAlign=bottom;resizable=0;points=[];fontSize=12;fontColor=#01A88D;labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="e-model">
+          <mxGeometry x="0" y="-1" relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#CFD8DC;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="390" y="930" width="1230" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="legendtext" value="&lt;b&gt;凡例&lt;/b&gt;　■ 受講者の接続経路　　&lt;font color=&quot;#ED7100&quot;&gt;■&lt;/font&gt; CLI デプロイ　　&lt;font color=&quot;#7AA116&quot;&gt;■&lt;/font&gt; コードアーティファクト　　&lt;font color=&quot;#0073BB&quot;&gt;■&lt;/font&gt; エージェント呼び出し　　&lt;font color=&quot;#01A88D&quot;&gt;■&lt;/font&gt; モデル推論　　　受講者に AWS の認証情報は配らない" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="410" y="930" width="1200" height="50" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
