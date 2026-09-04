@@ -141,6 +141,29 @@
     color: var(--muted);
   }
   @keyframes blink { 0%,50% { opacity: 1 } 50.01%,100% { opacity: 0 } }
+
+  .waiting { display: flex; align-items: center; gap: 10px; }
+  .dots { display: inline-flex; gap: 4px; }
+  .dots i {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: currentColor;
+    animation: bounce 1.3s infinite ease-in-out both;
+  }
+  .dots i:nth-child(1) { animation-delay: -.32s; }
+  .dots i:nth-child(2) { animation-delay: -.16s; }
+  @keyframes bounce {
+    0%, 80%, 100% { transform: scale(.6); opacity: .35 }
+    40% { transform: scale(1); opacity: 1 }
+  }
+  .elapsed {
+    font-size: 12px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dots i { animation: none; opacity: .6 }
+    .cursor::after { animation: none }
+  }
   .error { color: #b3261e; }
 </style>
 </head>
@@ -176,6 +199,36 @@ const sendButton = document.getElementById('send');
 
 // code-server の /proxy/3000/ 配下で開くので、パスは相対で組む
 const base = location.pathname.endsWith('/') ? location.pathname : location.pathname + '/';
+
+function addWaiting(kind, label) {
+  const body = addStep(kind, label, '');
+  const wrap = document.createElement('div');
+  wrap.className = 'waiting';
+
+  const dots = document.createElement('span');
+  dots.className = 'dots';
+  dots.append(document.createElement('i'), document.createElement('i'), document.createElement('i'));
+
+  const elapsed = document.createElement('span');
+  elapsed.className = 'elapsed';
+  elapsed.textContent = '0.0 秒';
+
+  wrap.append(dots, elapsed);
+  body.append(wrap);
+
+  const started = performance.now();
+  const timer = setInterval(() => {
+    elapsed.textContent = ((performance.now() - started) / 1000).toFixed(1) + ' 秒';
+  }, 100);
+
+  return {
+    element: body.parentElement,
+    stop() {
+      clearInterval(timer);
+      this.element.remove();
+    },
+  };
+}
 
 function addStep(kind, label, body) {
   const step = document.createElement('div');
@@ -243,8 +296,7 @@ async function ask(prompt) {
 
   const toolCards = new Map();
   let answerBody = null;
-  let thinking = addStep('think', 'モデルが考えています', '');
-  thinking.parentElement.classList.add('cursor');
+  let waiting = addWaiting('think', 'モデルが考えています');
 
   try {
     const res = await fetch(base + 'api/ask', {
@@ -278,7 +330,7 @@ async function ask(prompt) {
   } catch (e) {
     addStep('answer', 'エラー', String(e)).classList.add('error');
   } finally {
-    if (thinking) thinking.parentElement.classList.remove('cursor');
+    if (waiting) { waiting.stop(); waiting = null; }
     sendButton.disabled = false;
     promptInput.focus();
   }
@@ -287,10 +339,7 @@ async function ask(prompt) {
     if (event.type === 'loop_start') return;
 
     if (event.type === 'tool_use') {
-      if (thinking) {
-        thinking.parentElement.remove();
-        thinking = null;
-      }
+      if (waiting) { waiting.stop(); waiting = null; }
       let card = toolCards.get(event.id);
       if (!card) {
         const body = addStep('tool', 'モデルがツールを呼びました', '');
@@ -304,21 +353,23 @@ async function ask(prompt) {
         toolCards.set(event.id, card);
       }
       if (event.input) card.args.textContent = event.input;
+      // 引数が出そろったら、結果が返るまで待っていることを見せる
+      if (!waiting) waiting = addWaiting('think', 'ツールを実行しています');
       return;
     }
 
     if (event.type === 'tool_result') {
+      if (waiting) { waiting.stop(); waiting = null; }
       for (const result of event.results) {
         addStep('result', 'ツールが返した結果', result.text);
       }
+      // 結果を受けて、モデルがもう一度考える
+      waiting = addWaiting('think', 'モデルが結果を読んでいます');
       return;
     }
 
     if (event.type === 'text') {
-      if (thinking) {
-        thinking.parentElement.remove();
-        thinking = null;
-      }
+      if (waiting) { waiting.stop(); waiting = null; }
       if (!answerBody) {
         answerBody = addStep('answer', 'モデルの答え', '');
         answerBody.parentElement.classList.add('cursor');
