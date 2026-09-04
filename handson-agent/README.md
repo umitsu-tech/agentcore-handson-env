@@ -9,12 +9,14 @@
 |---|---|
 | `agent.py` | エージェントの定義。モデル、システムプロンプト、使えるツールの一覧 |
 | `tools.py` | ツールの中身。ハンズオンではここに関数を足す |
+| `events.py` | Strands のイベントを画面に出す形へ変換する。手元でも Runtime でも共通 |
 | `local.py` | 手元で動かすときの入口（前半で使う） |
 | `runtime.py` | AgentCore Runtime に載せるときの入口（後半で使う） |
 | `data/equipment.json` | 備品のデータ |
 
-`local.py` と `runtime.py` はどちらも `agent.py` の `build_agent()` を呼びます。
-同じエージェントを、動かす場所だけ変えて使う形です。
+`local.py` と `runtime.py` はどちらも `agent.py` の `build_agent()` を呼び、
+届いたイベントを `events.py` の `to_ui_event()` に通します。同じエージェントを、
+動かす場所だけ変えて使う形です。画面に届くイベントの形も同じになります。
 
 ## 動かす
 
