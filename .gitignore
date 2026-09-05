@@ -41,3 +41,9 @@ node_modules/
 
 # Terraform の作業ディレクトリ
 terraform/.terraform/
+
+# agentcore CLI（handson-agent/ を Runtime にデプロイする設定一式）
+# .env.local と .cli/ は agentcore/.gitignore 側でも無視される。ここにも書いておくのは
+# 誤って `git add -f` されたときの二重の網。
+agentcore/.env.local
+agentcore/.cli/

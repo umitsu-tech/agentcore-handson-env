@@ -6,9 +6,10 @@
 # 当日は起動するだけで使える状態になる。
 #
 # ワークスペース（受講者の EC2 に置くファイル一式）は S3 から取得する。バケットとキーは環境変数で渡す。
-# アーカイブは handson-agent/ と handson-ui/ の2ディレクトリを含む。
-# リポジトリ直下で `tar -czf handson-workspace.tar.gz handson-agent handson-ui` のように作る
-# （node_modules・.venv・frontend/dist は含めない）。
+# アーカイブは handson-agent/・handson-ui/・agentcore/（agentcore deploy 用の CLI 設定と
+# CDK コード一式）の3ディレクトリを含む。
+# リポジトリ直下で `tar -czf handson-workspace.tar.gz handson-agent handson-ui agentcore` のように作る
+# （node_modules・.venv・frontend/dist・agentcore/.cli・agentcore/.env.local は含めない）。
 set -euxo pipefail
 
 ASSET_BUCKET="${ASSET_BUCKET:-}"
@@ -34,8 +35,11 @@ curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin s
 uv --version
 
 # --- AWS CDK と AgentCore CLI -------------------------------------------------
-# agentcore deploy は内部で CDK を使うので両方入れる
-npm install -g aws-cdk @aws/agentcore
+# agentcore deploy は内部で CDK を使うので両方入れる。
+# agentcore/ 配下（agentcore.json・cdk/ のコード）は npx @aws/agentcore@latest で
+# 生成したものを AMI に焼き込んでいるため、生成時と異なるバージョンの CLI で
+# deploy すると噛み合わない可能性がある。バージョンを固定する。
+npm install -g aws-cdk @aws/agentcore@0.28.1
 cdk --version
 agentcore --version
 
@@ -91,6 +95,10 @@ chown handson:handson /home/handson/.local/share/code-server/User/settings.json
 systemctl enable code-server@handson
 
 # --- ワークスペース -----------------------------------------------------------
+# handson-agent/・handson-ui/ に加えて agentcore/（agentcore deploy 用の CLI 設定と
+# CDK コード）もここで展開される。agentcore/agentcore.json と aws-targets.json には
+# handson_PARTICIPANT / 000000000000 のプレースホルダが入っており、実際の値への
+# 差し替えは起動時に scripts/configure-instance.sh が行う。
 if [ -n "$ASSET_BUCKET" ]; then
   aws s3 cp "s3://${ASSET_BUCKET}/${ASSET_KEY}" /tmp/handson-workspace.tar.gz
   tar -xzf /tmp/handson-workspace.tar.gz -C /home/handson/workspace
@@ -106,6 +114,18 @@ if [ -n "$ASSET_BUCKET" ]; then
   sudo -u handson env PATH="$PATH" uv sync
   sudo -u handson env PATH="$PATH" npm --prefix frontend ci
   sudo -u handson env PATH="$PATH" npm --prefix frontend run build
+  popd
+
+  # agentcore deploy は実行のたびに agentcore/cdk で依存の同期（package.json が
+  # CLI の同梱テンプレートと食い違っているか、node_modules が無ければ npm install）と
+  # npm run build（tsc）を自分で行う。node_modules を先に入れておけば、CLI のバージョンを
+  # 固定してある限り package.json は一致し、npm install はスキップされる（node_modules の
+  # 有無と依存の差分だけで判断される）。npm run build（tsc）は毎回走るが、node_modules が
+  # 揃っていれば数秒で終わるので待ち時間の問題にはならない。package-lock.json を
+  # コミットしてあるので、lock どおりに入れる npm ci を使う。
+  pushd /home/handson/workspace/agentcore/cdk
+  sudo -u handson env PATH="$PATH" npm ci
+  sudo -u handson env PATH="$PATH" npm run build
   popd
 fi
 

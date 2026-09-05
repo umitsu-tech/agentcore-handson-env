@@ -1,0 +1,16 @@
+# Secrets (local environment files are never committed)
+.env.local
+
+# CDK Build Artifacts
+cdk/cdk.out/
+cdk/node_modules/
+
+# CLI Internals（deployed-state.json は CLI の既定だとコミット対象だが、
+# 受講者ごとの実デプロイ状態を含むためハンズオンでは丸ごと無視する）
+.cli/*
+
+# Ephemeral Staging
+.cache/*
+
+# AI アシスタント向けの型定義（CLI のバージョンに追従するだけの生成物なのでコミットしない）
+.llm-context/

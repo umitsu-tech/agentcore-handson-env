@@ -58,7 +58,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 
 AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証情報が要るので、リュウキがブラウザで認証できるタイミングで進める。
 
-1. `agentcore deploy` が 1 行で通るように `handson-agent/` に CLI の設定を用意し、受講者の権限で通ることを確認する（Issue #21）。あわせてデプロイ中のメモリを測って Issue #15 を閉じる
+1. `agentcore deploy` が 1 行で通るように `handson-agent/` に CLI の設定を用意する（Issue #21）。設定済み。受講者権限で通るかと所要時間・メモリの実測（Issue #15）は AMI 焼き直し後に PC で
 2. code-server を開いたときに `/home/handson/workspace` が開いた状態にする（Issue #22）。実装済み・AMI 焼き直しで確認待ち
 3. 1 と 2 を `scripts/build-ami.sh` で AMI に焼き直し、もう一度 1 台立てて「`tools.py` を保存すると画面のツール一覧が追随する」「デプロイしたエージェントをハンズオン UI から呼べる」まで確認する。ここまでで Issue #5 を閉じる
 4. 後片付けの仕組み（Issue #17）を実装する

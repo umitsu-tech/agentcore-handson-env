@@ -177,12 +177,19 @@ else
   log "ワークスペースを $ARCHIVE_NAME にまとめる"
   ARCHIVE="$WORK_DIR/$ARCHIVE_NAME"
   # COPYFILE_DISABLE は macOS の tar が ._ 付きのメタデータファイルを混ぜないようにする
+  # agentcore/ は agentcore deploy 用の CLI 設定と CDK コード一式。.cli/（デプロイ状態）と
+  # .env.local（秘密情報）は受講者ごと・実行ごとに変わるものなので AMI には焼き込まない。
   (cd "$REPO_ROOT" && COPYFILE_DISABLE=1 tar -czf "$ARCHIVE" \
     --exclude node_modules --exclude .venv --exclude frontend/dist \
+    --exclude agentcore/cdk/dist \
     --exclude __pycache__ --exclude .DS_Store \
-    handson-agent handson-ui)
+    --exclude agentcore/.cli --exclude agentcore/.env.local \
+    handson-agent handson-ui agentcore)
   if tar -tzf "$ARCHIVE" | grep -qE '(^|/)(node_modules|\.venv|dist)(/|$)'; then
     fail "tar.gz に node_modules / .venv / dist が混ざっています"
+  fi
+  if tar -tzf "$ARCHIVE" | grep -qE '(^|/)agentcore/(\.cli|\.env\.local)(/|$)'; then
+    fail "tar.gz に agentcore/.cli または agentcore/.env.local が混ざっています"
   fi
   echo "サイズ: $(du -h "$ARCHIVE" | cut -f1)"
 
