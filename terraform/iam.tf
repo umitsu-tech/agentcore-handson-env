@@ -50,6 +50,21 @@ resource "aws_iam_role_policy" "agentcore" {
         Resource = "*"
       },
       {
+        # agentcore deploy は Runtime 作成にあわせて既定のワークロードアイデンティティも
+        # 作る（aws/agentcore-cli の docs/policies/iam-policy-user.json の
+        # AgentCoreResourceManagement 相当。identity/credential provider を使わなくても
+        # 無条件で要る）。agentcore.json の tags もここで付与される。
+        Sid    = "AgentCoreWorkloadIdentityAndTags"
+        Effect = "Allow"
+        Action = [
+          "bedrock-agentcore:CreateWorkloadIdentity",
+          "bedrock-agentcore:DeleteWorkloadIdentity",
+          "bedrock-agentcore:TagResource",
+          "bedrock-agentcore:ListTagsForResource",
+        ]
+        Resource = "*"
+      },
+      {
         # AgentCore Runtime の実行ロールは CLI が自動で作る。事前に作って渡すことが
         # できないため（aws/agentcore-cli #870）、作成権限を持たせる必要がある。
         # 対象は BedrockAgentCore 系のロール名に限定する。
@@ -109,6 +124,17 @@ resource "aws_iam_role_policy" "agentcore" {
         Resource = "arn:${data.aws_partition.current.partition}:iam::${data.aws_caller_identity.current.account_id}:role/cdk-*"
       },
       {
+        # agentcore deploy（内部の CDK）はデプロイ前に CDKToolkit のブートストラップ
+        # バージョンを SSM パラメータで確認する。
+        Sid    = "CdkBootstrapVersionLookup"
+        Effect = "Allow"
+        Action = [
+          "ssm:GetParameter",
+          "ssm:GetParameters",
+        ]
+        Resource = "arn:${data.aws_partition.current.partition}:ssm:*:${data.aws_caller_identity.current.account_id}:parameter/cdk-bootstrap/*"
+      },
+      {
         Sid    = "AgentCodeBucket"
         Effect = "Allow"
         Action = [
@@ -150,6 +176,22 @@ resource "aws_iam_role_policy" "agentcore" {
           "logs:StartLiveTail",
         ]
         Resource = "*"
+      },
+      {
+        # Runtime のロググループは CLI がデプロイ時に自分で作る（aws/agentcore-cli の
+        # docs/policies/iam-policy-user.json の LogsStreamingAndSearch 相当のうち、
+        # デプロイに要る書き込み系だけを切り出した）。
+        Sid    = "AgentCoreExecutionLogging"
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+        ]
+        Resource = [
+          "arn:${data.aws_partition.current.partition}:logs:*:${data.aws_caller_identity.current.account_id}:log-group:/aws/bedrock-agentcore/*",
+          "arn:${data.aws_partition.current.partition}:logs:*:${data.aws_caller_identity.current.account_id}:log-group:/aws/bedrock-agentcore/*:*",
+        ]
       },
     ]
   })
