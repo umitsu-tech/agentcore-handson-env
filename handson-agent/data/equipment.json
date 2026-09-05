@@ -1,0 +1,66 @@
+[
+  {
+    "id": "PC-001",
+    "name": "ThinkPad X1 Carbon",
+    "category": "ノートPC",
+    "status": "貸出中",
+    "borrower": "山田",
+    "due_date": "2026-09-12"
+  },
+  {
+    "id": "PC-002",
+    "name": "MacBook Air 15インチ",
+    "category": "ノートPC",
+    "status": "貸出可",
+    "borrower": null,
+    "due_date": null
+  },
+  {
+    "id": "PC-003",
+    "name": "ThinkPad X1 Carbon",
+    "category": "ノートPC",
+    "status": "修理中",
+    "borrower": null,
+    "due_date": null
+  },
+  {
+    "id": "MON-001",
+    "name": "27インチ 4Kモニター",
+    "category": "モニター",
+    "status": "貸出可",
+    "borrower": null,
+    "due_date": null
+  },
+  {
+    "id": "MON-002",
+    "name": "34インチ ウルトラワイド",
+    "category": "モニター",
+    "status": "貸出中",
+    "borrower": "鈴木",
+    "due_date": "2026-09-08"
+  },
+  {
+    "id": "CAM-001",
+    "name": "配信用Webカメラ",
+    "category": "撮影機材",
+    "status": "貸出可",
+    "borrower": null,
+    "due_date": null
+  },
+  {
+    "id": "MIC-001",
+    "name": "指向性マイク",
+    "category": "撮影機材",
+    "status": "貸出中",
+    "borrower": "田中",
+    "due_date": "2026-09-06"
+  },
+  {
+    "id": "PRJ-001",
+    "name": "モバイルプロジェクター",
+    "category": "プレゼン機材",
+    "status": "貸出可",
+    "borrower": null,
+    "due_date": null
+  }
+]
