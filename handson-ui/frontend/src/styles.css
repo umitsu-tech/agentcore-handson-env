@@ -239,6 +239,7 @@ body {
 .step.answer .label { color: var(--output); }
 .step.answer .card { border-width: 2px; }
 .answer-note { margin-top: 8px; font-size: 13px; color: var(--muted); }
+.input-note { margin-top: 8px; font-size: 13px; color: var(--muted); }
 .step.error .card { border-color: var(--danger); }
 .step.error .label { color: var(--danger); }
 
