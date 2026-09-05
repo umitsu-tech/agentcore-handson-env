@@ -69,7 +69,7 @@ AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証�
 ### 未確定
 
 - EBS のサイズとインスタンスタイプ。AMI は 15GiB で焼き直した（使用 4.2GB）。再起動直後のメモリは 330MB で t4g.small は余っている。t4g.micro に落とすかは `agentcore deploy` 中のメモリを測ってから（Issue #15）
-- `aws login` の認証情報が 15 分ほどで更新に失敗して切れる（AWS CLI 側の既知の不具合と同じ症状）。長い操作はログイン直後に `aws configure export-credentials --format env` で取り出した一時クレデンシャルを環境変数で渡すと通る
+- `aws login` の認証情報が 15 分ほどで更新に失敗して切れる（AWS CLI 側の既知の不具合と同じ症状）。`terraform apply` や `build-ami.sh` のような長い操作は直前にログインし直す。認証方式そのものの見直しはこのプロジェクトの外で扱う
 - 本番でモデル制限をどうかけるか（検証の段階ではかけない方針）
 - UI のサーバー側で Bedrock の呼び出しが失敗したとき、画面には「network error」としか出ない。例外を捕まえてエラーの内容を流す改善を別 Issue にする予定
 - UI のサーバーを本番でも `--reload` 付きで動かすか。1 人 1 台なので負荷は問題ないが、保存すると再起動する挙動を受講者に説明する必要がある
