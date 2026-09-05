@@ -12,15 +12,15 @@ import asyncio
 import sys
 
 from agent import build_agent
-from events import to_ui_event
+from lib.events import to_ui_event
 
 
 async def ask(agent, prompt: str) -> None:
     """1 回のやりとりを実行して、届いたイベントを流す。
 
     stream_async はモデルの応答やツールの呼び出しをイベントとして順に返します。
-    ここでは events.to_ui_event を通した結果を素朴に表示しています。
-    ハンズオン UI（ui.py）も Runtime（runtime.py）も同じ関数を使うので、
+    ここでは lib/events.py の to_ui_event を通した結果を素朴に表示しています。
+    ハンズオン UI（handson-ui/server.py）も Runtime（runtime.py）も同じ関数を使うので、
     どこで動かしても届くイベントの形は同じです。
     """
     async for event in agent.stream_async(prompt):
