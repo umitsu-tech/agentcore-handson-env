@@ -1,4 +1,5 @@
 import type { Step } from '../types'
+import { renderAnswerText } from '../lib/markdown'
 import { RawData } from './RawData'
 import { Summary } from './Summary'
 import { Waiting } from './Waiting'
@@ -225,7 +226,7 @@ function renderStep(step: Step, cycleIndex?: number, isGroupStart?: boolean) {
       return (
         <div className="card">
           <div className="label">{isFinalCopy ? '最終的な答え' : 'モデルの答え'}</div>
-          <div className={`text ${step.done ? '' : 'caret'}`}>{step.text}</div>
+          <div className={`text ${step.done ? '' : 'caret'}`}>{renderAnswerText(step.text)}</div>
           {step.done && !isFinalCopy && (
             <div className="answer-note">
               ツールを呼ばずに答えたので、ここでループが終わりました

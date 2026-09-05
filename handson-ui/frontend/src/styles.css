@@ -228,6 +228,9 @@ body {
   margin-bottom: 6px;
 }
 .card .text { font-size: 16px; white-space: pre-wrap; word-break: break-word; }
+.card .text p { margin: 0 0 6px; }
+.card .text p:last-child { margin-bottom: 0; }
+.card .text ul, .card .text ol { margin: 6px 0; padding-left: 1.4em; }
 
 .step.question .card,
 .step.tool_result .card { border-color: var(--input); background: var(--input-soft); }
