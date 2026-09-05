@@ -23,7 +23,7 @@ export type AgentEvent =
 
 /** 画面のタイムラインに積むもの。 */
 export type Step =
-  | { kind: 'question'; id: string; text: string }
+  | { kind: 'question'; id: string; text: string; target: AskTarget }
   | { kind: 'cycle'; id: string; index: number }
   | { kind: 'waiting'; id: string; label: string; startedAt: number }
   | { kind: 'tool_use'; id: string; name: string; input: string; raw?: unknown }
@@ -43,3 +43,14 @@ export type AgentContext = {
   system_prompt: string
   tools: ToolDefinition[]
 }
+
+/** GET /api/runtime のレスポンス。Runtime にデプロイ済みかどうかを画面に伝える。 */
+export type RuntimeInfo = {
+  available: boolean
+  name: string
+  arn: string | null
+  region: string
+  reason?: string
+}
+
+export type AskTarget = 'local' | 'runtime'

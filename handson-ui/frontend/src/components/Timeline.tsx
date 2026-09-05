@@ -188,7 +188,9 @@ function renderStep(step: Step, options: RenderOptions = {}) {
         <div className="card">
           <div className="label">
             あなたの質問
-            <LabelNote>{isOutside ? 'お題' : 'インプット'}</LabelNote>
+            <LabelNote>
+              {isOutside ? `お題（${step.target === 'runtime' ? 'Runtime' : '手元'}）` : 'インプット'}
+            </LabelNote>
           </div>
           <div className="text">{step.text}</div>
         </div>

@@ -44,3 +44,24 @@ npm --prefix frontend run dev
 - ループの流れ（質問 → ツール呼び出し → 結果 → 答え）
 - 生のイベントの折りたたみ
 - 1 回のやりとりの集計（ループの周回数、トークン数、停止理由、ツール呼び出し回数）
+
+## Runtime の呼び出し
+
+`agentcore deploy` で AgentCore Runtime にエージェントをデプロイすると、画面に
+「手元で動かす / Runtime で動かす」の切り替えが増えます。未デプロイのときは
+`GET /api/runtime` が `available: false` を返し、切り替え自体を出しません
+（受講者ごとに見える画面が変わります）。
+
+Runtime の特定は次の順で行います。
+
+1. 環境変数 `HANDSON_RUNTIME_ARN` があればそれをそのまま使う
+2. 無ければ環境変数 `HANDSON_PARTICIPANT` → `/etc/handson/participant`（`scripts/configure-instance.sh` が起動時に書く）の順で受講者キーを取り、`handson_<キー>` という名前の Runtime を `ListAgentRuntimes` で探す
+
+見つかった結果だけをプロセス内でキャッシュします。未デプロイ→デプロイ済みへの変化は、
+画面をリロードすれば拾えます（キャッシュは「見つかったとき」だけ効くため）。
+
+`POST /api/ask` は `target: "local" | "runtime"` を受け取ります。`"runtime"` のときは
+`InvokeAgentRuntime` をストリーミングで呼び、`runtimeSessionId` はリクエストごとに新しい UUID
+にします。手元の `/api/ask` がリクエストごとに `build_agent()` を作り直して会話をリセットするのと
+同じ挙動にするためです。認証情報が無い・権限が無い・Runtime が見つからないなどの失敗は、
+画面が「network error」だけで止まらないよう `{"type": "error", "message": ...}` のイベントとして流します。
