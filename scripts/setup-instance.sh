@@ -58,6 +58,36 @@ CONFIG
 chown -R handson:handson /home/handson/.config
 chmod 600 /home/handson/.config/code-server/config.yaml
 
+# --- code-server の起動時に workspace を開く -----------------------------------
+# 何も渡さないと「You have no recent folders, open a folder to start」の画面に
+# なり、受講者がどこを触ればいいか分からない。ドロップインで起動フォルダを渡し、
+# 最初から handson-agent/ と handson-ui/ が見える状態にする。
+# 元ユニット（code-server@.service、rpm 提供）の ExecStart は `/usr/bin/code-server`
+# のみ（引数なし。https://github.com/coder/code-server/blob/main/ci/build/code-server%40.service
+# で確認）。bind-addr は config.yaml で指定済みなので引数には含めない。
+install -d /etc/systemd/system/code-server@handson.service.d
+cat > /etc/systemd/system/code-server@handson.service.d/override.conf <<'OVERRIDE'
+[Service]
+ExecStart=
+ExecStart=/usr/bin/code-server /home/handson/workspace
+OVERRIDE
+systemctl daemon-reload
+
+# 初回起動時の Welcome タブ・拡張機能のおすすめ・ワークスペース信頼ダイアログなど、
+# 受講者を迷わせる表示を抑える
+install -d -o handson -g handson /home/handson/.local/share/code-server/User
+cat > /home/handson/.local/share/code-server/User/settings.json <<'SETTINGS'
+{
+  "workbench.startupEditor": "none",
+  "extensions.ignoreRecommendations": true,
+  "telemetry.telemetryLevel": "off",
+  "workbench.tips.enabled": false,
+  "security.workspace.trust.enabled": false,
+  "update.mode": "none"
+}
+SETTINGS
+chown handson:handson /home/handson/.local/share/code-server/User/settings.json
+
 systemctl enable code-server@handson
 
 # --- ワークスペース -----------------------------------------------------------
