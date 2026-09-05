@@ -29,5 +29,15 @@ credentials
 .vscode/
 .idea/
 
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# フロントエンド
+node_modules/
+**/frontend/dist/
+*.tsbuildinfo
+
 # Terraform の作業ディレクトリ
 terraform/.terraform/
