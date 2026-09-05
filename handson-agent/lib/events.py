@@ -85,6 +85,11 @@ def to_ui_event(event: dict) -> dict | None:
     if event.get("init_event_loop"):
         return {"type": "loop_start", "raw": _serializable(event)}
 
+    # ループの 1 周ごと（モデルを呼ぶ直前）に 1 回出るイベント。ツールを呼んで
+    # もう一度モデルに聞きに行くたびに増えるので、画面で周回の区切りを描ける
+    if event.get("start_event_loop"):
+        return {"type": "cycle_start", "raw": _serializable(event)}
+
     # モデルが「このツールを呼べ」と言っている状態。引数は少しずつ届くので、
     # 同じ toolUseId のイベントが何度も来ます。画面側で同じカードを更新します。
     if "current_tool_use" in event:

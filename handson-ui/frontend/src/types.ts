@@ -14,6 +14,7 @@ export type ResultSummary = {
 /** サーバーから SSE で届くイベント。events.py の to_ui_event が作る形。 */
 export type AgentEvent =
   | { type: 'loop_start'; raw?: unknown }
+  | { type: 'cycle_start'; raw?: unknown }
   | { type: 'tool_use'; id?: string; name: string; input?: string; raw?: unknown }
   | { type: 'tool_result'; results: ToolResult[]; raw?: unknown }
   | { type: 'text'; text: string }
@@ -23,6 +24,7 @@ export type AgentEvent =
 /** 画面のタイムラインに積むもの。 */
 export type Step =
   | { kind: 'question'; id: string; text: string }
+  | { kind: 'cycle'; id: string; index: number }
   | { kind: 'waiting'; id: string; label: string; startedAt: number }
   | { kind: 'tool_use'; id: string; name: string; input: string; raw?: unknown }
   | { kind: 'tool_result'; id: string; results: ToolResult[]; raw?: unknown }

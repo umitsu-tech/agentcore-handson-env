@@ -48,9 +48,21 @@ export function App() {
       startedAt: performance.now(),
     })
 
+    // この質問の中で何周目か。cycle_start はループが 1 周するたびに届く
+    let cycleIndex = 0
+
     try {
       for await (const event of askAgent(question)) {
         switch (event.type) {
+          case 'cycle_start':
+            cycleIndex += 1
+            setSteps((list) => [
+              ...dropWaiting(list),
+              { kind: 'cycle', id: nextId(), index: cycleIndex },
+              waiting('モデルが考えています'),
+            ])
+            break
+
           case 'tool_use':
             setSteps((list) => {
               const rest = dropWaiting(list)

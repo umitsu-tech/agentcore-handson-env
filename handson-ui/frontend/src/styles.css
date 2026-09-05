@@ -158,6 +158,39 @@ body {
 .step.tool_result::before { background: var(--result); }
 .step.answer::before { background: var(--accent); }
 .step.error::before { background: var(--danger); }
+.step.cycle::before { background: var(--accent); width: 8px; height: 8px; }
+
+/* 周回の区切り見出し */
+.cycle-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0;
+}
+.cycle-badge {
+  flex: none;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent);
+  border-radius: 999px;
+  padding: 3px 12px;
+}
+.cycle-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.cycle-heading::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+/* 周回に属するステップは少し内側に寄せて、区切りとの親子関係を見せる */
+.step.in-cycle > .card { margin-left: 18px; width: calc(100% - 18px); }
 
 @keyframes rise {
   from { opacity: 0; transform: translateY(6px); }
@@ -186,6 +219,7 @@ body {
 .step.tool_result .label { color: var(--result); }
 .step.answer .card { border-width: 2px; border-color: var(--accent); }
 .step.answer .label { color: var(--accent); }
+.answer-note { margin-top: 8px; font-size: 13px; color: var(--muted); }
 .step.error .card { border-color: var(--danger); }
 .step.error .label { color: var(--danger); }
 
