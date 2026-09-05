@@ -10,10 +10,6 @@
   --accent-soft: #e2f1ee;
   --tool: #a64b00;
   --tool-soft: #fdf2e8;
-  --result: #1d5fa8;
-  --result-soft: #e8f0fb;
-  --answer: #6a3fb5;
-  --answer-soft: #f3eefb;
   --danger: #b3261e;
   --radius: 10px;
   --sans: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Yu Gothic UI', system-ui, sans-serif;
@@ -157,8 +153,8 @@ body {
   box-sizing: content-box;
 }
 .step.tool_use::before { background: var(--tool); }
-.step.tool_result::before { background: var(--result); }
-.step.answer::before { background: var(--answer); }
+.step.tool_result::before { background: var(--panel); border-color: var(--tool); }
+.step.answer::before { background: var(--ink); }
 .step.error::before { background: var(--danger); }
 
 /* 周ごとの折りたたみ。既定は開いた状態（Timeline 側で open を初期値としてのみ渡す） */
@@ -231,12 +227,12 @@ body {
 .card .text { font-size: 16px; white-space: pre-wrap; word-break: break-word; }
 
 .step.question .card { background: var(--panel-soft); }
-.step.tool_use .card { border-color: var(--tool); background: var(--tool-soft); }
-.step.tool_use .label { color: var(--tool); }
-.step.tool_result .card { border-color: var(--result); background: var(--result-soft); }
-.step.tool_result .label { color: var(--result); }
-.step.answer .card { border-width: 2px; border-color: var(--answer); background: var(--answer-soft); }
-.step.answer .label { color: var(--answer); }
+.step.tool_use .card,
+.step.tool_result .card { border-color: var(--tool); background: var(--tool-soft); }
+.step.tool_use .label,
+.step.tool_result .label { color: var(--tool); }
+.step.answer .card { border-width: 2px; border-color: var(--ink); }
+.step.answer .label { color: var(--ink); }
 .answer-note { margin-top: 8px; font-size: 13px; color: var(--muted); }
 .step.error .card { border-color: var(--danger); }
 .step.error .label { color: var(--danger); }
