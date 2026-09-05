@@ -52,7 +52,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 
 まだ手が要るもの。
 
-- AMI は `scripts/build-ami.sh` で焼き直し済み。`ami-04d14015e8f390da7`（agentcore-handson-20260905-1701、arm64、ルートボリューム 15GiB）。再起動後に code-server と handson-ui が自動起動し、`/healthz` と `/api/context` が 200 を返すところまでスクリプトで確認した。古い `ami-0212faf4372e1a817` とそのスナップショットは削除した
+- AMI は `scripts/build-ami.sh` で焼き直し済み。`ami-0687e031e99ce5eaf`（agentcore-handson-20260906-0811、arm64、ルートボリューム 15GiB。Issue #21 の agentcore CLI 設定と cdk の依存、Issue #22 の code-server 設定を含む）。再起動後に code-server と handson-ui が自動起動し、`/healthz` と `/api/context` が 200 を返すところまでスクリプトで確認した（ディスク 4.6GB、再起動後メモリ 303MB）。1 つ前の `ami-04d14015e8f390da7` は通し確認が済んだら削除する
 
 ### 次の一歩
 
