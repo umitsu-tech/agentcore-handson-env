@@ -28,7 +28,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - エージェントの題材は社内の備品貸出の案内。ツールを 1 つ足す体験がしやすい題材にした
 - Harness は振り返りで名前と位置づけを話すだけにする。自分でループを書いたあとに出すから意味が伝わる（`harness.json` は用意しておく）
 - Amazon Linux 2027 は preview なので使わない。当日パッケージが入らないリスクを取らない
-- 教材（受講者の EC2 に置くファイル一式）は `handson-agent/`（受講者が触る雛形）と `handson-ui/`（主催者側の UI）に分ける。受講者が code-server を開いたときに、触るファイルだけが平置きで見える形にする。裏方の `events.py` は `handson-agent/lib/` に寄せる
+- ワークスペース（受講者の EC2 に置くファイル一式。`/home/handson/workspace` に展開する）は `handson-agent/`（受講者が触る雛形）と `handson-ui/`（主催者側の UI）に分ける。受講者が code-server を開いたときに、触るファイルだけが平置きで見える形にする。裏方の `events.py` は `handson-agent/lib/` に寄せる
 - ツールはデータ（dict / list）を返し、日本語にするのはモデルの仕事にする。ツールの結果とモデルの答えが同じ文になると、モデルが何を足したのか見えないため
 - ハンズオン UI の見せ方は、ループの 1 周を「モデルを呼んで、ツールを実行して、結果を受け取るまで」とし、周ごとに折りたためる見出しで区切る。色は 3 つだけで、青緑はループの入口と出口（お題の質問と最終的な答え）、青はモデルに入るもの、オレンジはモデルかツールから出てくるもの。周の境目では同じカードを重複して出し、色をオレンジから青に切り替えて「出てきたものを次は入れる」を見せる
 - UI は常にライトテーマ、端末のフォントだけを使い、本文 16px・補助 13px 以上、白地でコントラスト比 4.5 以上を保つ（プロジェクターで見にくかったため）
@@ -50,13 +50,13 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 
 まだ手が要るもの。
 
-- AMI `ami-0212faf4372e1a817`（arm64）は `handson-ui/` 分離前のスクリプトで焼いたもの。教材を `handson-workspace.tar.gz` として S3 に上げ直してから焼き直す
+- AMI `ami-0212faf4372e1a817`（arm64）は `handson-ui/` 分離前のスクリプトで焼いたもの。ワークスペースを `handson-workspace.tar.gz` として S3 に上げ直してから焼き直す
 
 ### 次の一歩
 
 PR はすべてマージ済みなので、ここからは PC の前で行う作業になる（リモートの作業環境からは AWS の変更操作が通らない）。
 
-1. 教材（`handson-agent/` と `handson-ui/`）を `handson-workspace.tar.gz` にして S3 に上げ直す
+1. ワークスペース（`handson-agent/` と `handson-ui/`）を `handson-workspace.tar.gz` にして S3 に上げ直す
 2. `scripts/setup-instance.sh` で AMI を焼き直す。このときルートボリュームを Issue #15 の結論のサイズにする
 3. ACM のワイルドカード証明書と Cloudflare のレコードを用意する
 4. `terraform apply` で 1 台立てて通し確認をする。ブラウザから code-server に入れること、`tools.py` を保存すると画面のツール一覧が追随すること、`agentcore deploy` が通ること、デプロイしたエージェントをハンズオン UI から呼べること。あわせて Issue #15 の未測定分（code-server で TypeScript を開いた状態と `agentcore deploy` 中のメモリ）を取る。ここまでで Issue #2、#5、#15 を閉じる
