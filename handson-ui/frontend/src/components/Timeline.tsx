@@ -268,7 +268,7 @@ function renderStep(step: Step, options: RenderOptions = {}) {
           <div className={`text ${step.done ? '' : 'caret'}`}>{renderAnswerText(step.text)}</div>
           {step.done && !isOutside && (
             <div className="answer-note">
-              モデルの返事がツールの要求ではなく答えだったので、ループはここで止まります（停止した理由: end_turn）
+              モデルの返事がツールの要求ではなく答えだったので、ループはここで止まります
             </div>
           )}
         </div>
