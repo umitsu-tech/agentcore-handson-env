@@ -68,3 +68,13 @@ uv run python local.py "ノートPCの空きある？"
 ```
 
 受講者用の EC2 ではインスタンスプロファイルを使うので、この手順は要りません。
+
+## Runtime へのデプロイ（ハンズオン後半）
+
+```bash
+agentcore deploy
+```
+
+このコマンドはワークスペース直下（`agentcore/` がある場所。`handson-agent/` の1つ上の階層）で実行します。code-server はワークスペース直下を開いているので、ターミナルを開いた場所がそのまま実行場所になります。
+
+`agentcore/` は agentcore CLI の設定ファイルと CDK のコード一式で、`agentcore create` / `agentcore add agent` で生成したものをそのまま置いています。中身は触らなくて大丈夫です。`agentcore.json` の `runtimes[].name` が Runtime 名になりますが、これは受講者ごとに `handson_user01` のようにインスタンス起動時に自動で置き換わっています（AMI に焼いてある設定はプレースホルダ `handson_PARTICIPANT` のままです）。
