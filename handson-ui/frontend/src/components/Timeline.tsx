@@ -188,7 +188,7 @@ function renderStep(step: Step, options: RenderOptions = {}) {
         <div className="card">
           <div className="label">
             あなたの質問
-            <LabelNote>{isOutside ? 'お題' : `${cycleIndex}周目のインプット`}</LabelNote>
+            <LabelNote>{isOutside ? 'お題' : 'インプット'}</LabelNote>
           </div>
           <div className="text">{step.text}</div>
         </div>
@@ -206,7 +206,7 @@ function renderStep(step: Step, options: RenderOptions = {}) {
         <div className="card">
           <div className="label">
             モデルがツールを呼びました
-            <LabelNote>{`${cycleIndex}周目・モデルの判断`}</LabelNote>
+            <LabelNote>モデルの判断</LabelNote>
           </div>
           <div className="tool-name">{step.name}</div>
           {step.input && <div className="args">{step.input}</div>}
@@ -223,7 +223,7 @@ function renderStep(step: Step, options: RenderOptions = {}) {
         <div className="card">
           <div className="label">
             ツールが返した結果
-            <LabelNote>{`${cycleIndex}周目の${resultNote}`}</LabelNote>
+            <LabelNote>{resultNote}</LabelNote>
           </div>
           {step.results.map((result, index) => {
             // ツールは dict / list のデータを返し、Strands がそれを JSON 文字列にして
@@ -261,14 +261,14 @@ function renderStep(step: Step, options: RenderOptions = {}) {
             ) : (
               <>
                 モデルの答え
-                <LabelNote>{`${cycleIndex}周目のアウトプット`}</LabelNote>
+                <LabelNote>アウトプット</LabelNote>
               </>
             )}
           </div>
           <div className={`text ${step.done ? '' : 'caret'}`}>{renderAnswerText(step.text)}</div>
           {step.done && !isOutside && (
             <div className="answer-note">
-              ツールを呼ばずに答えたので、ここでループが終わりました
+              モデルの返事がツールの要求ではなく答えだったので、ループはここで止まります（停止した理由: end_turn）
             </div>
           )}
         </div>
