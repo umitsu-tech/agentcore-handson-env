@@ -7,25 +7,77 @@ type Props = {
   steps: Step[]
 }
 
-// 周回の区切り見出しの後に続くステップだけ、少し内側に寄せて表示する
-const IN_CYCLE_KINDS = new Set(['tool_use', 'tool_result', 'answer', 'waiting'])
+type CycleStep = Extract<Step, { kind: 'cycle' }>
+type Group = { cycle: CycleStep; items: Step[] }
+
+// steps を「cycle 見出しより前」「周ごとのグループ」「summary・error（末尾）」に分ける。
+// question は先頭グループより前、answer は直前の周のグループの中に入る。
+function groupSteps(steps: Step[]) {
+  const leading: Step[] = []
+  const groups: Group[] = []
+  const trailing: Step[] = []
+  let current: Group | null = null
+
+  for (const step of steps) {
+    if (step.kind === 'cycle') {
+      current = { cycle: step, items: [] }
+      groups.push(current)
+      continue
+    }
+    if (step.kind === 'summary' || step.kind === 'error') {
+      trailing.push(step)
+      continue
+    }
+    if (current) {
+      current.items.push(step)
+    } else {
+      leading.push(step)
+    }
+  }
+
+  return { leading, groups, trailing }
+}
 
 export function Timeline({ steps }: Props) {
   if (steps.length === 0) return null
 
-  let afterCycleStart = false
+  const { leading, groups, trailing } = groupSteps(steps)
 
   return (
     <div className="timeline">
-      {steps.map((step) => {
-        if (step.kind === 'cycle') afterCycleStart = true
-        const inCycle = afterCycleStart && IN_CYCLE_KINDS.has(step.kind)
-        return (
-          <div className={`step ${step.kind}${inCycle ? ' in-cycle' : ''}`} key={step.id}>
-            {renderStep(step)}
+      {leading.map((step) => (
+        <div className={`step ${step.kind}`} key={step.id}>
+          {renderStep(step)}
+        </div>
+      ))}
+
+      {groups.map(({ cycle, items }) => (
+        // open は初期値としてのみ渡す。React に open の状態を管理させると、
+        // 再描画のたびに開いた状態へ戻ってしまいユーザーが畳めなくなるため。
+        <details className="cycle" open key={cycle.id}>
+          <summary className="cycle-heading">
+            <span className="cycle-badge">{cycle.index}周目</span>
+            <span className="cycle-text">
+              {cycle.index === 1
+                ? 'モデルを呼びます（質問とツールの一覧を渡します）'
+                : 'ツールの結果を持って、もう一度モデルを呼びます'}
+            </span>
+          </summary>
+          <div className="cycle-body">
+            {items.map((step) => (
+              <div className={`step ${step.kind} in-cycle`} key={step.id}>
+                {renderStep(step)}
+              </div>
+            ))}
           </div>
-        )
-      })}
+        </details>
+      ))}
+
+      {trailing.map((step) => (
+        <div className={`step ${step.kind}`} key={step.id}>
+          {renderStep(step)}
+        </div>
+      ))}
     </div>
   )
 }
@@ -41,16 +93,8 @@ function renderStep(step: Step) {
       )
 
     case 'cycle':
-      return (
-        <div className="cycle-heading">
-          <span className="cycle-badge">{step.index}周目</span>
-          <span className="cycle-text">
-            {step.index === 1
-              ? 'モデルを呼びます（質問とツールの一覧を渡します）'
-              : 'ツールの結果を持って、もう一度モデルを呼びます'}
-          </span>
-        </div>
-      )
+      // groups のレンダリングで <summary> として直接扱うため、ここには来ない。
+      return null
 
     case 'waiting':
       return <Waiting label={step.label} startedAt={step.startedAt} />
