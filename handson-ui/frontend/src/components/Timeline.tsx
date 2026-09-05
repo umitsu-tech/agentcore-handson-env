@@ -17,8 +17,11 @@ type Group = { cycle: CycleStep; items: Step[] }
 //   コピーして表示する（重複表示。React の key 重複を避けるため id には接尾辞を付ける）。
 // - question の直後の waiting は、最初の cycle 見出しが届く前は leading に、
 //   届いたあとは最初の周のグループへ移す（従来どおり片方にしか出さない）。
-// - tool_result（と直後の waiting）は「次の周への入力」なので、次の cycle 見出しが
-//   届いた瞬間に新しい周のグループの先頭へ移る。まだ届いていない間は現在の周の末尾のまま。
+// - tool_result は「モデルを呼ぶ→ツールを実行する→結果を受け取る」までを 1 周とするため、
+//   直前の周の末尾にそのまま残す。ただし次の周への入力でもあるので、次の cycle 見出しが
+//   届いた瞬間に、そのコピーを新しい周のグループの先頭にも入れる（重複表示。id には
+//   接尾辞を付けて key の重複を避ける）。直後の waiting は（これまでどおり）新しい周の
+//   グループへ移す。
 function groupSteps(steps: Step[]) {
   const leading: Step[] = []
   const groups: Group[] = []
@@ -31,11 +34,13 @@ function groupSteps(steps: Step[]) {
       current = { cycle: step, items: [] }
 
       if (previous) {
-        // 直前の周の末尾にある tool_result（と、それに続く waiting）は
-        // 新しい周への入力なので、新しい周のグループの先頭へ移す。
+        // tool_result は前の周の末尾に残す。コピーだけを新しい周のグループの
+        // 先頭（モデルへの入力）に入れ、直後の waiting は新しい周のグループへ移す。
         const carryFrom = findTrailingToolResultStart(previous.items)
         if (carryFrom !== -1) {
-          current.items.push(...previous.items.splice(carryFrom))
+          const toolResult = previous.items[carryFrom]
+          const waitingSteps = previous.items.splice(carryFrom + 1)
+          current.items.push({ ...toolResult, id: `${toolResult.id}-in-next-cycle` }, ...waitingSteps)
         }
       } else if (leading.length > 0) {
         // question はコピーして最初の周のグループにも入れる（leading 側にはそのまま残す）。
@@ -71,7 +76,7 @@ function groupSteps(steps: Step[]) {
 }
 
 // items の末尾が tool_result とそれに続く waiting だけの並びなら、その tool_result の
-// インデックスを返す（無ければ -1）。次の周へ持ち越す範囲の開始位置として使う。
+// インデックスを返す（無ければ -1）。次の周へコピーを持ち越す起点として使う。
 function findTrailingToolResultStart(items: Step[]) {
   let index = items.length - 1
   while (index >= 0 && items[index].kind === 'waiting') {
@@ -106,9 +111,9 @@ export function Timeline({ steps }: Props) {
             </span>
           </summary>
           <div className="cycle-body">
-            {items.map((step) => (
+            {items.map((step, index) => (
               <div className={`step ${step.kind} in-cycle`} key={step.id}>
-                {renderStep(step, cycle.index)}
+                {renderStep(step, cycle.index, index === 0)}
               </div>
             ))}
           </div>
@@ -124,7 +129,7 @@ export function Timeline({ steps }: Props) {
   )
 }
 
-function renderStep(step: Step, cycleIndex?: number) {
+function renderStep(step: Step, cycleIndex?: number, isGroupStart?: boolean) {
   switch (step.kind) {
     case 'question':
       return (
@@ -160,7 +165,7 @@ function renderStep(step: Step, cycleIndex?: number) {
               {result.text}
             </div>
           ))}
-          {cycleIndex !== undefined && cycleIndex >= 2 && (
+          {isGroupStart && cycleIndex !== undefined && cycleIndex >= 2 && (
             <div className="input-note">
               この結果だけでなく、ここまでの質問とツール呼び出しの履歴もまとめてモデルに渡します
             </div>
