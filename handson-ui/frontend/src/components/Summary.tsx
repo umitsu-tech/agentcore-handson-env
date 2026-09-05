@@ -32,14 +32,6 @@ export function Summary({ summary }: Props) {
             <div className="name">出力トークン</div>
           </div>
         )}
-        {summary.stop_reason && (
-          <div className="metric">
-            <div className="value" style={{ fontSize: 15 }}>
-              {summary.stop_reason}
-            </div>
-            <div className="name">停止した理由</div>
-          </div>
-        )}
       </div>
 
       {tools.length > 0 && (
