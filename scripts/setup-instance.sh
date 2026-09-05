@@ -5,7 +5,7 @@
 # デバッグに張り付くことになる。ここで入れたものを AMI に焼き込んでおけば、
 # 当日は起動するだけで使える状態になる。
 #
-# 教材は S3 から取得する。バケットとキーは環境変数で渡す。
+# ワークスペース（受講者の EC2 に置くファイル一式）は S3 から取得する。バケットとキーは環境変数で渡す。
 # アーカイブは handson-agent/ と handson-ui/ の2ディレクトリを含む。
 # リポジトリ直下で `tar -czf handson-workspace.tar.gz handson-agent handson-ui` のように作る
 # （node_modules・.venv・frontend/dist は含めない）。
@@ -60,7 +60,7 @@ chmod 600 /home/handson/.config/code-server/config.yaml
 
 systemctl enable code-server@handson
 
-# --- 教材 ---------------------------------------------------------------------
+# --- ワークスペース -----------------------------------------------------------
 if [ -n "$ASSET_BUCKET" ]; then
   aws s3 cp "s3://${ASSET_BUCKET}/${ASSET_KEY}" /tmp/handson-workspace.tar.gz
   tar -xzf /tmp/handson-workspace.tar.gz -C /home/handson/workspace
