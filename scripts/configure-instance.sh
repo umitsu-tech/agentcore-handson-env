@@ -1,15 +1,21 @@
 #!/bin/bash
-# AMI に焼いた環境を前提に、起動時にパスワードを差し込むだけのスクリプト。
-# templatefile 経由なので `$` は `$$` にエスケープする。
+# AMI に焼いた環境を前提に、起動時に受講者固有の値を差し込むスクリプト。
+# templatefile 経由なので `$` は `$$` にエスケープする（波かっこを使わない
+# 素の `$VAR` の形はエスケープ不要）。
 #
 # AMI（scripts/setup-instance.sh で作る）には code-server が
 # code-server@handson として有効化済みで、config.yaml には
 # password: CHANGE_ME_AT_BOOT というプレースホルダが入っている。
-# ここでは Terraform が生成したパスワードに差し替えて再起動するだけ。
+# ワークスペースの agentcore/agentcore.json と aws-targets.json にも
+# handson_PARTICIPANT / 000000000000 というプレースホルダが焼き込まれている。
+# ここではそれらを Terraform が渡した受講者固有の値に差し替える。
 set -euo pipefail
 
 CONFIG_FILE=/home/handson/.config/code-server/config.yaml
+AGENTCORE_JSON=/home/handson/workspace/agentcore/agentcore.json
+AWS_TARGETS_JSON=/home/handson/workspace/agentcore/aws-targets.json
 
+# --- code-server のパスワード --------------------------------------------------
 sed -i "s/^password: CHANGE_ME_AT_BOOT$/password: ${code_server_password}/" "$CONFIG_FILE"
 chown handson:handson "$CONFIG_FILE"
 chmod 600 "$CONFIG_FILE"
@@ -24,3 +30,16 @@ for _ in $(seq 1 30); do
   fi
   sleep 2
 done
+
+# --- agentcore CLI の設定 -------------------------------------------------------
+# Runtime 名は受講者ごとに一意にする必要があるため、AMI では
+# handson_PARTICIPANT というプレースホルダにしてあり、ここで実名に差し替える。
+sed -i "s/handson_PARTICIPANT/handson_${participant}/" "$AGENTCORE_JSON"
+# aws-targets.json のアカウント ID も同様にプレースホルダから実アカウントへ差し替える。
+sed -i "s/000000000000/${account_id}/" "$AWS_TARGETS_JSON"
+
+# --- 受講者キーの記録 -----------------------------------------------------------
+# 他のスクリプトやハンズオン UI から参照できるよう、受講者キーをファイルに残しておく。
+install -d -m 755 /etc/handson
+printf '%s\n' "${participant}" > /etc/handson/participant
+chmod 644 /etc/handson/participant

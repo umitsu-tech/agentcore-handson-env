@@ -6,9 +6,10 @@
 # 当日は起動するだけで使える状態になる。
 #
 # ワークスペース（受講者の EC2 に置くファイル一式）は S3 から取得する。バケットとキーは環境変数で渡す。
-# アーカイブは handson-agent/ と handson-ui/ の2ディレクトリを含む。
-# リポジトリ直下で `tar -czf handson-workspace.tar.gz handson-agent handson-ui` のように作る
-# （node_modules・.venv・frontend/dist は含めない）。
+# アーカイブは handson-agent/・handson-ui/・agentcore/（agentcore deploy 用の CLI 設定と
+# CDK コード一式）の3ディレクトリを含む。
+# リポジトリ直下で `tar -czf handson-workspace.tar.gz handson-agent handson-ui agentcore` のように作る
+# （node_modules・.venv・frontend/dist・agentcore/.cli・agentcore/.env.local は含めない）。
 set -euxo pipefail
 
 ASSET_BUCKET="${ASSET_BUCKET:-}"
@@ -34,8 +35,11 @@ curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin s
 uv --version
 
 # --- AWS CDK と AgentCore CLI -------------------------------------------------
-# agentcore deploy は内部で CDK を使うので両方入れる
-npm install -g aws-cdk @aws/agentcore
+# agentcore deploy は内部で CDK を使うので両方入れる。
+# agentcore/ 配下（agentcore.json・cdk/ のコード）は npx @aws/agentcore@latest で
+# 生成したものを AMI に焼き込んでいるため、生成時と異なるバージョンの CLI で
+# deploy すると噛み合わない可能性がある。バージョンを固定する。
+npm install -g aws-cdk @aws/agentcore@0.28.1
 cdk --version
 agentcore --version
 
@@ -61,6 +65,10 @@ chmod 600 /home/handson/.config/code-server/config.yaml
 systemctl enable code-server@handson
 
 # --- ワークスペース -----------------------------------------------------------
+# handson-agent/・handson-ui/ に加えて agentcore/（agentcore deploy 用の CLI 設定と
+# CDK コード）もここで展開される。agentcore/agentcore.json と aws-targets.json には
+# handson_PARTICIPANT / 000000000000 のプレースホルダが入っており、実際の値への
+# 差し替えは起動時に scripts/configure-instance.sh が行う。
 if [ -n "$ASSET_BUCKET" ]; then
   aws s3 cp "s3://${ASSET_BUCKET}/${ASSET_KEY}" /tmp/handson-workspace.tar.gz
   tar -xzf /tmp/handson-workspace.tar.gz -C /home/handson/workspace
