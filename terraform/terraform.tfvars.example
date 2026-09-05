@@ -12,5 +12,8 @@ participants = ["user01"]
 # 会場の固定 IP が分かっているなら絞る
 # allowed_cidr_blocks = ["203.0.113.0/24"]
 
-# #5 で受講環境を焼いた AMI ができたら指定する。未指定なら AL2023 の最新版に user_data でセットアップする
-# ami_id = "ami-xxxxxxxxxxxxxxxxx"
+# 受講環境を焼いた AMI（scripts/setup-instance.sh で作る）。AMI を焼き直したら更新する
+ami_id = "ami-0212faf4372e1a817"
+
+# ルートボリュームのサイズ（GiB）。AMI のルートボリューム以上にする
+# root_volume_size = 30

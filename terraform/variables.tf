@@ -38,9 +38,14 @@ variable "instance_type" {
 }
 
 variable "ami_id" {
-  description = "受講環境を焼いた AMI の ID。null の場合は Amazon Linux 2023（ARM64）の最新版を使い、user_data でセットアップする"
+  description = "受講環境を焼いた AMI の ID（scripts/setup-instance.sh で作る）"
   type        = string
-  default     = null
+}
+
+variable "root_volume_size" {
+  description = "ルートボリュームのサイズ（GiB）。AMI のルートボリューム以上にする。Issue #15 の結論で 15 に下げる予定"
+  type        = number
+  default     = 30
 }
 
 variable "allowed_cidr_blocks" {

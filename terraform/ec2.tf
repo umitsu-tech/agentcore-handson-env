@@ -8,19 +8,19 @@ resource "random_password" "code_server" {
 resource "aws_instance" "participant" {
   for_each = local.participants
 
-  ami                    = local.ami_id
+  ami                    = var.ami_id
   instance_type          = var.instance_type
   subnet_id              = values(aws_subnet.public)[0].id
   vpc_security_group_ids = [aws_security_group.instance.id]
   iam_instance_profile   = aws_iam_instance_profile.instance.name
 
-  user_data = templatefile("${path.module}/../scripts/setup-code-server.sh", {
+  user_data = templatefile("${path.module}/../scripts/set-code-server-password.sh", {
     code_server_password = random_password.code_server[each.key].result
   })
   user_data_replace_on_change = true
 
   root_block_device {
-    volume_size = 30
+    volume_size = var.root_volume_size
     volume_type = "gp3"
     encrypted   = true
   }
