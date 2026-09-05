@@ -26,16 +26,25 @@ npx cdk bootstrap aws://<アカウントID>/ap-northeast-1
 
 ### AMI を作る
 
-受講者用の EC2 を 1 台起動して、次のものをセットアップします。
+`scripts/build-ami.sh` を実行します。ワークスペースを tar.gz にして S3 に上げ、EC2 を 1 台起動して `scripts/setup-instance.sh` を流し、再起動後に code-server とハンズオン UI が動いていることを確認してから AMI を作り、EC2 を消すところまで一気にやります。
+
+```bash
+aws login                               # 一式で 15 分ほどかかる。セッションは 1 時間で切れるので直前に
+scripts/build-ami.sh                    # 既定は t4g.small / ルートボリューム 15GiB
+scripts/build-ami.sh --volume-size 20   # サイズを変えて試すとき
+scripts/build-ami.sh --prune            # 古い AMI とスナップショットも消すとき
+```
+
+終わると新しい AMI ID が表示され、`terraform/terraform.tfvars` があれば `ami_id` を書き換えます。
+
+AMI には次のものが入ります。
 
 - code-server（8080 番で待ち受け）
 - ハンズオン UI（3000 番。エージェントの動きを可視化する画面）
 - Strands Agent の雛形プロジェクト
 - Node.js、Python、uv、AWS CLI、AWS CDK、AgentCore CLI（`npm install -g @aws/agentcore`）
 
-セットアップが終わったら通しで動作確認をします。code-server にブラウザから入れること、`agentcore deploy` が最後まで通ること、デプロイしたエージェントをハンズオン UI から呼んで動きが画面に出ることの 3 点を確認してから AMI を作成します。
-
-AMI の ID は Terraform の変数に渡します。
+スクリプトが確認するのは code-server の `/healthz` とハンズオン UI の `/api/context` が応答することまでです。`agentcore deploy` が最後まで通ること、デプロイしたエージェントをハンズオン UI から呼んで動きが画面に出ることは、Terraform で 1 台立ててから確認します。
 
 ### DNS のレコードを引く
 
