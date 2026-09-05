@@ -314,7 +314,7 @@ ssm_run 300 "$CHECK_SCRIPT" || fail "動作確認に失敗しました。--keep-
 AMI_NAME="${AMI_PREFIX}-$(date +%Y%m%d-%H%M)"
 log "AMI $AMI_NAME を作る"
 AMI_ID=$("${AWS[@]}" ec2 create-image --instance-id "$INSTANCE_ID" --name "$AMI_NAME" \
-  --description "agentcore-handson 受講者用（${INSTANCE_TYPE} / ${VOLUME_SIZE}GiB で作成）" \
+  --description "agentcore-handson participant image (built on ${INSTANCE_TYPE}, ${VOLUME_SIZE}GiB root volume)" \
   --tag-specifications \
     "ResourceType=image,Tags=[{Key=Name,Value=$AMI_NAME},{Key=Project,Value=$AMI_PREFIX}]" \
     "ResourceType=snapshot,Tags=[{Key=Name,Value=$AMI_NAME},{Key=Project,Value=$AMI_PREFIX}]" \
