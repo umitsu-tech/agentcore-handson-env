@@ -21,6 +21,7 @@
 #   -h, --help             この説明を表示する
 #
 # 前提: AWS CLI v2 と tar。認証は aws login で済ませておく。
+# 一式で 15 分ほどかかり、aws login のセッションは 1 時間で切れるので、実行の直前にログインし直すとよい。
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

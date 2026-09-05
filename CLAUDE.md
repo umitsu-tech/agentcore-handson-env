@@ -44,30 +44,29 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - Strands Agent の雛形（`handson-agent/`）。実機でモデル呼び出し、Nova 2 Lite のツール選択、Runtime へのデプロイまで確認した。ツールはデータ（dict / list）を返す
 - ハンズオン UI（`handson-ui/`、React + Vite + FastAPI）。周ごとの見出しと折りたたみ、入力と出力の 2 色、ツールの結果の JSON 表示、Markdown 記号の抑制、ラベルの補足まで入っている
 - 受講環境のセットアップスクリプト（`scripts/setup-instance.sh`）。`handson-ui/` 分離後の構成に追随済み
+- AMI を焼き直す一括スクリプト（`scripts/build-ami.sh`、Issue #19）。tar.gz の作成と S3 アップロード、固定名の IAM ロール `agentcore-handson-ami-builder` の用意、EC2 起動、cloud-init 完了待ち、再起動後の疎通確認、AMI 作成、EC2 削除、`terraform.tfvars` の `ami_id` 書き換えまで行う
 - 1 人分の Terraform（`terraform/`）。AMI 前提の構成で、`ami_id` を必須で受け取り、user_data は code-server のパスワードを差し込むだけ。`terraform plan` が 26 リソースで通るところまで（apply は証明書と DNS 待ち）
 - コストの試算。30 人 5 時間で約 5.7 USD（内訳は docs/operations.md）
 - 東京リージョンで使えるモデルの単価比較（結論は Nova 2 Lite 据え置き）
 
 まだ手が要るもの。
 
-- AMI `ami-0212faf4372e1a817`（arm64）は `handson-ui/` 分離前のスクリプトで焼いたもの。ワークスペースを `handson-workspace.tar.gz` として S3 に上げ直してから焼き直す
+- AMI は `scripts/build-ami.sh` で焼き直し済み。`ami-04d14015e8f390da7`（agentcore-handson-20260905-1701、arm64、ルートボリューム 15GiB）。再起動後に code-server と handson-ui が自動起動し、`/healthz` と `/api/context` が 200 を返すところまでスクリプトで確認した。古い `ami-0212faf4372e1a817` は残っている（`--prune` で消せる）
 
 ### 次の一歩
 
 PR はすべてマージ済みなので、ここからは PC の前で行う作業になる（リモートの作業環境からは AWS の変更操作が通らない）。
 
-1. ワークスペース（`handson-agent/` と `handson-ui/`）を `handson-workspace.tar.gz` にして S3 に上げ直す
-2. `scripts/setup-instance.sh` で AMI を焼き直す。このときルートボリュームを Issue #15 の結論のサイズにする
-3. ACM のワイルドカード証明書と Cloudflare のレコードを用意する
-4. `terraform apply` で 1 台立てて通し確認をする。ブラウザから code-server に入れること、`tools.py` を保存すると画面のツール一覧が追随すること、`agentcore deploy` が通ること、デプロイしたエージェントをハンズオン UI から呼べること。あわせて Issue #15 の未測定分（code-server で TypeScript を開いた状態と `agentcore deploy` 中のメモリ）を取る。ここまでで Issue #2、#5、#15 を閉じる
-5. 後片付けの仕組み（Issue #17）を実装する
-6. 人数ぶんへの展開（Issue #6）
+1. ACM のワイルドカード証明書と Cloudflare のレコードを用意する
+2. `terraform apply` で 1 台立てて通し確認をする。ブラウザから code-server に入れること、`tools.py` を保存すると画面のツール一覧が追随すること、`agentcore deploy` が通ること、デプロイしたエージェントをハンズオン UI から呼べること。あわせて Issue #15 の未測定分（code-server で TypeScript を開いた状態と `agentcore deploy` 中のメモリ）を取る。ここまでで Issue #2、#5、#15 を閉じる
+3. 後片付けの仕組み（Issue #17）を実装する
+4. 人数ぶんへの展開（Issue #6）
 
 当日の運営（事前準備、リハーサル）はこのリポジトリの範囲外にした（Issue #7、#8 はクローズ）。
 
 ### 未確定
 
-- EBS のサイズとインスタンスタイプ。実測はディスク 4.3GB / メモリ 468MB で、30GB と t4g.small は余っている。15GB と t4g.micro が候補（Issue #15）。`agentcore deploy` 中のメモリは未測定
+- EBS のサイズとインスタンスタイプ。AMI は 15GiB で焼き直した（使用 4.2GB）。再起動直後のメモリは 330MB で t4g.small は余っている。t4g.micro に落とすかは `agentcore deploy` 中のメモリを測ってから（Issue #15）
 - ALB に付ける ACM のワイルドカード証明書と、Cloudflare のレコード。どちらも未作成で `terraform apply` はこれ待ち
 - 本番でモデル制限をどうかけるか（検証の段階ではかけない方針）
 - UI のサーバー側で Bedrock の呼び出しが失敗したとき、画面には「network error」としか出ない。例外を捕まえてエラーの内容を流す改善を別 Issue にする予定
