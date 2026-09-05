@@ -105,7 +105,7 @@ export function Timeline({ steps }: Props) {
       {leading.map((step) => (
         // question はループの外（ベースカラー）の質問カードとして出す。
         <div className={`step ${step.kind}${step.kind === 'question' ? ' outside' : ''}`} key={step.id}>
-          {renderStep(step)}
+          {renderStep(step, { isOutside: true })}
         </div>
       ))}
 
@@ -133,7 +133,10 @@ export function Timeline({ steps }: Props) {
                   className={`step ${step.kind} in-cycle${isTrailingResult ? ' as-output' : ''}`}
                   key={step.id}
                 >
-                  {renderStep(step, cycle.index, index === 0)}
+                  {renderStep(step, {
+                    cycleIndex: cycle.index,
+                    isGroupStart: index === 0,
+                  })}
                 </div>
               )
             })}
@@ -147,7 +150,7 @@ export function Timeline({ steps }: Props) {
           className={`step ${step.kind}${step.kind === 'answer' && step.id.endsWith('-final') ? ' outside' : ''}`}
           key={step.id}
         >
-          {renderStep(step)}
+          {renderStep(step, { isOutside: true })}
         </div>
       ))}
     </div>
@@ -164,12 +167,29 @@ function formatIfJson(text: string): string | null {
   }
 }
 
-function renderStep(step: Step, cycleIndex?: number, isGroupStart?: boolean) {
+// 各カードのラベルに「何周目の入力／出力か」を補足する小さな注釈を付けるための要素。
+// 本文ラベルと同じ色（親の .label の color を継承）で、太さだけ通常に戻す。
+function LabelNote({ children }: { children: string }) {
+  return <span className="label-note">（{children}）</span>
+}
+
+type RenderOptions = {
+  cycleIndex?: number
+  isGroupStart?: boolean
+  isOutside?: boolean
+}
+
+function renderStep(step: Step, options: RenderOptions = {}) {
+  const { cycleIndex, isGroupStart, isOutside } = options
+
   switch (step.kind) {
     case 'question':
       return (
         <div className="card">
-          <div className="label">あなたの質問</div>
+          <div className="label">
+            あなたの質問
+            <LabelNote>{isOutside ? 'お題' : `${cycleIndex}周目のインプット`}</LabelNote>
+          </div>
           <div className="text">{step.text}</div>
         </div>
       )
@@ -184,17 +204,27 @@ function renderStep(step: Step, cycleIndex?: number, isGroupStart?: boolean) {
     case 'tool_use':
       return (
         <div className="card">
-          <div className="label">モデルがツールを呼びました</div>
+          <div className="label">
+            モデルがツールを呼びました
+            <LabelNote>{`${cycleIndex}周目・モデルの判断`}</LabelNote>
+          </div>
           <div className="tool-name">{step.name}</div>
           {step.input && <div className="args">{step.input}</div>}
           <RawData data={step.raw} />
         </div>
       )
 
-    case 'tool_result':
+    case 'tool_result': {
+      // 周先頭のコピー（次の周への入力として渡ってきた側）は isGroupStart で判定する。
+      // それ以外（周末尾に残った実物）は、次の周が始まっているかどうかの as-output の
+      // 色切り替えとは独立に「この周で発生した結果そのもの」として出力扱いにする。
+      const resultNote = isGroupStart ? 'インプット' : 'アウトプット'
       return (
         <div className="card">
-          <div className="label">ツールが返した結果</div>
+          <div className="label">
+            ツールが返した結果
+            <LabelNote>{`${cycleIndex}周目の${resultNote}`}</LabelNote>
+          </div>
           {step.results.map((result, index) => {
             // ツールは dict / list のデータを返し、Strands がそれを JSON 文字列にして
             // モデルへ渡す。JSON としてパースできればそのまま整形して見せ、
@@ -218,16 +248,25 @@ function renderStep(step: Step, cycleIndex?: number, isGroupStart?: boolean) {
           <RawData data={step.raw} />
         </div>
       )
+    }
 
     case 'answer': {
-      // id 末尾が -final のものは、ループの外に出す最終結果のコピー。
+      // isOutside（id 末尾が -final）のものは、ループの外に出す最終結果のコピー。
       // ラベルを変え、周の中でだけ意味を持つ補足行（ループが終わった理由）は出さない。
-      const isFinalCopy = step.id.endsWith('-final')
       return (
         <div className="card">
-          <div className="label">{isFinalCopy ? '最終的な答え' : 'モデルの答え'}</div>
+          <div className="label">
+            {isOutside ? (
+              '最終的な答え'
+            ) : (
+              <>
+                モデルの答え
+                <LabelNote>{`${cycleIndex}周目のアウトプット`}</LabelNote>
+              </>
+            )}
+          </div>
           <div className={`text ${step.done ? '' : 'caret'}`}>{renderAnswerText(step.text)}</div>
-          {step.done && !isFinalCopy && (
+          {step.done && !isOutside && (
             <div className="answer-note">
               ツールを呼ばずに答えたので、ここでループが終わりました
             </div>

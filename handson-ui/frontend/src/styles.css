@@ -227,6 +227,8 @@ body {
   color: var(--muted);
   margin-bottom: 6px;
 }
+/* 「何周目の入力／出力か」の補足。色は本文ラベルを継承し、太さだけ通常に戻す */
+.label-note { font-weight: 500; letter-spacing: normal; }
 .card .text { font-size: 16px; white-space: pre-wrap; word-break: break-word; }
 .card .text p { margin: 0 0 6px; }
 .card .text p:last-child { margin-bottom: 0; }
