@@ -85,6 +85,18 @@ if [ -n "$ASSET_BUCKET" ]; then
   sudo -u handson env PATH="$PATH" npm --prefix frontend ci
   sudo -u handson env PATH="$PATH" npm --prefix frontend run build
   popd
+
+  # agentcore deploy は実行のたびに agentcore/cdk で依存の同期（package.json が
+  # CLI の同梱テンプレートと食い違っているか、node_modules が無ければ npm install）と
+  # npm run build（tsc）を自分で行う。node_modules を先に入れておけば、CLI のバージョンを
+  # 固定してある限り package.json は一致し、npm install はスキップされる（node_modules の
+  # 有無と依存の差分だけで判断される）。npm run build（tsc）は毎回走るが、node_modules が
+  # 揃っていれば数秒で終わるので待ち時間の問題にはならない。package-lock.json が無いので
+  # npm ci は使えず、ここでは npm install を使う。
+  pushd /home/handson/workspace/agentcore/cdk
+  sudo -u handson env PATH="$PATH" npm install
+  sudo -u handson env PATH="$PATH" npm run build
+  popd
 fi
 
 # --- ハンズオン UI を自動起動 --------------------------------------------------

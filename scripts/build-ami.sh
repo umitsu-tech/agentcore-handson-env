@@ -181,6 +181,7 @@ else
   # .env.local（秘密情報）は受講者ごと・実行ごとに変わるものなので AMI には焼き込まない。
   (cd "$REPO_ROOT" && COPYFILE_DISABLE=1 tar -czf "$ARCHIVE" \
     --exclude node_modules --exclude .venv --exclude frontend/dist \
+    --exclude agentcore/cdk/dist \
     --exclude __pycache__ --exclude .DS_Store \
     --exclude agentcore/.cli --exclude agentcore/.env.local \
     handson-agent handson-ui agentcore)
