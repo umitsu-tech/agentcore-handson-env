@@ -243,6 +243,16 @@ body {
 .step.error .card { border-color: var(--danger); }
 .step.error .label { color: var(--danger); }
 
+/* 周の末尾に残った tool_result（次の周が始まった後）はモデル/ツールからの出力として橙にする */
+.step.tool_result.as-output::before { background: var(--output); }
+.step.tool_result.as-output .card { border-color: var(--output); background: var(--output-soft); }
+.step.tool_result.as-output .label { color: var(--output); }
+
+/* ループの外に出す質問・最終的な答えはベースカラー（青緑）にする */
+.step.outside::before { background: var(--accent); }
+.step.outside .card { border-width: 1px; border-color: var(--accent); background: var(--accent-soft); }
+.step.outside .label { color: var(--accent); }
+
 .tool-name { font-family: var(--mono); font-size: 14px; font-weight: 500; }
 .args {
   font-family: var(--mono);

@@ -72,6 +72,15 @@ function groupSteps(steps: Step[]) {
     }
   }
 
+  // 最後の周の答えが完了していたら、そのコピーをループの外（trailing の先頭、
+  // summary・error より前）にも出す。「モデルの答え」の 2 周目のカードはそのまま残し、
+  // これは最終結果として別枠で見せるためのコピー（id には接尾辞を付ける）。
+  const lastGroup = groups[groups.length - 1]
+  const finalAnswer = lastGroup?.items.find((step) => step.kind === 'answer')
+  if (finalAnswer && finalAnswer.kind === 'answer' && finalAnswer.done) {
+    trailing.unshift({ ...finalAnswer, id: `${finalAnswer.id}-final` })
+  }
+
   return { leading, groups, trailing }
 }
 
@@ -93,12 +102,13 @@ export function Timeline({ steps }: Props) {
   return (
     <div className="timeline">
       {leading.map((step) => (
-        <div className={`step ${step.kind}`} key={step.id}>
+        // question はループの外（ベースカラー）の質問カードとして出す。
+        <div className={`step ${step.kind}${step.kind === 'question' ? ' outside' : ''}`} key={step.id}>
           {renderStep(step)}
         </div>
       ))}
 
-      {groups.map(({ cycle, items }) => (
+      {groups.map(({ cycle, items }, groupIndex) => (
         // open は初期値としてのみ渡す。React に open の状態を管理させると、
         // 再描画のたびに開いた状態へ戻ってしまいユーザーが畳めなくなるため。
         <details className="cycle" open key={cycle.id}>
@@ -111,17 +121,31 @@ export function Timeline({ steps }: Props) {
             </span>
           </summary>
           <div className="cycle-body">
-            {items.map((step, index) => (
-              <div className={`step ${step.kind} in-cycle`} key={step.id}>
-                {renderStep(step, cycle.index, index === 0)}
-              </div>
-            ))}
+            {items.map((step, index) => {
+              // 周の末尾に残った tool_result（次の周にコピーが渡った側）は、
+              // 次の周が始まった時点でモデル/ツールからの「出力」として橙にする。
+              // まだ次の周が始まっていない（＝最後の周の末尾）間は入力色の青のまま。
+              const isTrailingResult =
+                groupIndex < groups.length - 1 && index === items.length - 1 && step.kind === 'tool_result'
+              return (
+                <div
+                  className={`step ${step.kind} in-cycle${isTrailingResult ? ' as-output' : ''}`}
+                  key={step.id}
+                >
+                  {renderStep(step, cycle.index, index === 0)}
+                </div>
+              )
+            })}
           </div>
         </details>
       ))}
 
       {trailing.map((step) => (
-        <div className={`step ${step.kind}`} key={step.id}>
+        // 最終的な答えのコピー（id 末尾 -final）はループの外（ベースカラー）で出す。
+        <div
+          className={`step ${step.kind}${step.kind === 'answer' && step.id.endsWith('-final') ? ' outside' : ''}`}
+          key={step.id}
+        >
           {renderStep(step)}
         </div>
       ))}
@@ -174,18 +198,22 @@ function renderStep(step: Step, cycleIndex?: number, isGroupStart?: boolean) {
         </div>
       )
 
-    case 'answer':
+    case 'answer': {
+      // id 末尾が -final のものは、ループの外に出す最終結果のコピー。
+      // ラベルを変え、周の中でだけ意味を持つ補足行（ループが終わった理由）は出さない。
+      const isFinalCopy = step.id.endsWith('-final')
       return (
         <div className="card">
-          <div className="label">モデルの答え</div>
+          <div className="label">{isFinalCopy ? '最終的な答え' : 'モデルの答え'}</div>
           <div className={`text ${step.done ? '' : 'caret'}`}>{step.text}</div>
-          {step.done && (
+          {step.done && !isFinalCopy && (
             <div className="answer-note">
               ツールを呼ばずに答えたので、ここでループが終わりました
             </div>
           )}
         </div>
       )
+    }
 
     case 'summary':
       return <Summary summary={step.summary} />
