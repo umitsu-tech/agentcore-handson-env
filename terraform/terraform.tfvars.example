@@ -13,7 +13,7 @@ participants = ["user01"]
 # allowed_cidr_blocks = ["203.0.113.0/24"]
 
 # 受講環境を焼いた AMI（scripts/build-ami.sh で作る。焼き直すと terraform.tfvars の値を書き換えてくれる）
-ami_id = "ami-04d14015e8f390da7"
+ami_id = "ami-0687e031e99ce5eaf"
 
 # ルートボリュームのサイズ（GiB）。AMI のルートボリューム以上にする
 # root_volume_size = 30
