@@ -1,0 +1,16 @@
+[project]
+name = "handson-ui"
+version = "0.1.0"
+description = "AgentCore ハンズオンの UI サーバー（主催者側の道具）"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn>=0.30.0",
+    "sse-starlette>=2.0.0",
+    # ../handson-agent の agent.py を import するので、そちらの依存もここに要る
+    "strands-agents>=1.0.0",
+]
+
+[tool.uv]
+# ライブラリではなくアプリなのでパッケージとしてビルドしない
+package = false

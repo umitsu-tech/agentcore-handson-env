@@ -1,11 +1,18 @@
 """ハンズオン UI。エージェントの動きを画面に流すサーバー。
 
+主催者側の道具です。受講者はこのディレクトリを触りません。
+
     npm --prefix frontend install
     npm --prefix frontend run build
-    uv run uvicorn ui:app --host 0.0.0.0 --port 3000
+    uv run uvicorn server:app --host 0.0.0.0 --port 3000 --reload --reload-dir ../handson-agent
 
 code-server の /proxy/3000/ 経由でブラウザから開きます。
 画面は frontend/ にある React アプリで、ビルド結果の frontend/dist/ を配信します。
+
+エージェント本体は ../handson-agent にあります。このサーバーはそのディレクトリを
+import パスに足して、agent.py と tools.py をそのまま読みます。受講者が tools.py を
+書き換えると uvicorn の --reload が拾ってサーバーを再読み込みするので、画面のツール一覧も
+次に開いたときには変わっています。場所を変えるときは環境変数 HANDSON_AGENT_DIR で指定します。
 
 この画面はチャット窓ではありません。モデルに何が渡って、モデルが何を返して、
 どのツールがどんな引数で呼ばれて、何が返ってきたのかを順に積んでいきます。
@@ -13,16 +20,23 @@ code-server の /proxy/3000/ 経由でブラウザから開きます。
 """
 
 import json
+import os
+import sys
 from pathlib import Path
 
-from fastapi import FastAPI
-from fastapi.responses import FileResponse, PlainTextResponse
-from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
-from sse_starlette.sse import EventSourceResponse
+AGENT_DIR = Path(
+    os.environ.get("HANDSON_AGENT_DIR") or Path(__file__).resolve().parent.parent / "handson-agent"
+)
+sys.path.insert(0, str(AGENT_DIR))
 
-from agent import MODEL_ID, SYSTEM_PROMPT, TOOLS, build_agent
-from events import to_ui_event
+from fastapi import FastAPI  # noqa: E402
+from fastapi.responses import FileResponse, PlainTextResponse  # noqa: E402
+from fastapi.staticfiles import StaticFiles  # noqa: E402
+from pydantic import BaseModel  # noqa: E402
+from sse_starlette.sse import EventSourceResponse  # noqa: E402
+
+from agent import MODEL_ID, SYSTEM_PROMPT, TOOLS, build_agent  # noqa: E402
+from lib.events import to_ui_event  # noqa: E402
 
 app = FastAPI()
 DIST_DIR = Path(__file__).parent / "frontend" / "dist"
