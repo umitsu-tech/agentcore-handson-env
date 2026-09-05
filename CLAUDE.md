@@ -24,26 +24,37 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - サービスの名前は先に説明せず、受講者が困ったあとに出す
 - **トレースは自作のハンズオン UI だけで見せる**。前半のローカル実行も後半の Runtime 実行も同じ画面。汎用のトレース UI も CloudWatch のコンソールもハンズオン中は開かない（初学者には情報が多すぎる / マネコンのログインが要る）
 - AgentCore Runtime へのデプロイは受講者が各自行う（1 人 1 つ）。共有 Runtime はログが混ざるため不採用
+- code-server のパスワードは受講者ごとに変える。Terraform で生成して user_data で渡す
+- エージェントの題材は社内の備品貸出の案内。ツールを 1 つ足す体験がしやすい題材にした
+- Harness は振り返りで名前と位置づけを話すだけにする。自分でループを書いたあとに出すから意味が伝わる（`harness.json` は用意しておく）
+- Amazon Linux 2027 は preview なので使わない。当日パッケージが入らないリスクを取らない
 
 ### できているもの
 
-- 構成図（`docs/images/architecture.drawio` と `.png`）
-- README.md、docs/architecture.md、docs/operations.md
+いずれもレビュー待ちの PR に乗っている段階で、main にはまだ入っていない。
+
+- 構成図とドキュメント（README.md、docs/architecture.md、docs/curriculum.md、docs/operations.md）
+- Strands Agent の雛形（`handson-agent/`）。実機で Nova 2 Lite がツールを正しく選ぶところまで確認した
+- ハンズオン UI（`handson-agent/frontend/`、React + Vite）。生のイベント、トークン数、ループの周回数を出す
+- 1 人分の Terraform（`terraform/`）。`terraform plan` が 26 リソースで通るところまで
+- 受講環境のセットアップスクリプト（`scripts/setup-instance.sh`）と、それを焼いた AMI（`ami-0212faf4372e1a817` / arm64）
+- コストの試算。30 人 5 時間で約 5.7 USD（内訳は docs/operations.md）
 
 ### 次の一歩
 
-最初に確かめるのは AgentCore Runtime のストリーミング応答。前半（手元実行）と後半（Runtime 実行）で同じ画面を使う前提で組んでいるので、`InvokeAgentRuntime` から Strands のイベントが同じ形で流れてくるかどうかが構成の土台になる。流れない場合は後半の見せ方を作り直す。
+まずレビューとマージ。PR が 5 本あり、依存関係があるので順番が決まっている。#11 → #13 → #14 → #16 → #12 の順で、#14 は #13 宛、#16 は #14 宛なので、それぞれマージしたあとに base を main へ付け替える。
 
-そのうえで 1 人分の構成を Terraform で書き、実際に起動して通しで動作確認する。確認するのは、ブラウザから code-server に入れること、`agentcore deploy` が 1 行で通ること、デプロイしたエージェントをハンズオン UI から呼べること。
+そのあとが AMI からの通し確認（Issue #5 の残り）。1 台起動して、ブラウザから code-server に入れること、`agentcore deploy` が通ること、デプロイしたエージェントをハンズオン UI から呼べることを確認する。あわせて Issue #15 のスペック実測（code-server で TypeScript を開いた状態と `agentcore deploy` 中のメモリ）も同じ 1 台で取る。
 
-そのあと AMI を焼いて、人数ぶんに展開する。
+その結果を Terraform へ反映する。いまの `terraform/` は user_data で全部セットアップする形のままなので、`ami_id` に AMI を渡し、user_data は code-server のパスワード設定だけに縮める。
+
+そこまで済んだら、人数ぶんへの展開（#6）、事前準備（#7）、リハーサル（#8）と進む。
 
 ### 未確定
 
-- code-server のパスワードを受講者ごとに変えるか、全員共通にするか
-- ハンズオン UI の実装（Strands のフックからイベントを拾って画面に流す）
-- Strands Agent の雛形の題材
-- コストの実測
+- EBS のサイズとインスタンスタイプ。実測はディスク 4.3GB / メモリ 468MB で、30GB と t4g.small は余っている。15GB と t4g.micro が候補（Issue #15）
+- ALB に付ける ACM のワイルドカード証明書と、Cloudflare のレコード。どちらも未作成で `terraform apply` はこれ待ち
+- 本番でモデル制限をどうかけるか（検証の段階ではかけない方針）
 
 ## 作業のルール
 
