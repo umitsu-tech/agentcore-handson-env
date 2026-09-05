@@ -38,7 +38,7 @@ variable "instance_type" {
 }
 
 variable "ami_id" {
-  description = "受講環境を焼いた AMI の ID（scripts/setup-instance.sh で作る）"
+  description = "受講環境を焼いた AMI の ID（scripts/build-ami.sh で作る）"
   type        = string
 }
 
