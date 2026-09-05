@@ -6,10 +6,13 @@
 # 当日は起動するだけで使える状態になる。
 #
 # 教材は S3 から取得する。バケットとキーは環境変数で渡す。
+# アーカイブは handson-agent/ と handson-ui/ の2ディレクトリを含む。
+# リポジトリ直下で `tar -czf handson-workspace.tar.gz handson-agent handson-ui` のように作る
+# （node_modules・.venv・frontend/dist は含めない）。
 set -euxo pipefail
 
 ASSET_BUCKET="${ASSET_BUCKET:-}"
-ASSET_KEY="${ASSET_KEY:-handson-agent.tar.gz}"
+ASSET_KEY="${ASSET_KEY:-handson-workspace.tar.gz}"
 
 dnf update -y
 dnf install -y git tar gzip
@@ -59,13 +62,17 @@ systemctl enable code-server@handson
 
 # --- 教材 ---------------------------------------------------------------------
 if [ -n "$ASSET_BUCKET" ]; then
-  aws s3 cp "s3://${ASSET_BUCKET}/${ASSET_KEY}" /tmp/handson-agent.tar.gz
-  tar -xzf /tmp/handson-agent.tar.gz -C /home/handson/workspace
-  rm -f /tmp/handson-agent.tar.gz
+  aws s3 cp "s3://${ASSET_BUCKET}/${ASSET_KEY}" /tmp/handson-workspace.tar.gz
+  tar -xzf /tmp/handson-workspace.tar.gz -C /home/handson/workspace
+  rm -f /tmp/handson-workspace.tar.gz
   chown -R handson:handson /home/handson/workspace
 
   # 依存の取得と画面のビルドまで済ませておく。当日ここで待たせないため
   pushd /home/handson/workspace/handson-agent
+  sudo -u handson env PATH="$PATH" uv sync
+  popd
+
+  pushd /home/handson/workspace/handson-ui
   sudo -u handson env PATH="$PATH" uv sync
   sudo -u handson env PATH="$PATH" npm --prefix frontend ci
   sudo -u handson env PATH="$PATH" npm --prefix frontend run build
@@ -82,9 +89,10 @@ Wants=network-online.target
 [Service]
 Type=simple
 User=handson
-WorkingDirectory=/home/handson/workspace/handson-agent
+WorkingDirectory=/home/handson/workspace/handson-ui
 Environment=AWS_REGION=ap-northeast-1
-ExecStart=/usr/local/bin/uv run uvicorn ui:app --host 127.0.0.1 --port 3000
+Environment=HANDSON_AGENT_DIR=/home/handson/workspace/handson-agent
+ExecStart=/usr/local/bin/uv run uvicorn server:app --host 127.0.0.1 --port 3000 --reload --reload-dir /home/handson/workspace/handson-agent
 Restart=always
 RestartSec=5
 
