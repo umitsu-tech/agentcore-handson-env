@@ -48,6 +48,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - 1 人分の Terraform（`terraform/`）。AMI 前提の構成で、`ami_id` を必須で受け取り、user_data は code-server のパスワードを差し込むだけ。`terraform plan` が 26 リソースで通るところまで（apply は証明書と DNS 待ち）
 - コストの試算。30 人 5 時間で約 5.7 USD（内訳は docs/operations.md）
 - 東京リージョンで使えるモデルの単価比較（結論は Nova 2 Lite 据え置き）
+- 1 人分の通し確認（2026-09-05）。ACM のワイルドカード証明書を発行し、Cloudflare に検証用と `*.<base_domain>` の CNAME を入れ、`terraform apply`（26 リソース）で 1 台立てて、ブラウザから `https://user01.<base_domain>` で code-server にログインできるところまで確認した。確認後に `terraform destroy` で消した。証明書と DNS レコードは次回も使うので残してある
 
 まだ手が要るもの。
 
@@ -55,19 +56,20 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 
 ### 次の一歩
 
-PR はすべてマージ済みなので、ここからは PC の前で行う作業になる（リモートの作業環境からは AWS の変更操作が通らない）。
+AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証情報が要るので、リュウキがブラウザで認証できるタイミングで進める。
 
-1. ACM のワイルドカード証明書と Cloudflare のレコードを用意する
-2. `terraform apply` で 1 台立てて通し確認をする。ブラウザから code-server に入れること、`tools.py` を保存すると画面のツール一覧が追随すること、`agentcore deploy` が通ること、デプロイしたエージェントをハンズオン UI から呼べること。あわせて Issue #15 の未測定分（code-server で TypeScript を開いた状態と `agentcore deploy` 中のメモリ）を取る。ここまでで Issue #2、#5、#15 を閉じる
-3. 後片付けの仕組み（Issue #17）を実装する
-4. 人数ぶんへの展開（Issue #6）
+1. `agentcore deploy` が 1 行で通るように `handson-agent/` に CLI の設定を用意し、受講者の権限で通ることを確認する（Issue #21）。あわせてデプロイ中のメモリを測って Issue #15 を閉じる
+2. code-server を開いたときに `/home/handson/workspace` が開いた状態にする（Issue #22）
+3. 1 と 2 を `scripts/build-ami.sh` で AMI に焼き直し、もう一度 1 台立てて「`tools.py` を保存すると画面のツール一覧が追随する」「デプロイしたエージェントをハンズオン UI から呼べる」まで確認する。ここまでで Issue #5 を閉じる
+4. 後片付けの仕組み（Issue #17）を実装する
+5. 人数ぶんへの展開（Issue #6）
 
 当日の運営（事前準備、リハーサル）はこのリポジトリの範囲外にした（Issue #7、#8 はクローズ）。
 
 ### 未確定
 
 - EBS のサイズとインスタンスタイプ。AMI は 15GiB で焼き直した（使用 4.2GB）。再起動直後のメモリは 330MB で t4g.small は余っている。t4g.micro に落とすかは `agentcore deploy` 中のメモリを測ってから（Issue #15）
-- ALB に付ける ACM のワイルドカード証明書と、Cloudflare のレコード。どちらも未作成で `terraform apply` はこれ待ち
+- `aws login` の認証情報が 15 分ほどで更新に失敗して切れる（AWS CLI 側の既知の不具合と同じ症状）。`terraform apply` や `build-ami.sh` のような長い操作は直前にログインし直す。認証方式そのものの見直しはこのプロジェクトの外で扱う
 - 本番でモデル制限をどうかけるか（検証の段階ではかけない方針）
 - UI のサーバー側で Bedrock の呼び出しが失敗したとき、画面には「network error」としか出ない。例外を捕まえてエラーの内容を流す改善を別 Issue にする予定
 - UI のサーバーを本番でも `--reload` 付きで動かすか。1 人 1 台なので負荷は問題ないが、保存すると再起動する挙動を受講者に説明する必要がある
