@@ -1,4 +1,4 @@
-import type { AgentContext, AgentEvent } from './types'
+import type { AgentContext, AgentEvent, AskTarget, RuntimeInfo } from './types'
 
 // code-server の /proxy/3000/ 配下で開くので、パスは現在地からの相対で組む
 const base = location.pathname.endsWith('/') ? location.pathname : `${location.pathname}/`
@@ -9,12 +9,23 @@ export async function fetchContext(): Promise<AgentContext> {
   return res.json()
 }
 
-/** SSE を読んで、届いたイベントを 1 つずつ返す。 */
-export async function* askAgent(prompt: string, signal?: AbortSignal): AsyncGenerator<AgentEvent> {
+/** Runtime にデプロイ済みかどうかを取得する。取得自体に失敗しても投げずに未デプロイ扱いにする。 */
+export async function fetchRuntime(): Promise<RuntimeInfo> {
+  const res = await fetch(`${base}api/runtime`)
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  return res.json()
+}
+
+/** SSE を読んで、届いたイベントを 1 つずつ返す。target で手元と Runtime のどちらで動かすか選ぶ。 */
+export async function* askAgent(
+  prompt: string,
+  target: AskTarget,
+  signal?: AbortSignal,
+): AsyncGenerator<AgentEvent> {
   const res = await fetch(`${base}api/ask`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt }),
+    body: JSON.stringify({ prompt, target }),
     signal,
   })
   if (!res.ok) throw new Error(`HTTP ${res.status}`)

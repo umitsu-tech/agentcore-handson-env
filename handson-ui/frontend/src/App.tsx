@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { askAgent, fetchContext } from './api'
+import { askAgent, fetchContext, fetchRuntime } from './api'
 import { ContextPanel } from './components/ContextPanel'
 import { Timeline } from './components/Timeline'
-import type { AgentContext, Step } from './types'
+import type { AgentContext, AskTarget, RuntimeInfo, Step } from './types'
 
 const EXAMPLES = [
   'ノートPCで今借りられるものある？',
@@ -16,6 +16,8 @@ const nextId = () => `s${sequence++}`
 export function App() {
   const [context, setContext] = useState<AgentContext | null>(null)
   const [contextError, setContextError] = useState<string | null>(null)
+  const [runtime, setRuntime] = useState<RuntimeInfo | null>(null)
+  const [target, setTarget] = useState<AskTarget>('local')
   const [steps, setSteps] = useState<Step[]>([])
   const [prompt, setPrompt] = useState('')
   const [busy, setBusy] = useState(false)
@@ -27,6 +29,13 @@ export function App() {
       .catch((e: unknown) => setContextError(String(e)))
   }, [])
 
+  useEffect(() => {
+    // 未デプロイの受講者には切り替え自体を出さないので、失敗時は「未デプロイ」として扱う
+    fetchRuntime()
+      .then(setRuntime)
+      .catch(() => setRuntime({ available: false, name: '', arn: null, region: '' }))
+  }, [])
+
   const ask = useCallback(async (question: string) => {
     setBusy(true)
     setPrompt('')
@@ -34,9 +43,10 @@ export function App() {
     // 待機カードは 1 枚だけ出し、次の出来事が来たら差し替える
     const waitingId = nextId()
     const answerId = nextId()
+    const askTarget = target
 
     setSteps([
-      { kind: 'question', id: nextId(), text: question },
+      { kind: 'question', id: nextId(), text: question, target: askTarget },
       { kind: 'waiting', id: waitingId, label: 'モデルが考えています', startedAt: performance.now() },
     ])
 
@@ -52,7 +62,7 @@ export function App() {
     let cycleIndex = 0
 
     try {
-      for await (const event of askAgent(question)) {
+      for await (const event of askAgent(question, askTarget)) {
         switch (event.type) {
           case 'cycle_start':
             cycleIndex += 1
@@ -142,7 +152,7 @@ export function App() {
       setBusy(false)
       inputRef.current?.focus()
     }
-  }, [])
+  }, [target])
 
   return (
     <div className="app">
@@ -152,6 +162,33 @@ export function App() {
       </header>
 
       <ContextPanel context={context} error={contextError} />
+
+      {runtime?.available && (
+        <div className="target-switch" role="radiogroup" aria-label="実行場所">
+          <label>
+            <input
+              type="radio"
+              name="target"
+              value="local"
+              checked={target === 'local'}
+              disabled={busy}
+              onChange={() => setTarget('local')}
+            />
+            手元で動かす
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="target"
+              value="runtime"
+              checked={target === 'runtime'}
+              disabled={busy}
+              onChange={() => setTarget('runtime')}
+            />
+            Runtime で動かす（{runtime.name}）
+          </label>
+        </div>
+      )}
 
       <form
         className="ask"

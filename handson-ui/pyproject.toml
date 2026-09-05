@@ -9,6 +9,8 @@ dependencies = [
     "sse-starlette>=2.0.0",
     # ../handson-agent の agent.py を import するので、そちらの依存もここに要る
     "strands-agents>=1.0.0",
+    # AgentCore Runtime の InvokeAgentRuntime / ListAgentRuntimes を呼ぶため
+    "boto3>=1.35.0",
 ]
 
 [tool.uv]
