@@ -192,7 +192,7 @@ fi
 log "IAM ロール $ROLE_NAME を用意する"
 if ! "${AWS[@]}" iam get-role --role-name "$ROLE_NAME" > /dev/null 2>&1; then
   "${AWS[@]}" iam create-role --role-name "$ROLE_NAME" \
-    --description "agentcore-handson の AMI を焼くときだけ使う" \
+    --description "Used only while building the agentcore-handson AMI (scripts/build-ami.sh)" \
     --assume-role-policy-document '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":"ec2.amazonaws.com"},"Action":"sts:AssumeRole"}]}' \
     > /dev/null
 fi
