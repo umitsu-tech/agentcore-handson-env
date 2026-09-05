@@ -12,8 +12,11 @@ type Group = { cycle: CycleStep; items: Step[] }
 
 // steps を「周ごとのグループ」と「summary・error（末尾）」に分ける。
 // 1 周は「モデルへの入力 → モデルの出力」の 1 往復になるように揃える。
-// - question（と直後の waiting）は最初の周のグループの中に入る（先頭グループは無くす）。
-//   ただし最初の cycle 見出しがまだ届いていない間は leading として先頭にそのまま出す。
+// - question はタイムライン先頭（leading）に常に残す。加えて、最初の cycle 見出しが
+//   届いた瞬間に、その question を「モデルへの入力」として最初の周のグループにも
+//   コピーして表示する（重複表示。React の key 重複を避けるため id には接尾辞を付ける）。
+// - question の直後の waiting は、最初の cycle 見出しが届く前は leading に、
+//   届いたあとは最初の周のグループへ移す（従来どおり片方にしか出さない）。
 // - tool_result（と直後の waiting）は「次の周への入力」なので、次の cycle 見出しが
 //   届いた瞬間に新しい周のグループの先頭へ移る。まだ届いていない間は現在の周の末尾のまま。
 function groupSteps(steps: Step[]) {
@@ -35,9 +38,19 @@ function groupSteps(steps: Step[]) {
           current.items.push(...previous.items.splice(carryFrom))
         }
       } else if (leading.length > 0) {
-        // 最初の周が始まるまでの question（と waiting）は、
-        // 先頭グループを持たず最初の周のグループに含める。
-        current.items.push(...leading.splice(0))
+        // question はコピーして最初の周のグループにも入れる（leading 側にはそのまま残す）。
+        // waiting はこれまでどおり leading から移す。
+        const remainingLeading: Step[] = []
+        for (const leadingStep of leading) {
+          if (leadingStep.kind === 'question') {
+            current.items.push({ ...leadingStep, id: `${leadingStep.id}-in-cycle` })
+            remainingLeading.push(leadingStep)
+          } else {
+            current.items.push(leadingStep)
+          }
+        }
+        leading.length = 0
+        leading.push(...remainingLeading)
       }
 
       groups.push(current)
