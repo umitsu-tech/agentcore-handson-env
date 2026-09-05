@@ -261,10 +261,13 @@ body {
   border: 1px solid var(--line);
   border-radius: 6px;
   padding: 8px 12px;
-  margin-top: 8px;
+  margin: 8px 0 0;
   white-space: pre-wrap;
   word-break: break-all;
 }
+
+/* ツールが返した結果を JSON として整形表示するとき。.args と同じ見た目にする */
+.args.json { line-height: 1.6; }
 
 /* 待っている間 */
 .waiting { display: flex; align-items: center; gap: 12px; color: var(--muted); }

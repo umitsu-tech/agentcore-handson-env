@@ -153,6 +153,16 @@ export function Timeline({ steps }: Props) {
   )
 }
 
+// ツールが返した結果（JSON 文字列）をパースできれば、読みやすく整形した文字列を返す。
+// パースできなければ null を返し、呼び出し側は元の文字列をそのまま表示する。
+function formatIfJson(text: string): string | null {
+  try {
+    return JSON.stringify(JSON.parse(text), null, 2)
+  } catch {
+    return null
+  }
+}
+
 function renderStep(step: Step, cycleIndex?: number, isGroupStart?: boolean) {
   switch (step.kind) {
     case 'question':
@@ -184,11 +194,21 @@ function renderStep(step: Step, cycleIndex?: number, isGroupStart?: boolean) {
       return (
         <div className="card">
           <div className="label">ツールが返した結果</div>
-          {step.results.map((result, index) => (
-            <div className="text" key={result.id ?? index}>
-              {result.text}
-            </div>
-          ))}
+          {step.results.map((result, index) => {
+            // ツールは dict / list のデータを返し、Strands がそれを JSON 文字列にして
+            // モデルへ渡す。JSON としてパースできればそのまま整形して見せ、
+            // できなければ（旧イベントなど）これまでどおり文字列として出す。
+            const formatted = formatIfJson(result.text)
+            return formatted ? (
+              <pre className="args json" key={result.id ?? index}>
+                {formatted}
+              </pre>
+            ) : (
+              <div className="text" key={result.id ?? index}>
+                {result.text}
+              </div>
+            )
+          })}
           {isGroupStart && cycleIndex !== undefined && cycleIndex >= 2 && (
             <div className="input-note">
               この結果だけでなく、ここまでの質問とツール呼び出しの履歴もまとめてモデルに渡します
