@@ -38,3 +38,6 @@ __pycache__/
 node_modules/
 **/frontend/dist/
 *.tsbuildinfo
+
+# Terraform の作業ディレクトリ
+terraform/.terraform/
