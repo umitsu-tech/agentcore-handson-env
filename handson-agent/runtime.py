@@ -5,7 +5,7 @@
 
     agentcore deploy
 
-イベントは events.to_ui_event を通してから返します。手元で動かすときも
+イベントは lib/events.py の to_ui_event を通してから返します。手元で動かすときも
 同じ関数を通すので、呼び出し側にはまったく同じ形のイベントが届きます。
 ハンズオン UI は前半と同じ画面のまま、実行場所だけが変わった状態を表示できます。
 
@@ -16,7 +16,7 @@
 from bedrock_agentcore.runtime import BedrockAgentCoreApp
 
 from agent import build_agent
-from events import to_ui_event
+from lib.events import to_ui_event
 
 app = BedrockAgentCoreApp()
 agent = build_agent()

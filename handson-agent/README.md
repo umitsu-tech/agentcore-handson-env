@@ -9,39 +9,23 @@
 |---|---|
 | `agent.py` | エージェントの定義。モデル、システムプロンプト、使えるツールの一覧 |
 | `tools.py` | ツールの中身。ハンズオンではここに関数を足す |
-| `events.py` | Strands のイベントを画面に出す形へ変換する。手元でも Runtime でも共通 |
-| `ui.py` | ハンズオン UI のサーバー。API と画面の配信 |
-| `frontend/` | ハンズオン UI の画面（React + Vite） |
 | `local.py` | 手元で動かすときの入口（前半で使う） |
 | `runtime.py` | AgentCore Runtime に載せるときの入口（後半で使う） |
 | `data/equipment.json` | 備品のデータ |
+| `lib/` | 裏方。Strands のイベントを画面に出す形へ変換する `events.py` が入っている。ハンズオンでは触らない |
 
 `local.py` と `runtime.py` はどちらも `agent.py` の `build_agent()` を呼び、
-届いたイベントを `events.py` の `to_ui_event()` に通します。同じエージェントを、
+届いたイベントを `lib/events.py` の `to_ui_event()` に通します。同じエージェントを、
 動かす場所だけ変えて使う形です。画面に届くイベントの形も同じになります。
+
+ブラウザで動きを見るための画面（ハンズオン UI）は、隣の `../handson-ui/` にあります。
+主催者側の道具なので、受講者が中を触る必要はありません。
 
 ## 動かす
 
 ```bash
 uv sync
 uv run python local.py
-```
-
-ブラウザで見るときはこちらです。画面は React で書いてあるので、先にビルドします。
-
-```bash
-npm --prefix frontend install
-npm --prefix frontend run build
-uv run uvicorn ui:app --host 0.0.0.0 --port 3000
-```
-
-code-server の `/proxy/3000/` から開きます。
-
-画面を触りながら開発するときは、別のターミナルで Vite の開発サーバーを立てると
-保存のたびに反映されます。API は 3000 番のサーバーに転送されます。
-
-```bash
-npm --prefix frontend run dev
 ```
 
 聞いてみる例です。
