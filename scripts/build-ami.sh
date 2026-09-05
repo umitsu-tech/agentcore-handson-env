@@ -61,6 +61,7 @@ done
 
 AWS=(aws --region "$REGION")
 INSTANCE_ID=""
+FINISHED=false
 WORK_DIR="$(mktemp -d)"
 
 log() { printf '\n==> %s\n' "$*"; }
@@ -79,6 +80,8 @@ json_escape() {
 # 終了時の後片付け。成功でも失敗でも EC2 を残さない
 cleanup() {
   local status=$?
+  # set -u の unbound variable で落ちたときは $? が 0 のまま来るので、最後まで走ったかで判定する
+  if [ "$status" -eq 0 ] && ! $FINISHED; then status=1; fi
   if [ -n "$INSTANCE_ID" ]; then
     if $KEEP_INSTANCE; then
       echo "EC2 $INSTANCE_ID は残してあります。aws ssm start-session --target $INSTANCE_ID で入れます。不要になったら terminate してください"
@@ -214,7 +217,7 @@ fi
 log "ベース AMI とサブネットを決める"
 BASE_AMI=$("${AWS[@]}" ssm get-parameters --names "$BASE_AMI_PARAM" \
   --query 'Parameters[0].Value' --output text)
-[ "$BASE_AMI" != "None" ] || fail "AL2023 の AMI が引けません（$BASE_AMI_PARAM）"
+[ "$BASE_AMI" != "None" ] || fail "AL2023 の AMI が引けません（${BASE_AMI_PARAM}）"
 ROOT_DEVICE=$("${AWS[@]}" ec2 describe-images --image-ids "$BASE_AMI" \
   --query 'Images[0].RootDeviceName' --output text)
 if [ -z "$SUBNET_ID" ]; then
@@ -222,7 +225,7 @@ if [ -z "$SUBNET_ID" ]; then
     --query 'Subnets[0].SubnetId' --output text)
   [ "$SUBNET_ID" != "None" ] || fail "デフォルト VPC のサブネットが見つかりません。--subnet-id で指定してください"
 fi
-echo "ベース AMI: $BASE_AMI（ルートデバイス $ROOT_DEVICE）/ サブネット: $SUBNET_ID"
+echo "ベース AMI: ${BASE_AMI}（ルートデバイス ${ROOT_DEVICE}）/ サブネット: ${SUBNET_ID}"
 
 # user_data は setup-instance.sh の先頭（shebang の直後）にバケット名の export を足したもの
 USER_DATA="$WORK_DIR/user-data.sh"
@@ -363,3 +366,4 @@ if [ -f "$TFVARS" ] && grep -qE '^ami_id[[:space:]]*=' "$TFVARS"; then
 else
   echo "terraform/terraform.tfvars に ami_id = \"$AMI_ID\" を設定してください"
 fi
+FINISHED=true
