@@ -1,13 +1,13 @@
 ---
-title: 4. 自分のエージェントを Runtime に載せる
-description: agentcore deploy の 1 行で、手元で動いていたエージェントを AgentCore Runtime に載せます。
+title: 4. Runtime へのデプロイ
+description: agentcore deploy の 1 行で、手元で動いていたエージェントを AgentCore Runtime に載せます
 ---
 
 import { Steps } from '@astrojs/starlight/components';
 
 ここまで、エージェントは自分の EC2 の上で動いていました。それを AWS のマネージド環境（AgentCore Runtime）に載せ替えます。
 
-## やること
+## 手順
 
 <Steps>
 
@@ -31,7 +31,7 @@ import { Steps } from '@astrojs/starlight/components';
 
 </Steps>
 
-## 見比べてほしいこと
+## 前半との比較
 
 ![前半は自分の EC2 の中でエージェントが動き、後半は同じコードが AgentCore Runtime の中で動く。ブラウザと UI のサーバーは変わらない](/images/local-vs-runtime.png)
 
@@ -41,12 +41,12 @@ import { Steps } from '@astrojs/starlight/components';
 
 違うのは動いている場所だけです。前半は自分の EC2 の中で Python が動いていました。今は AWS 側の箱の中で同じコードが動き、EC2 はそれを呼びに行っているだけです。
 
-## Runtime が引き受けているもの
+## Runtime の役割
 
 手元で動いているものを他の人に使ってもらうには、いろいろ要ります。サーバーを立てて、認証を付けて、同時にたくさん来ても耐えて、落ちたら上げ直す。それを全部引き受けるのが Runtime です。
 
 いま打ったのは 1 行でしたが、裏では自分のコードがコンテナに詰められ、実行用の権限が作られ、呼び出し口が用意されました。前半のループのコードは 1 行も変わっていません。
 
-:::note[deploy が失敗したら]
+:::note[deploy が失敗した場合]
 もう一度同じ `agentcore deploy` を打つと、続きから進むことが多いです。それでも止まるときは、ターミナルの最後の数行を主催者に見せてください。
 :::
