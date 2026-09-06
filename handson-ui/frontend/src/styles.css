@@ -331,7 +331,8 @@ body {
   font-family: var(--mono);
   font-size: 13px;
   line-height: 1.6;
-  background: var(--panel-soft);
+  /* 色付きのカードの中に置くので、薄い紙色ではなく白にして上の JSON の箱と揃える */
+  background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 6px;
   padding: 10px 12px;
