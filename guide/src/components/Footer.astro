@@ -19,7 +19,7 @@ import Default from '@astrojs/starlight/components/Footer.astro';
   .lightbox {
     position: fixed;
     inset: 0;
-    z-index: 100;
+    z-index: 10000;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -72,6 +72,8 @@ import Default from '@astrojs/starlight/components/Footer.astro';
   const box = document.getElementById('lightbox') as HTMLDivElement | null;
   const big = box?.querySelector('img') as HTMLImageElement | null;
   if (box && big) {
+    // 本文の枠の中に置いたままだと position: fixed が枠に閉じ込められるので、body 直下に移す
+    document.body.appendChild(box);
     const open = (src: string, alt: string) => {
       big.src = src;
       big.alt = alt;
