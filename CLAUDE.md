@@ -48,7 +48,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - 受講環境のセットアップスクリプト（`scripts/setup-instance.sh`）。`handson-ui/` 分離後の構成に追随済み
 - AMI を焼き直す一括スクリプト（`scripts/build-ami.sh`、Issue #19）。tar.gz の作成と S3 アップロード、固定名の IAM ロール `agentcore-handson-ami-builder` の用意、EC2 起動、cloud-init 完了待ち、再起動後の疎通確認、AMI 作成、EC2 削除、`terraform.tfvars` の `ami_id` 書き換えまで行う
 - 1 人分の Terraform（`terraform/`）。AMI 前提の構成で、`ami_id` を必須で受け取り、user_data は code-server のパスワードを差し込むだけ。`terraform plan` が 26 リソースで通るところまで（apply は証明書と DNS 待ち）
-- コストの試算。30 人 5 時間で約 5.7 USD（内訳は docs/operations.md）
+- コストの試算。30 人 5 時間で約 2.2 USD（t4g.small の無料トライアル適用時。無ければ約 5.4 USD。内訳は docs/operations.md）
 - 東京リージョンで使えるモデルの単価比較（結論は Nova 2 Lite 据え置き）
 - 1 人分の通し確認（2026-09-05）。ACM のワイルドカード証明書を発行し、Cloudflare に検証用と `*.<base_domain>` の CNAME を入れ、`terraform apply`（26 リソース）で 1 台立てて、ブラウザから `https://user01.<base_domain>` で code-server にログインできるところまで確認した。確認後に `terraform destroy` で消した。証明書と DNS レコードは次回も使うので残してある
 
