@@ -4,13 +4,13 @@
 
 ## 1. 事前準備（初回だけ / 前日までに）
 
-### Bedrock のモデルアクセスを有効にする
+### Bedrock のモデルアクセス
 
 ハンズオンで使うリージョンで、Nova 2 Lite のモデルアクセスを有効にします。有効化はアカウント単位なので 1 回で済みます。
 
 ここで有効にするモデルを絞ることが、そのまま使えるモデルの制限になります。有効にしていないモデルは呼び出せないので、他のモデルを使われたくないなら有効化は必要最小限にしておきます。
 
-### CDK をブートストラップする
+### CDK のブートストラップ
 
 `agentcore deploy` は内部で AWS CDK を使うため、アカウントとリージョンの組み合わせに対して 1 回ブートストラップが必要です。
 
@@ -20,11 +20,11 @@ npx cdk bootstrap aws://<アカウントID>/ap-northeast-1
 
 これを事前にやっておかないと、受講者が最初の `agentcore deploy` で失敗します。
 
-### ACM で証明書を発行する
+### ACM の証明書
 
-`*.handson.example.com` のワイルドカード証明書を、ALB を置くリージョンで発行します。検証方法は DNS 検証を選び、表示された検証用の CNAME を Cloudflare に追加します。証明書の状態が「発行済み」になるまで待ちます。
+`*.handson.example.com` のワイルドカード証明書を、ALB を置くリージョンで発行します。検証方法は DNS 検証を選び、表示された検証用の CNAME を Cloudflare に追加します。証明書の状態が「発行済み」になるまで待ちます。証明書と検証用の CNAME は Terraform の管理外で、次回もそのまま使います。
 
-### AMI を作る
+### AMI の作成
 
 `scripts/build-ami.sh` を実行します。ワークスペースを tar.gz にして S3 に上げ、EC2 を 1 台起動して `scripts/setup-instance.sh` を流し、再起動後に code-server とハンズオン UI が動いていることを確認してから AMI を作り、EC2 を消すところまで一気にやります。
 
@@ -46,7 +46,7 @@ AMI には次のものが入ります。
 
 スクリプトが確認するのは code-server の `/healthz` とハンズオン UI の `/api/context` が応答することまでです。`agentcore deploy` が最後まで通ること、デプロイしたエージェントをハンズオン UI から呼んで動きが画面に出ることは、Terraform で 1 台立ててから確認します。
 
-### Terraform の state を S3 に置く
+### Terraform の state
 
 Terraform の state は手元ではなく S3 に置きます。当日 30 人ぶんのリソースを Terraform で持つので、作業しているマシンが使えなくなっても別のマシンから `terraform destroy` を打てるようにするためです。置き場は `scripts/build-ami.sh` が資材置き場に使っているバケット（`agentcore-handson-assets-<アカウントID>`）の `terraform-state/` で、バケットは分けません。ロックは Terraform 1.10 以降の `use_lockfile`（S3 の条件付き書き込み）で取るので、DynamoDB のテーブルは要りません。
 
@@ -82,7 +82,7 @@ terraform init -backend-config=backend.hcl
 
 同じ state に対して 2 か所から同時に apply すると、後から始めたほうがロックの取得で止まります。止まったら先に動いているほうが終わるのを待ちます。
 
-### 受講者向けの手順書を配信する
+### 手順書の配信
 
 受講者が読む手順書（`guide/site/index.html`）は S3 + CloudFront で配信します。受講環境とは寿命が違う（手順書は前もって公開して当日まで置いておく）ので、Terraform のルートを受講環境の `terraform/handson/` とは別の `terraform/guide/` に分けてあり、state も同じバケットの別のキーです。
 
@@ -105,7 +105,7 @@ Actions の認証は OIDC で、GitHub にアクセスキーは置きません�
 
 ハンズオンが終わったら `terraform/guide` で `terraform destroy` すると、バケットの中身ごと消えます。次回も同じ手順書を使うなら残しておいても構いません（費用はほぼゼロ）。
 
-### Cloudflare の API トークンを用意する
+### Cloudflare の API トークン
 
 `*.handson.example.com` の CNAME を ALB の DNS 名に向けるレコードは、Terraform が Cloudflare のプロバイダー経由で作ります。ALB は `destroy` と `apply` のたびに DNS 名が変わるので、手で差し替える代わりに Terraform に追随させます。
 
@@ -121,22 +121,23 @@ export CLOUDFLARE_API_TOKEN=<発行したトークン>
 
 ## 2. 当日
 
-### 環境を作る
+### 環境の作成
 
 ```bash
+cd terraform/handson
 terraform plan
 terraform apply
 ```
 
-受講者数は変数で指定します。apply が終わると、受講者ごとの URL とパスワードが出力されます。`*.handson.example.com` の CNAME も同じ apply の中で ALB に向けられます。DNS の反映に数十秒かかるので、URL を開いて確認するのは少し待ってからにします。
+受講者数は `participants` の変数で指定します。apply が終わると、受講者ごとの URL とパスワードが出力されます。`*.handson.example.com` の CNAME も同じ apply の中で ALB に向けられます。DNS の反映に数十秒かかるので、URL を開いて確認するのは少し待ってからにします。
 
-ハンズオン当日は `destroy` せず apply したままにしておきます。`destroy` すると CNAME も一緒に消えます。
+ハンズオン当日は `destroy` せず apply したままにしておきます。`destroy` すると CNAME も一緒に消えます。終了時刻の自動停止は `handson_end_time` で仕込みます（後片付けの項）。
 
 ### 動作確認
 
 配布する前に、主催者が 1 台目の URL を開いて code-server にログインできることを確認します。ALB のターゲットグループがすべて healthy になっているかも見ておきます。
 
-### 受講者に配る
+### 受講者への配布
 
 code-server の URL とパスワードに加えて、ハンズオン UI の URL（`participant_ui_urls`）と手順書の URL（`terraform/guide` の `guide_url`）も一緒に配ります。受講者側で必要なのはブラウザだけです。
 
@@ -158,7 +159,7 @@ aws ssm start-session --target <インスタンスID>
 
 これとは別に、受講者には当日の最後に自分の deploy を自分で消してもらいます（`agentcore remove all` のあと `agentcore deploy`。[docs/curriculum.md](curriculum.md) の「5. 振り返る」）。受講者が消す → 消し忘れた分を翌日のスクリプトが拾う、の二段構えです。
 
-### 終了時刻で自動停止する（当日の apply で仕込む）
+### 終了時刻での自動停止
 
 `terraform.tfvars` に `handson_end_time` を書いて apply すると、その時刻に次の 3 つが起きます。
 
@@ -177,12 +178,12 @@ apply の出力 `handson_deadline` に、壁時計の時刻と UTC の両方が�
 時刻を過ぎたあとの状態と注意点です。
 
 - 止まるのは EC2 と Bedrock の呼び出しで、消えるのは ALB だけです。EBS、AMI のスナップショット、受講者が作った Runtime は残ります。Runtime は呼ばれなければ課金されません
-- ALB を Terraform の外で消すので、**時刻を過ぎたあとは `terraform apply` を打たないでください**。apply すると ALB を作り直します。以降は `terraform destroy` の一方向です（destroy は消えたものを refresh で検知するので問題ありません）
+- ALB を Terraform の外で消すので、時刻を過ぎたあとは `terraform apply` を打ちません。apply すると ALB を作り直します。以降は `terraform destroy` の一方向です（destroy は消えたものを refresh で検知するので問題ありません）
 - 実行後のスケジュールは自動で消えます（`action_after_completion = DELETE`）。destroy のときに見つからなくても正常です
 - 終了時刻を延ばしたいときは、時刻が来る前に `handson_end_time` を書き換えて apply します。すでに過ぎてしまった場合は apply せず、手で `terraform destroy` に進みます
 - 検証や試し焼きのときは `handson_end_time` を書かないでおくと、この仕組みは作られません
 
-### 受講者が作ったリソースを消す（翌日以降）
+### 受講者が作ったリソースの削除
 
 `terraform destroy` で消えるのは Terraform が作ったものだけです。受講者が `agentcore deploy` で作った AgentCore Runtime、その実行ロール、CDK が作った CloudFormation スタック、Runtime のロググループは Terraform の管理外なので残ります。これらは棚卸しスクリプトで消します。
 
@@ -201,9 +202,10 @@ ECR は対象外です。deploy は CodeZip 方式で、受講者ごとのリポ
 
 削除には受講者数に応じて数分かかります。終わったら一覧モードでもう一度実行し、すべて「なし」になっていることを確認します。
 
-### Terraform で作ったものを消す
+### Terraform で作ったものの削除
 
 ```bash
+cd terraform/handson
 terraform destroy
 ```
 
@@ -246,7 +248,7 @@ EC2 は t4g.small の無料トライアル（次の項）が適用される前�
 | Bedrock 出力 | 90K トークン | 0.30 USD | 0.30 USD |
 | **合計** | | **約 2.2 USD** | **約 5.4 USD** |
 
-半日のハンズオンで 2 ドル程度、トライアルが無くても 6 ドル程度です。リハーサルを数回やっても同じ桁に収まります。t4g.medium も試しましたが `agentcore deploy` の所要時間は変わらなかった（small 99 秒、medium 112 秒）ので t4g.small にしています（Issue #15）。
+半日のハンズオンで 2 ドル程度、トライアルが無くても 6 ドル程度です。リハーサルを数回やっても同じ桁に収まります。t4g.medium も試しましたが `agentcore deploy` の所要時間が変わらなかった（small 99 秒、medium 112 秒）ので t4g.small にしています（Issue #15）。
 
 ### t4g.small の無料トライアル
 
@@ -273,7 +275,7 @@ t4g.small には AWS の無料トライアルがあります。2021 年に始ま
 
 ### コスト管理で気をつけること
 
-金額そのものより、消し忘れのほうが問題になります。EC2 と ALB は起動している限り課金され続けるので、終わったら `terraform destroy` まで通してください。受講者が作った AgentCore Runtime は Terraform の管理外なので、別途消す必要があります。
+金額そのものより、消し忘れのほうが問題になります。EC2 と ALB は起動している限り課金され続けるので、終了時刻の自動停止を仕込んだうえで、終わったら `terraform destroy` まで通します。受講者が作った AgentCore Runtime は Terraform の管理外なので、棚卸しスクリプトで消します。
 
 Bedrock の利用料は主催者のアカウントに乗ります。アカウントにクレジットが付いていれば、そのまま充当されます。
 
