@@ -10,6 +10,10 @@ terraform {
       source  = "hashicorp/random"
       version = "~> 3.6"
     }
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "~> 5.24"
+    }
   }
 }
 
@@ -23,3 +27,6 @@ provider "aws" {
     }
   }
 }
+
+# API トークンは環境変数 CLOUDFLARE_API_TOKEN から読む。tfvars には書かない
+provider "cloudflare" {}

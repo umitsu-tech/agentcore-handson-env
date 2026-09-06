@@ -65,3 +65,8 @@ variable "model_inference_profile" {
   type        = string
   default     = "jp.amazon.nova-2-lite-v1:0"
 }
+
+variable "cloudflare_zone_id" {
+  description = "base_domain を管理している Cloudflare ゾーンの ID。*.<base_domain> の CNAME をこのゾーンに作る。ゾーンの概要ページに表示される 32 桁の値で、秘密ではない"
+  type        = string
+}
