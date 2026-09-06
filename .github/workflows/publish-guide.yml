@@ -3,7 +3,7 @@
 # guide/publish.sh と同じことをしている。
 #
 # 必要な Variables（リポジトリの Settings → Secrets and variables → Actions → Variables）:
-#   AWS_ROLE_ARN          guide/terraform の output github_actions_role_arn
+#   AWS_ROLE_ARN          terraform/guide の output github_actions_role_arn
 #   GUIDE_BUCKET          同 bucket_name
 #   GUIDE_DISTRIBUTION_ID 同 distribution_id
 name: publish-guide

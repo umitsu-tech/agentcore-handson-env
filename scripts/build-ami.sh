@@ -366,12 +366,12 @@ fi
 log "完了"
 echo "AMI 名: $AMI_NAME"
 echo "AMI ID: $AMI_ID"
-TFVARS="$REPO_ROOT/terraform/terraform.tfvars"
+TFVARS="$REPO_ROOT/terraform/handson/terraform.tfvars"
 if [ -f "$TFVARS" ] && grep -qE '^ami_id[[:space:]]*=' "$TFVARS"; then
   sed -i.bak -E "s|^(ami_id[[:space:]]*=[[:space:]]*)\"[^\"]*\"|\1\"$AMI_ID\"|" "$TFVARS"
   rm -f "$TFVARS.bak"
-  echo "terraform/terraform.tfvars の ami_id を $AMI_ID に書き換えました"
+  echo "terraform/handson/terraform.tfvars の ami_id を $AMI_ID に書き換えました"
 else
-  echo "terraform/terraform.tfvars に ami_id = \"$AMI_ID\" を設定してください"
+  echo "terraform/handson/terraform.tfvars に ami_id = \"$AMI_ID\" を設定してください"
 fi
 FINISHED=true

@@ -36,9 +36,9 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - 後片付けは仕組みで担保する（Issue #17、実装済み）。名前が `handson` で始まるものだけを選んで消す棚卸しスクリプト `scripts/cleanup-participant-resources.sh` を本命に、終了時刻 `handson_end_time` を Terraform の変数で渡して IAM の Deny・EC2 停止（EventBridge Scheduler）・ALB 削除を時刻で発火させる。時刻後は apply せず destroy の一方向。Budgets は既存のものを使う
 - モデルは比較のうえ Nova 2 Lite に据え置く。Nova Micro や旧 Nova Lite は安いが世代が古く、オープンモデルは Converse API でのツール呼び出しが未確認。下がる幅も最大 1 USD 程度で、ツール選択の確実さを優先した
 - 受講者には code-server と UI（/proxy/3000/）の 2 つの URL を配り、workspace の README を起動時に開いて導線にする（Issue #36）
-- Terraform の state は S3（build-ami.sh の資材バケットの `terraform-state/`）に置き、ロックは Terraform 1.10 以降の `use_lockfile` で取る。DynamoDB は使わない。バケット名は `terraform/backend.hcl`（git 管理外）で渡す（Issue #40）
-- 受講者向けの手順書は HTML 直書き（`guide/site/index.html`、原稿は curriculum から変換せず別で書く）を S3 非公開 + CloudFront OAC で配信する。Terraform のルートは寿命が違うので `guide/terraform/` に分け、state は同じバケットの別キー。中身の更新は `guide/publish.sh`。独自ドメインは `guide_hostname` を指定したときだけ（証明書は us-east-1 でホスト名単体を発行）（Issue #48）
-- 手順書の更新は GitHub Actions で自動配信する（`guide/site/**` が main に入ったら s3 sync + キャッシュ削除）。認証は OIDC で、ロールは `guide/terraform` が作り、このリポジトリの main からだけ assume できる。sub は ID 無しと ID 付き（immutable subject claim）の両方を許可する。バケット名などは GitHub の Variables に置く（Issue #52）
+- Terraform の state は S3（build-ami.sh の資材バケットの `terraform-state/`）に置き、ロックは Terraform 1.10 以降の `use_lockfile` で取る。DynamoDB は使わない。バケット名は `terraform/handson/backend.hcl`（git 管理外）で渡す（Issue #40）
+- 受講者向けの手順書は HTML 直書き（`guide/site/index.html`、原稿は curriculum から変換せず別で書く）を S3 非公開 + CloudFront OAC で配信する。Terraform のルートは寿命が違うので `terraform/guide/` に分け（受講環境は `terraform/handson/`）、state は同じバケットの別キー。中身の更新は `guide/publish.sh`。独自ドメインは `guide_hostname` を指定したときだけ（証明書は us-east-1 でホスト名単体を発行）（Issue #48）
+- 手順書の更新は GitHub Actions で自動配信する（`guide/site/**` が main に入ったら s3 sync + キャッシュ削除）。認証は OIDC で、ロールは `terraform/guide` が作り、このリポジトリの main からだけ assume できる。sub は ID 無しと ID 付き（immutable subject claim）の両方を許可する。バケット名などは GitHub の Variables に置く（Issue #52）
 - Cloudflare の `*.<base_domain>` の CNAME は Terraform（cloudflare プロバイダー v5 の `cloudflare_dns_record`）で管理し、ALB の作り直しに自動で追随させる。API トークンは環境変数 `CLOUDFLARE_API_TOKEN` で渡し、ゾーン ID だけ tfvars に書く。証明書の検証用 CNAME は手で入れたまま管理外にする（Issue #30）
 
 ### できているもの
@@ -53,7 +53,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - 後片付けの仕組み（Issue #17）。棚卸しスクリプト `scripts/cleanup-participant-resources.sh`（一覧モードは実機で確認済み、削除モードは未確認）と、`handson_end_time` で発火する Deny・EC2 停止・ALB 削除（`terraform validate` まで。apply は未実施）
 - 受講環境のセットアップスクリプト（`scripts/setup-instance.sh`）。`handson-ui/` 分離後の構成に追随済み
 - AMI を焼き直す一括スクリプト（`scripts/build-ami.sh`、Issue #19）。tar.gz の作成と S3 アップロード、固定名の IAM ロール `agentcore-handson-ami-builder` の用意、EC2 起動、cloud-init 完了待ち、再起動後の疎通確認、AMI 作成、EC2 削除、`terraform.tfvars` の `ami_id` 書き換えまで行う
-- 1 人分の Terraform（`terraform/`）。AMI 前提の構成で、`ami_id` を必須で受け取り、user_data は code-server のパスワードを差し込むだけ。`terraform plan` が 26 リソースで通るところまで（apply は証明書と DNS 待ち）
+- 1 人分の Terraform（`terraform/handson/`）。AMI 前提の構成で、`ami_id` を必須で受け取り、user_data は code-server のパスワードを差し込むだけ。`terraform plan` が 26 リソースで通るところまで（apply は証明書と DNS 待ち）
 - コストの試算。30 人 5 時間で約 2.2 USD（t4g.small の無料トライアル適用時。無ければ約 5.4 USD。内訳は docs/operations.md）
 - 東京リージョンで使えるモデルの単価比較（結論は Nova 2 Lite 据え置き）
 - 1 人分の通し確認（2026-09-05）。ACM のワイルドカード証明書を発行し、Cloudflare に検証用と `*.<base_domain>` の CNAME を入れ、`terraform apply`（26 リソース）で 1 台立てて、ブラウザから `https://user01.<base_domain>` で code-server にログインできるところまで確認した。確認後に `terraform destroy` で消した。証明書と DNS レコードは次回も使うので残してある
@@ -68,9 +68,8 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証情報が要るので、リュウキがブラウザで認証できるタイミングで進める。
 
 1. 手順書のデザインと中身を受講者向けに詰める（Issue #51。`guide/site/` を直して main に push すれば自動で反映される。複数ページにしてもよいが、フォルダ形式の URL は index.html を補わないので `step1.html` のようにファイル名で分ける）
-2. Terraform のルートを `terraform/handson/` と `terraform/guide/` に並べ直す（Issue #50）
-3. 人数ぶんへの展開（Issue #6）
-4. 後片付けの仕組み（Issue #17）を実機で確認する。`handson_end_time` を 10 分後などにして apply し、時刻を過ぎたら EC2 が停止・ALB が削除・受講者ロールで Bedrock が Deny されることを見る。Scheduler の universal target の ARN（`elasticloadbalancingv2:deleteLoadBalancer`）は apply で初めて検証される
+2. 人数ぶんへの展開（Issue #6）
+3. 後片付けの仕組み（Issue #17）を実機で確認する。`handson_end_time` を 10 分後などにして apply し、時刻を過ぎたら EC2 が停止・ALB が削除・受講者ロールで Bedrock が Deny されることを見る。Scheduler の universal target の ARN（`elasticloadbalancingv2:deleteLoadBalancer`）は apply で初めて検証される
 
 当日の運営（事前準備、リハーサル）はこのリポジトリの範囲外にした（Issue #7、#8 はクローズ）。
 

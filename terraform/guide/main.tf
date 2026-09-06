@@ -1,6 +1,6 @@
 # 受講者向けの手順書（HTML）を S3 + CloudFront で配信する。
 # S3 は非公開にして、CloudFront だけが OAC（Origin Access Control）で読めるようにする。
-# 中身の更新は Terraform ではなく ../publish.sh（s3 sync + キャッシュ削除）で行う。
+# 中身の更新は Terraform ではなく ../../guide/publish.sh（s3 sync + キャッシュ削除）で行う。
 
 data "aws_caller_identity" "current" {}
 

@@ -17,8 +17,8 @@ terraform.rc
 !*.tfvars.example
 
 # S3 バックエンドの接続情報（バケット名にアカウント ID が入る）。example だけコミットする
-terraform/backend.hcl
-guide/terraform/backend.hcl
+terraform/handson/backend.hcl
+terraform/guide/backend.hcl
 
 # 認証情報・秘密情報
 *.pem
@@ -44,7 +44,7 @@ node_modules/
 *.tsbuildinfo
 
 # Terraform の作業ディレクトリ
-terraform/.terraform/
+terraform/*/.terraform/
 
 # agentcore CLI（handson-agent/ を Runtime にデプロイする設定一式）
 # .env.local と .cli/ は agentcore/.gitignore 側でも無視される。ここにも書いておくのは
