@@ -99,7 +99,7 @@ apply の出力 `guide_url` が受講者に配る URL です。中身を直し�
 
 ### 受講者情報の配り方
 
-手順書サイトの `/participants.html` に、受講者ごとのエディタの URL、ハンズオン UI の URL、パスワードの表を出せます（Issue #58）。このページと中身の `participants/data.json` だけは CloudFront Function の Basic 認証で守られていて、他のページは今までどおり誰でも開けます。ユーザー名と合言葉は `terraform/guide/terraform.tfvars` の `participants_user` / `participants_password` で渡し、当日その場で口頭で伝えます。合言葉を変えたら `terraform/guide` を apply し直します。
+手順書サイトの `/participants.html` に、受講者ごとのエディタの URL、ハンズオン UI の URL、パスワードの表を出せます（Issue #58）。このページと中身の `participants/data.json` だけは CloudFront Function の Basic 認証で守られていて、他のページは今までどおり誰でも開けます。ユーザー名と合言葉は `terraform/guide/terraform.tfvars` の `participants_user` / `participants_password` で渡し、当日その場で口頭で伝えます。Basic 認証は apply 済みで、認証なしで開くと 401 が返ります。合言葉を変えたら `terraform/guide` を apply し直します。
 
 表の中身は git に入れません。受講環境（`terraform/handson`）を apply したあとに次を打つと、output から JSON を組み立てて S3 に直接置き、キャッシュを消します。
 
