@@ -16,6 +16,9 @@ terraform.rc
 # 例示用の tfvars はコミットする
 !*.tfvars.example
 
+# S3 バックエンドの接続情報（バケット名にアカウント ID が入る）。example だけコミットする
+terraform/backend.hcl
+
 # 認証情報・秘密情報
 *.pem
 *.key

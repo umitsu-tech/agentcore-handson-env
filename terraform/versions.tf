@@ -1,5 +1,14 @@
 terraform {
-  required_version = ">= 1.5.7"
+  # S3 バックエンドのロックに use_lockfile を使うため 1.10 以降が要る（DynamoDB を使わない）
+  required_version = ">= 1.10"
+
+  # state は scripts/build-ami.sh と同じ資材バケットの terraform-state/ に置く。
+  # バケット名にアカウント ID が入るので、ここには書かず backend.hcl（git 管理外）で渡す。
+  # 初回は `terraform init -backend-config=backend.hcl`（docs/operations.md）
+  backend "s3" {
+    key          = "terraform-state/agentcore-handson.tfstate"
+    use_lockfile = true
+  }
 
   required_providers {
     aws = {

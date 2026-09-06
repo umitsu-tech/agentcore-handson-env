@@ -1,0 +1,6 @@
+# 実際の値を入れて backend.hcl という名前で保存する（backend.hcl は git 管理しない）。
+# terraform init -backend-config=backend.hcl で読み込む。
+# バケットは scripts/build-ami.sh が資材置き場に使っているもの（agentcore-handson-assets-<アカウントID>）。
+# バージョニングを有効にしておく（state を戻せるように）。
+bucket = "agentcore-handson-assets-123456789012"
+region = "ap-northeast-1"
