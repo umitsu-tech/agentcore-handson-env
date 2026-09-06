@@ -52,7 +52,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - 受講環境のセットアップスクリプト（`scripts/setup-instance.sh`）と、AMI を焼く一括スクリプト（`scripts/build-ami.sh`、Issue #19）。同梱の Copilot 拡張はディレクトリごと消している（Issue #15）
 - 受講環境の Terraform（`terraform/handson/`）。AMI 前提で、`ami_id` を必須で受け取り、user_data は受講者固有の値を差し込むだけ。Cloudflare のワイルドカード CNAME も一緒に作る（Issue #30）。state は S3、ロックは `use_lockfile`（Issue #40）
 - 後片付けの仕組み（Issue #17）。棚卸しスクリプト `scripts/cleanup-participant-resources.sh`（一覧モードは確認済み、`--delete` は未確認）と、`handson_end_time` で発火する Deny・EC2 停止・ALB 削除（validate まで。apply は未実施）
-- 受講者向けの手順書（`guide/`、Issue #48、#51 でセクションごとのページ + サイドメニュー + 図 4 枚に作り直し）。S3 非公開 + CloudFront OAC で配信し、`https://guide.handson.<base_domain>/` で HTTPS 200、HTTP は 301、S3 直アクセスは 403 まで確認済み。証明書は us-east-1 でホスト名単体を発行し、検証用と本体の CNAME は Terraform が Cloudflare に入れる。中身は GitHub Actions（OIDC、Issue #52）か `guide/publish.sh` で同期する。環境は立てたまま
+- 受講者向けの手順書（`guide/`、Issue #48。#51 で Astro Starlight に作り直し、mcks.log と同じ紙色のパレット、セクションごとのページ + サイドメニュー + 図 4 枚 + 画像の拡大表示）。受講者情報ページ `participants.html` と `/participants*` の Basic 認証は #58 で追加し、apply 済み（2026-09-07。認証なしは 401、他のページは今までどおり）。表の中身はまだ置いていない（`guide/publish-participants.sh`）。S3 非公開 + CloudFront OAC で配信し、`https://guide.handson.<base_domain>/` で HTTPS 200、HTTP は 301、S3 直アクセスは 403 まで確認済み。証明書は us-east-1 でホスト名単体を発行し、検証用と本体の CNAME は Terraform が Cloudflare に入れる。中身は GitHub Actions（OIDC、Issue #52）か `guide/publish.sh` で同期する。環境は立てたまま
 - コストの試算。30 人 5 時間で約 2.2 USD（t4g.small の無料トライアル適用時。無ければ約 5.4 USD。内訳は docs/operations.md）。東京で使えるモデルの単価比較は Nova 2 Lite 据え置き
 
 通し確認の記録（2026-09-05〜06）。
@@ -67,9 +67,8 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 
 AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証情報が要るので、リュウキがブラウザで認証できるタイミングで進める。
 
-1. 受講者情報ページと Basic 認証（Issue #58、実装済み・PR 待ち）を `terraform/guide` に apply する。`participants_password` を tfvars に入れてから plan → apply。受講環境を立てたら `guide/publish-participants.sh` で表を置く
-2. 人数ぶんへの展開（Issue #6）
-3. 後片付けの仕組み（Issue #17）を実機で確認する。`handson_end_time` を 10 分後などにして apply し、時刻を過ぎたら EC2 が停止・ALB が削除・受講者ロールで Bedrock が Deny されることを見る。Scheduler の universal target の ARN（`elasticloadbalancingv2:deleteLoadBalancer`）は apply で初めて検証される
+1. 人数ぶんへの展開（Issue #6）。受講環境を立てたら `guide/publish-participants.sh` で受講者情報の表を置く
+2. 後片付けの仕組み（Issue #17）を実機で確認する。`handson_end_time` を 10 分後などにして apply し、時刻を過ぎたら EC2 が停止・ALB が削除・受講者ロールで Bedrock が Deny されることを見る。Scheduler の universal target の ARN（`elasticloadbalancingv2:deleteLoadBalancer`）は apply で初めて検証される
 
 当日の運営（事前準備、リハーサル）はこのリポジトリの範囲外にした（Issue #7、#8 はクローズ）。
 
