@@ -58,7 +58,8 @@ def search_equipment(keyword: str) -> list[dict]:
        return [
            item
            for item in _load_equipment()
-           if item["category"] == category and item["status"] == "貸出可"
+           if item["category"] == category
+           and item["status"] == "貸出可"
        ]
    ```
 
