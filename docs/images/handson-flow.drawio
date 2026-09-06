@@ -17,7 +17,7 @@
         <mxCell id="s1title" value="&lt;b&gt;手元でエージェントを動かす&lt;/b&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;font color=&quot;#8b8678&quot;&gt;15 分&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontColor=#211f19;" vertex="1" parent="1">
           <mxGeometry x="150" y="162" width="600" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="s1body" value="ブラウザの画面に、モデルとのやりとりが 1 周ぶん流れる。&lt;br&gt;ツール定義が渡り、モデルが選び、結果が戻り、また考える。" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=13;fontColor=#8b8678;" vertex="1" parent="1">
+        <mxCell id="s1body" value="ブラウザの画面にモデルとのやりとりが 1 周ぶん流れる&lt;br&gt;ツール定義が渡り モデルが選び 結果が戻り また考える" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=13;fontColor=#8b8678;" vertex="1" parent="1">
           <mxGeometry x="150" y="194" width="620" height="52" as="geometry" />
         </mxCell>
         <mxCell id="s1learn" value="エージェントは&lt;br&gt;ループで動いている" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#4a7c59;fillColor=#e8eee8;fontSize=13;fontColor=#3a6346;fontStyle=1;verticalAlign=middle;align=center;" vertex="1" parent="1">
@@ -35,7 +35,7 @@
         <mxCell id="s2title" value="&lt;b&gt;ツールを 1 つ足す&lt;/b&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;font color=&quot;#8b8678&quot;&gt;20 分&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontColor=#211f19;" vertex="1" parent="1">
           <mxGeometry x="150" y="317" width="600" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="s2body" value="自分で書いた関数がモデルから呼ばれる。&lt;br&gt;名前と説明文を変えると、モデルの選び方が変わる。" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=13;fontColor=#8b8678;" vertex="1" parent="1">
+        <mxCell id="s2body" value="自分で書いた関数がモデルから呼ばれる&lt;br&gt;名前と説明文を変えるとモデルの選び方が変わる" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=13;fontColor=#8b8678;" vertex="1" parent="1">
           <mxGeometry x="150" y="349" width="620" height="52" as="geometry" />
         </mxCell>
         <mxCell id="s2learn" value="ツールは&lt;br&gt;自分で定義できる" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#4a7c59;fillColor=#e8eee8;fontSize=13;fontColor=#3a6346;fontStyle=1;verticalAlign=middle;align=center;" vertex="1" parent="1">
@@ -53,7 +53,7 @@
         <mxCell id="s3title" value="&lt;b&gt;会話を続けてみる&lt;/b&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;font color=&quot;#8b8678&quot;&gt;10 分&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontColor=#211f19;" vertex="1" parent="1">
           <mxGeometry x="150" y="472" width="600" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="s3body" value="少し前に言ったことをエージェントが忘れる。&lt;br&gt;毎回まっさらな状態で呼ばれているから。" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=13;fontColor=#8b8678;" vertex="1" parent="1">
+        <mxCell id="s3body" value="少し前に言ったことをエージェントが忘れる&lt;br&gt;毎回まっさらな状態で呼ばれているため" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=13;fontColor=#8b8678;" vertex="1" parent="1">
           <mxGeometry x="150" y="504" width="620" height="52" as="geometry" />
         </mxCell>
         <mxCell id="s3learn" value="だから Memory がある" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#4a7c59;fillColor=#e8eee8;fontSize=13;fontColor=#3a6346;fontStyle=1;verticalAlign=middle;align=center;" vertex="1" parent="1">
@@ -71,7 +71,7 @@
         <mxCell id="s4title" value="&lt;b&gt;自分のエージェントを Runtime に載せる&lt;/b&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;font color=&quot;#8b8678&quot;&gt;25 分&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontColor=#211f19;" vertex="1" parent="1">
           <mxGeometry x="150" y="627" width="600" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="s4body" value="叩くのは agentcore deploy の 1 行。&lt;br&gt;上がるまでの数分で、Runtime が何を肩代わりするかを話す。" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=13;fontColor=#8b8678;" vertex="1" parent="1">
+        <mxCell id="s4body" value="叩くのは agentcore deploy の 1 行&lt;br&gt;上がるまでの数分で Runtime が何を肩代わりするかを話す" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=13;fontColor=#8b8678;" vertex="1" parent="1">
           <mxGeometry x="150" y="659" width="620" height="52" as="geometry" />
         </mxCell>
         <mxCell id="s4learn" value="マネージド環境が&lt;br&gt;引き受ける範囲" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#4a7c59;fillColor=#e8eee8;fontSize=13;fontColor=#3a6346;fontStyle=1;verticalAlign=middle;align=center;" vertex="1" parent="1">
@@ -89,7 +89,7 @@
         <mxCell id="s5title" value="&lt;b&gt;振り返る&lt;/b&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;font color=&quot;#8b8678&quot;&gt;10 分&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontColor=#211f19;" vertex="1" parent="1">
           <mxGeometry x="150" y="782" width="600" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="s5body" value="手元とクラウドで何が変わったかを並べる。&lt;br&gt;Gateway はここで名前だけ出す。" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=13;fontColor=#8b8678;" vertex="1" parent="1">
+        <mxCell id="s5body" value="手元とクラウドで何が変わったかを並べる&lt;br&gt;Gateway はここで名前だけ出す" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=13;fontColor=#8b8678;" vertex="1" parent="1">
           <mxGeometry x="150" y="814" width="620" height="52" as="geometry" />
         </mxCell>
         <mxCell id="s5learn" value="次に何を調べればいいか" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#4a7c59;fillColor=#e8eee8;fontSize=13;fontColor=#3a6346;fontStyle=1;verticalAlign=middle;align=center;" vertex="1" parent="1">
