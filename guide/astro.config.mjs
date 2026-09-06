@@ -12,6 +12,24 @@ export default defineConfig({
       title: 'AgentCore ハンズオン',
       locales: { root: { label: '日本語', lang: 'ja' } },
       customCss: ['./src/styles/custom.css'],
+      // コードブロックはライト 1 つだけ。枠は影を消して線だけにする
+      expressiveCode: {
+        themes: ['github-light'],
+        styleOverrides: {
+          borderRadius: '8px',
+          borderColor: '#e4e1d4',
+          codeBackground: '#f7f6ef',
+          frames: {
+            shadowColor: 'transparent',
+            editorTabBarBackground: '#f1efe6',
+            editorActiveTabBackground: '#f7f6ef',
+            editorActiveTabIndicatorTopColor: '#4a7c59',
+            editorActiveTabIndicatorBottomColor: 'transparent',
+            terminalTitlebarBackground: '#f1efe6',
+            terminalBackground: '#f7f6ef',
+          },
+        },
+      },
       // プロジェクターで見せるので常にライトテーマに固定する（切り替えボタンも消す）
       components: {
         ThemeProvider: './src/components/ThemeProvider.astro',

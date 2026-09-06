@@ -3,8 +3,6 @@ title: はじめに
 description: AgentCore ハンズオンの手順書。自分でエージェントを動かし、ツールを足し、クラウドに載せるまでをやります
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
-
 自分でエージェントを動かして、ツールを足して、クラウドに載せるまでをやります。読みながら手を動かしてください。
 
 自分の PC には何もインストールしません。AWS のログインも要りません。ブラウザだけで進みます。
@@ -23,14 +21,11 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 
 ## ねらい
 
-<CardGrid>
-  <Card title="エージェントの中身" icon="setting">
-    モデルにツールの一覧が渡り、モデルがどれを呼ぶか決め、結果を戻してまた考える。このループが回っているだけです。魔法ではありません。
-  </Card>
-  <Card title="AgentCore が引き受けるもの" icon="cloud-download">
-    動かし続ける場所（Runtime）、会話を覚えておく仕組み（Memory）、外のツールにつなぐ口（Gateway）。困ってから名前を知る順番で進めます。
-  </Card>
-</CardGrid>
+持ち帰ってほしいことは 2 つあります。
+
+ひとつはエージェントの中身です。モデルにツールの一覧が渡り、モデルがどれを呼ぶか決め、結果を戻してまた考える。このループが回っているだけで、魔法ではありません。
+
+もうひとつは AgentCore が引き受けてくれるものです。動かし続ける場所（Runtime）、会話を覚えておく仕組み（Memory）、外のツールにつなぐ口（Gateway）。それぞれどの困りごとを引き受けるのかを、困ってから名前を知る順番で押さえます。
 
 ## 題材
 
