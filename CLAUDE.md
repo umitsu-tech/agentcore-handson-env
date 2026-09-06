@@ -53,6 +53,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - 1 人分の通し確認（2026-09-05）。ACM のワイルドカード証明書を発行し、Cloudflare に検証用と `*.<base_domain>` の CNAME を入れ、`terraform apply`（26 リソース）で 1 台立てて、ブラウザから `https://user01.<base_domain>` で code-server にログインできるところまで確認した。確認後に `terraform destroy` で消した。証明書と DNS レコードは次回も使うので残してある
 
 - 1 人分の通し確認（2026-09-06、AMI `ami-00c0b0303a0921d88` = agentcore-handson-20260906-0825、arm64、ルートボリューム 15GiB）。code-server にログインすると `/home/handson/workspace` が開いた状態で始まる / `agentcore deploy` が受講者の権限で 1 行で通る（約 3 分）/ ハンズオン UI から手元と Runtime のどちらでも同じ画面で動く、の 3 点を確認した。確認後に Runtime のスタック（CloudFormation）と Terraform の環境は削除し、古い AMI 2 本（`ami-04d14015e8f390da7`、`ami-0687e031e99ce5eaf`）も削除した。この AMI には Issue #32（`runtime.py` の `app.run()`）と #31（受講者ごとのプロジェクト名）の修正が入っていないので、次に焼き直す
+- Cloudflare のワイルドカード CNAME の Terraform 管理（Issue #30、2026-09-06）。DNS 編集だけの API トークンを発行し、手で入れていた CNAME を消してから apply（27 リソース）したところ、ALB の作成直後に CNAME が新しい DNS 名へ向き、`https://user01.<base_domain>/login` が 200 を返した。apply 直後の再 plan は No changes。destroy で CNAME も一緒に消え、証明書の検証用 CNAME だけが残ることも確認した。トークンは git 管理外の `~/.config/agentcore-handson/cloudflare.env` に置き、terraform の前に `source` する
 
 まだ手が要るもの。
 
@@ -63,9 +64,8 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証情報が要るので、リュウキがブラウザで認証できるタイミングで進める。
 
 1. #31 と #32 の修正を `scripts/build-ami.sh` で AMI に焼き直す（インスタンスタイプは t4g.medium、Copilot の無効化も試す）。受講者 2 人分で apply して deploy し、Runtime の実名（`handsonuserNN_agent`）と CloudFormation のスタック（`AgentCore-handsonuserNN-default`）が受講者ごとに分かれることを確認する。ここまでで Issue #5 と #15 を閉じる。#36（UI への導線）もこの焼き直しに含める
-2. Cloudflare のワイルドカード CNAME の Terraform 管理（Issue #30）を実機で確認する。コードは入っていて、DNS 編集だけのトークン発行、`terraform.tfvars` への `cloudflare_zone_id` の追記、手で入れていた `*.<base_domain>` の CNAME の削除まで済んでいる（2026-09-06）。トークンは git 管理外の `~/.config/agentcore-handson/cloudflare.env` に置いてあるので、`source` してから `terraform init` と plan / apply を実行する（`terraform validate` は通っているが apply は未実施）
-3. 後片付けの仕組み（Issue #17）を実装する
-4. 人数ぶんへの展開（Issue #6）
+2. 後片付けの仕組み（Issue #17）を実装する
+3. 人数ぶんへの展開（Issue #6）
 
 当日の運営（事前準備、リハーサル）はこのリポジトリの範囲外にした（Issue #7、#8 はクローズ）。
 
