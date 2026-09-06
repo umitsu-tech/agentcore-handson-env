@@ -12,7 +12,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - 受講者に AWS の認証情報は配らない。EC2 のインスタンスプロファイルで `agentcore deploy` まで通す
 - 入口は ALB + HTTPS。ホスト名（`userNN.handson.<ドメイン>`）で受講者ごとの EC2 に振り分ける
 - DNS は Cloudflare。ワイルドカードの CNAME を ALB に向ける（プロキシは無効）
-- EC2 は t4g.small / Amazon Linux 2023 / ARM64。1 人 1 台。ルートボリュームは 15GiB。t4g.medium と比べて `agentcore deploy` の所要時間に差が無かったので small のまま（Issue #15 の実測で決めた）
+- EC2 は t4g.small / Amazon Linux 2023 / ARM64。1 人 1 台。ルートボリュームは 15GiB。t4g.medium と比べて `agentcore deploy` の所要時間に差が無かったので small のまま（Issue #15 で挙動を比べて決めた）
 - 開発環境は AMI に焼いておく。user_data で毎回セットアップはしない
 - リージョンは ap-northeast-1（東京）
 - モデルは Amazon Nova 2 Lite。東京は In-Region 非対応なので `jp.amazon.nova-2-lite-v1:0` を使う
@@ -43,25 +43,24 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 
 ### できているもの
 
-すべて main にマージ済み（2026-09-05）。
+すべて main にマージ済み（2026-09-06 時点）。
 
-- 構成図とドキュメント（README.md、docs/architecture.md、docs/curriculum.md、docs/operations.md）
-- Strands Agent の雛形（`handson-agent/`）。実機でモデル呼び出し、Nova 2 Lite のツール選択、Runtime へのデプロイまで確認した。ツールはデータ（dict / list）を返す
-- ハンズオン UI（`handson-ui/`、React + Vite + FastAPI）。周ごとの見出しと折りたたみ、入力と出力の 2 色、ツールの結果の JSON 表示、Markdown 記号の抑制、ラベルの補足まで入っている
-- 手順書の自動配信（Issue #52、2026-09-06）。`.github/workflows/publish-guide.yml` が OIDC でロールを assume し、s3 sync とキャッシュ削除まで通ることをブランチの push で確認した（configure-aws-credentials v6）
-- 受講者向けの手順書の配信（Issue #48、2026-09-06）。`guide/site/index.html` を S3 非公開 + CloudFront OAC で配信し、`https://guide.handson.<base_domain>/` で HTTPS 200、HTTP は 301、S3 直アクセスは 403 まで確認した。us-east-1 の証明書はホスト名単体で発行し、検証用 CNAME と本体の CNAME は Terraform が Cloudflare に入れる。中身の更新は `guide/publish.sh`
-- 後片付けの仕組み（Issue #17）。棚卸しスクリプト `scripts/cleanup-participant-resources.sh`（一覧モードは実機で確認済み、削除モードは未確認）と、`handson_end_time` で発火する Deny・EC2 停止・ALB 削除（`terraform validate` まで。apply は未実施）
-- 受講環境のセットアップスクリプト（`scripts/setup-instance.sh`）。`handson-ui/` 分離後の構成に追随済み
-- AMI を焼き直す一括スクリプト（`scripts/build-ami.sh`、Issue #19）。tar.gz の作成と S3 アップロード、固定名の IAM ロール `agentcore-handson-ami-builder` の用意、EC2 起動、cloud-init 完了待ち、再起動後の疎通確認、AMI 作成、EC2 削除、`terraform.tfvars` の `ami_id` 書き換えまで行う
-- 1 人分の Terraform（`terraform/handson/`）。AMI 前提の構成で、`ami_id` を必須で受け取り、user_data は code-server のパスワードを差し込むだけ。`terraform plan` が 26 リソースで通るところまで（apply は証明書と DNS 待ち）
-- コストの試算。30 人 5 時間で約 2.2 USD（t4g.small の無料トライアル適用時。無ければ約 5.4 USD。内訳は docs/operations.md）
-- 東京リージョンで使えるモデルの単価比較（結論は Nova 2 Lite 据え置き）
-- 1 人分の通し確認（2026-09-05）。ACM のワイルドカード証明書を発行し、Cloudflare に検証用と `*.<base_domain>` の CNAME を入れ、`terraform apply`（26 リソース）で 1 台立てて、ブラウザから `https://user01.<base_domain>` で code-server にログインできるところまで確認した。確認後に `terraform destroy` で消した。証明書と DNS レコードは次回も使うので残してある
+- 構成図とドキュメント（README.md、docs/architecture.md、docs/curriculum.md、docs/operations.md、docs/images/ の構成図・流れ図・Terraform の管理体系図）
+- Strands Agent の雛形（`handson-agent/`）。モデル呼び出し、Nova 2 Lite のツール選択、Runtime へのデプロイまで確認済み。ツールはデータ（dict / list）を返す
+- ハンズオン UI（`handson-ui/`、React + Vite + FastAPI）。周ごとの見出しと折りたたみ、入力と出力の 2 色、ツールの結果の JSON 表示、Markdown 記号の抑制、ラベルの補足。手元と Runtime のどちらでも同じ画面で動く
+- 受講環境のセットアップスクリプト（`scripts/setup-instance.sh`）と、AMI を焼く一括スクリプト（`scripts/build-ami.sh`、Issue #19）。同梱の Copilot 拡張はディレクトリごと消している（Issue #15）
+- 受講環境の Terraform（`terraform/handson/`）。AMI 前提で、`ami_id` を必須で受け取り、user_data は受講者固有の値を差し込むだけ。Cloudflare のワイルドカード CNAME も一緒に作る（Issue #30）。state は S3、ロックは `use_lockfile`（Issue #40）
+- 後片付けの仕組み（Issue #17）。棚卸しスクリプト `scripts/cleanup-participant-resources.sh`（一覧モードは確認済み、`--delete` は未確認）と、`handson_end_time` で発火する Deny・EC2 停止・ALB 削除（validate まで。apply は未実施）
+- 受講者向けの手順書（`guide/site/`、Issue #48）。S3 非公開 + CloudFront OAC で配信し、`https://guide.handson.<base_domain>/` で HTTPS 200、HTTP は 301、S3 直アクセスは 403 まで確認済み。証明書は us-east-1 でホスト名単体を発行し、検証用と本体の CNAME は Terraform が Cloudflare に入れる。中身は GitHub Actions（OIDC、Issue #52）か `guide/publish.sh` で同期する。環境は立てたまま
+- コストの試算。30 人 5 時間で約 2.2 USD（t4g.small の無料トライアル適用時。無ければ約 5.4 USD。内訳は docs/operations.md）。東京で使えるモデルの単価比較は Nova 2 Lite 据え置き
 
-- 1 人分の通し確認（2026-09-06、AMI `ami-00c0b0303a0921d88` = agentcore-handson-20260906-0825、arm64、ルートボリューム 15GiB）。code-server にログインすると `/home/handson/workspace` が開いた状態で始まる / `agentcore deploy` が受講者の権限で 1 行で通る（約 3 分）/ ハンズオン UI から手元と Runtime のどちらでも同じ画面で動く、の 3 点を確認した。確認後に Runtime のスタック（CloudFormation）と Terraform の環境は削除し、古い AMI 2 本（`ami-04d14015e8f390da7`、`ami-0687e031e99ce5eaf`）も削除した。この AMI には Issue #32（`runtime.py` の `app.run()`）と #31（受講者ごとのプロジェクト名）の修正が入っていないので、次に焼き直す
-- Cloudflare のワイルドカード CNAME の Terraform 管理（Issue #30、2026-09-06）。DNS 編集だけの API トークンを発行し、手で入れていた CNAME を消してから apply（27 リソース）したところ、ALB の作成直後に CNAME が新しい DNS 名へ向き、`https://user01.<base_domain>/login` が 200 を返した。apply 直後の再 plan は No changes。destroy で CNAME も一緒に消え、証明書の検証用 CNAME だけが残ることも確認した。トークンは git 管理外の `~/.config/agentcore-handson/cloudflare.env` に置き、terraform の前に `source` する
+通し確認の記録（2026-09-05〜06）。
 
-インスタンスタイプの実測（Issue #15、2026-09-06、AMI `ami-0e6e145f65e038cd9` = agentcore-handson-20260906-1805）。t4g.small と t4g.medium で `agentcore deploy` を計測し、所要時間に差が無かった（small 99 秒、medium 112 秒）ので t4g.small のまま、ルート 15GiB。表と考察は [docs/architecture.md](docs/architecture.md) の「インスタンスタイプは実測で t4g.small にした」にある。Copilot 拡張の削除は効いている（プロセス 0、拡張ディレクトリなし、再起動後の使用メモリ 301MB）。Runtime 名（`handsonuserNN_agent`）と CloudFormation スタック（`AgentCore-handsonuserNN-default`）が受講者ごとに分かれることも 2 人分で確認した（Issue #31）。確認後に Terraform の環境と Runtime のスタック 2 つは削除した
+- 1 人分の apply（26〜27 リソース）で code-server にログインでき、`/home/handson/workspace` が開いた状態で始まる。`agentcore deploy` が受講者の権限で 1 行で通る。ハンズオン UI から手元と Runtime のどちらでも同じ画面で動く
+- Cloudflare の CNAME は ALB の作成直後に新しい DNS 名へ向き、destroy で一緒に消える。検証用 CNAME だけが残る
+- AMI `ami-0e6e145f65e038cd9`（agentcore-handson-20260906-1805、arm64、15GiB）で t4g.small と t4g.medium の `agentcore deploy` を比べ、所要時間が変わらなかった（small 99 秒、medium 112 秒）ので small のまま。表と考察は docs/architecture.md の「インスタンスタイプ」にある。Copilot 拡張の削除は効いている（プロセス 0、再起動後の使用メモリ 301MB）
+- Runtime 名（`handsonuserNN_agent`）と CloudFormation スタック（`AgentCore-handsonuserNN-default`）が受講者ごとに分かれることを 2 人分で確認した（Issue #31）
+- 確認後の環境と Runtime のスタック、古い AMI は削除済み。Cloudflare の API トークンは git 管理外の `~/.config/agentcore-handson/cloudflare.env` に置き、terraform の前に `source` する
 
 ### 次の一歩
 

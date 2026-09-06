@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" agent="claude-code" version="26.0.0">
+  <diagram id="agentcore-handson-terraform-layout" name="Terraform の管理体系">
+    <mxGraphModel dx="1600" dy="1000" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1660" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="Terraform の管理体系" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=26;fontStyle=1;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="900" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="ルートは受講環境と手順書の 2 つ。寿命が違うので state を分け、置き場は同じ S3 バケットにする。Terraform の外にあるものは下段にまとめた。" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=13;fontColor=#5A6C74;" vertex="1" parent="1">
+          <mxGeometry x="40" y="62" width="1500" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- 左: terraform/handson -->
+        <mxCell id="handson" value="terraform/handson/（受講環境）" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#ED7100;strokeWidth=2;fillColor=none;verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;fontSize=14;fontStyle=1;fontColor=#ED7100;" vertex="1" parent="1">
+          <mxGeometry x="40" y="110" width="560" height="360" as="geometry" />
+        </mxCell>
+        <mxCell id="handson-life" value="寿命: 当日 apply → 終了後 destroy（終了時刻後は apply せず destroy の一方向）" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;fillColor=#FFF0E0;align=center;verticalAlign=middle;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="60" y="145" width="520" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="handson-backend" value="backend.hcl（git 管理外）&lt;br&gt;bucket = agentcore-handson-assets-&amp;lt;account&amp;gt;" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;strokeColor=#78909C;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="60" y="200" width="270" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="handson-tfvars" value="terraform.tfvars（git 管理外）&lt;br&gt;証明書 ARN / AMI ID / 終了時刻 など" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;strokeColor=#78909C;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="345" y="200" width="235" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="handson-label" value="作るもの" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fontColor=#ED7100;" vertex="1" parent="1">
+          <mxGeometry x="60" y="266" width="200" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="h-vpc" value="VPC&lt;br&gt;パブリックサブネット 2 AZ" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#ED7100;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="60" y="295" width="270" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="h-alb" value="ALB（HTTPS 443）&lt;br&gt;ホスト名で受講者ごとに振り分け" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#ED7100;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="345" y="295" width="235" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="h-ec2" value="EC2（受講者ごとに 1 台）&lt;br&gt;AMI から起動" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#ED7100;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="60" y="349" width="270" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="h-iam" value="IAM ロール&lt;br&gt;受講者用 / Scheduler 用" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#ED7100;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="345" y="349" width="235" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="h-dns" value="Cloudflare ワイルドカード CNAME&lt;br&gt;*.handson.&amp;lt;domain&amp;gt; → ALB" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#ED7100;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="60" y="403" width="270" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="h-sched" value="EventBridge Scheduler（終了時刻）&lt;br&gt;EC2 停止 / ALB 削除" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#ED7100;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="345" y="403" width="235" height="44" as="geometry" />
+        </mxCell>
+
+        <!-- 中央: state の置き場 -->
+        <mxCell id="statebox" value="state の置き場（2 ルートで共有）" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#7AA116;strokeWidth=2;fillColor=none;verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;fontSize=14;fontStyle=1;fontColor=#7AA116;" vertex="1" parent="1">
+          <mxGeometry x="640" y="110" width="380" height="360" as="geometry" />
+        </mxCell>
+        <mxCell id="s3state" value="Amazon S3 資材バケット&lt;br&gt;agentcore-handson-assets-&amp;lt;account&amp;gt;" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#7AA116;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.s3;" vertex="1" parent="1">
+          <mxGeometry x="800" y="145" width="60" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tfstate-handson" value="terraform-state/agentcore-handson.tfstate" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#ED7100;fillColor=#FFFFFF;align=center;verticalAlign=middle;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="660" y="265" width="340" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="tfstate-guide" value="terraform-state/agentcore-handson-guide.tfstate" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#8C4FFF;fillColor=#FFFFFF;align=center;verticalAlign=middle;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="660" y="320" width="340" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="lock" value="ロックは use_lockfile（S3 の条件付き書き込み）&lt;br&gt;DynamoDB は使わない。Terraform 1.10 以降" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;fillColor=#F2F6E8;align=center;verticalAlign=middle;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="660" y="380" width="340" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="bucketnote" value="バケット自体は Terraform 管理外（下段）" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;fontColor=#78909C;" vertex="1" parent="1">
+          <mxGeometry x="660" y="432" width="340" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- 右: terraform/guide -->
+        <mxCell id="guide" value="terraform/guide/（手順書）" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#8C4FFF;strokeWidth=2;fillColor=none;verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;fontSize=14;fontStyle=1;fontColor=#8C4FFF;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="110" width="560" height="360" as="geometry" />
+        </mxCell>
+        <mxCell id="guide-life" value="寿命: 前もって apply → 当日まで置きっぱなし（次回も使うなら destroy しなくてよい）" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;fillColor=#F3EEFF;align=center;verticalAlign=middle;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="145" width="520" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="guide-backend" value="backend.hcl（git 管理外）&lt;br&gt;bucket = 受講環境と同じ" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;strokeColor=#78909C;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="200" width="235" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="guide-tfvars" value="terraform.tfvars（git 管理外）&lt;br&gt;ホスト名 / ゾーン ID / GitHub リポジトリ" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;strokeColor=#78909C;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="1330" y="200" width="270" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="guide-label" value="作るもの" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fontColor=#8C4FFF;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="266" width="200" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="g-cf" value="CloudFront + OAC" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#8C4FFF;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="295" width="235" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="g-acm" value="ACM 証明書（us-east-1）&lt;br&gt;guide.handson.&amp;lt;domain&amp;gt; 単体" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#8C4FFF;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="1330" y="295" width="270" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="g-dns" value="Cloudflare CNAME 2 本&lt;br&gt;ACM 検証用 / 本体 → CloudFront" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#8C4FFF;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="349" width="235" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="g-iam" value="IAM ロール（GitHub Actions 用）&lt;br&gt;OIDC。このリポジトリの main だけ assume 可" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#8C4FFF;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="1330" y="349" width="270" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="g-s3" value="S3 バケット（非公開）— 手順書の置き場。中身は Terraform の外から同期する" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#8C4FFF;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="403" width="520" height="44" as="geometry" />
+        </mxCell>
+
+        <!-- 手順書の中身の流れ -->
+        <mxCell id="site" value="guide/site/&lt;br&gt;手順書の HTML" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#24292F;fillColor=#F6F8FA;align=center;verticalAlign=middle;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="530" width="190" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="sync" value="GitHub Actions（.github/workflows/publish-guide.yml）&lt;br&gt;または guide/publish.sh" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#24292F;fillColor=#F6F8FA;align=center;verticalAlign=middle;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="1290" y="530" width="330" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="e-site-sync" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#24292F;endArrow=blockThin;endFill=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="site" target="sync">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-sync-s3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#24292F;endArrow=blockThin;endFill=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.7;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="sync" target="g-s3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-sync-s3-label" value="s3 sync + キャッシュ削除（Terraform は触らない）" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontSize=12;fontColor=#24292F;labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="e-sync-s3">
+          <mxGeometry x="0" relative="1" as="geometry"><mxPoint x="10" y="0" as="offset" /></mxGeometry>
+        </mxCell>
+
+        <!-- state の線 -->
+        <mxCell id="e-state-handson" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#ED7100;endArrow=blockThin;endFill=1;exitX=1;exitY=0.49;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="handson" target="tfstate-handson">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-state-handson-label" value="state" style="edgeLabel;html=1;align=center;verticalAlign=bottom;resizable=0;points=[];fontSize=12;fontColor=#ED7100;labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="e-state-handson">
+          <mxGeometry x="0" y="-1" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-state-guide" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#8C4FFF;endArrow=blockThin;endFill=1;exitX=0;exitY=0.644;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="guide" target="tfstate-guide">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-state-guide-label" value="state" style="edgeLabel;html=1;align=center;verticalAlign=bottom;resizable=0;points=[];fontSize=12;fontColor=#8C4FFF;labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="e-state-guide">
+          <mxGeometry x="0" y="-1" relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 下段: Terraform 管理外 -->
+        <mxCell id="outside" value="Terraform 管理外（スクリプトか手作業で扱う）" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;dashPattern=8 8;strokeColor=#78909C;strokeWidth=2;fillColor=none;verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;fontSize=14;fontStyle=1;fontColor=#78909C;" vertex="1" parent="1">
+          <mxGeometry x="40" y="640" width="1580" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="o-runtime" value="受講者が agentcore deploy で作るもの&lt;br&gt;CloudFormation スタック（Runtime + 実行ロール）とロググループ" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#01A88D;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="60" y="690" width="490" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="o-cleanup" value="scripts/cleanup-participant-resources.sh で消す&lt;br&gt;名前が handson で始まるものだけ。--delete を付けたときだけ削除" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#01A88D;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="60" y="810" width="490" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e-cleanup" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#01A88D;endArrow=blockThin;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="o-runtime" target="o-cleanup">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-cleanup-label" value="終了後（翌日以降）" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontSize=12;fontColor=#01A88D;labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="e-cleanup">
+          <mxGeometry x="0" relative="1" as="geometry"><mxPoint x="10" y="0" as="offset" /></mxGeometry>
+        </mxCell>
+        <mxCell id="o-ami" value="AMI&lt;br&gt;scripts/build-ami.sh で作る。次回も使う" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#78909C;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="585" y="690" width="490" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="o-acm" value="受講環境のワイルドカード ACM 証明書（ap-northeast-1、手動）&lt;br&gt;と ACM 検証用 CNAME（手動）。次回も使う" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#78909C;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="585" y="810" width="490" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="o-bucket" value="資材バケット agentcore-handson-assets-&amp;lt;account&amp;gt;&lt;br&gt;build-ami.sh が作る。Terraform の state もここに置く" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#7AA116;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="690" width="490" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="o-misc" value="CDK のブートストラップ（agentcore deploy に必要）&lt;br&gt;GitHub の OIDC プロバイダー（アカウントに既存）" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#78909C;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="810" width="490" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e-bucket-state" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#7AA116;dashed=1;endArrow=blockThin;endFill=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="o-bucket" target="statebox">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1355" y="620" />
+              <mxPoint x="830" y="620" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-bucket-state-label" value="同じバケット" style="edgeLabel;html=1;align=center;verticalAlign=bottom;resizable=0;points=[];fontSize=12;fontColor=#7AA116;labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="e-bucket-state">
+          <mxGeometry x="0" y="-1" relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
