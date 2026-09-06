@@ -37,6 +37,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - モデルは比較のうえ Nova 2 Lite に据え置く。Nova Micro や旧 Nova Lite は安いが世代が古く、オープンモデルは Converse API でのツール呼び出しが未確認。下がる幅も最大 1 USD 程度で、ツール選択の確実さを優先した
 - 受講者には code-server と UI（/proxy/3000/）の 2 つの URL を配り、workspace の README を起動時に開いて導線にする（Issue #36）
 - Terraform の state は S3（build-ami.sh の資材バケットの `terraform-state/`）に置き、ロックは Terraform 1.10 以降の `use_lockfile` で取る。DynamoDB は使わない。バケット名は `terraform/backend.hcl`（git 管理外）で渡す（Issue #40）
+- 受講者向けの手順書は HTML 直書き（`guide/site/index.html`、原稿は curriculum から変換せず別で書く）を S3 非公開 + CloudFront OAC で配信する。Terraform のルートは寿命が違うので `guide/terraform/` に分け、state は同じバケットの別キー。中身の更新は `guide/publish.sh`。独自ドメインは `guide_hostname` を指定したときだけ（証明書は us-east-1 でホスト名単体を発行）（Issue #48）
 - Cloudflare の `*.<base_domain>` の CNAME は Terraform（cloudflare プロバイダー v5 の `cloudflare_dns_record`）で管理し、ALB の作り直しに自動で追随させる。API トークンは環境変数 `CLOUDFLARE_API_TOKEN` で渡し、ゾーン ID だけ tfvars に書く。証明書の検証用 CNAME は手で入れたまま管理外にする（Issue #30）
 
 ### できているもの

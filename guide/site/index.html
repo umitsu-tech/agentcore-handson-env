@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AgentCore ハンズオン 手順書</title>
+<style>
+  :root { color-scheme: light; }
+  body { margin: 0; background: #fff; color: #1a1a1a; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 16px; line-height: 1.8; }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 20px 80px; }
+  h1 { font-size: 1.6rem; margin: 0 0 8px; }
+  h2 { font-size: 1.25rem; margin: 48px 0 12px; padding-top: 12px; border-top: 1px solid #ddd; }
+  h3 { font-size: 1.05rem; margin: 28px 0 8px; }
+  p { margin: 0 0 14px; }
+  code { font-family: ui-monospace, Menlo, monospace; font-size: 0.95em; background: #f3f3f3; padding: 1px 5px; border-radius: 3px; }
+  pre { background: #f3f3f3; padding: 12px 14px; border-radius: 6px; overflow-x: auto; font-size: 0.95em; line-height: 1.6; }
+  pre code { background: none; padding: 0; }
+  .note { border-left: 4px solid #2a7f8f; background: #f0f8fa; padding: 10px 14px; margin: 14px 0; }
+  .toc { background: #f7f7f7; padding: 12px 18px; border-radius: 6px; }
+  .toc ol { margin: 0; padding-left: 20px; }
+  .lead { color: #444; margin-bottom: 20px; }
+  ol, ul { padding-left: 22px; }
+  li { margin: 4px 0; }
+  a { color: #1a5fb4; }
+</style>
+</head>
+<body>
+<main>
+
+<h1>AgentCore ハンズオン 手順書</h1>
+<p class="lead">自分でエージェントを動かして、ツールを足して、クラウドに載せるまでをやります。読みながら手を動かしてください。</p>
+
+<div class="toc">
+<strong>流れ</strong>
+<ol>
+  <li><a href="#prep">準備。配られた URL を開く</a></li>
+  <li><a href="#step1">手元でエージェントを動かす</a></li>
+  <li><a href="#step2">ツールを 1 つ足す</a></li>
+  <li><a href="#step3">会話を続けてみる</a></li>
+  <li><a href="#step4">自分のエージェントを Runtime に載せる</a></li>
+  <li><a href="#step5">振り返りと片付け</a></li>
+  <li><a href="#trouble">困ったとき</a></li>
+</ol>
+</div>
+
+<h2 id="prep">準備。配られた URL を開く</h2>
+<p>受講者ごとに 2 つの URL とパスワードが配られています。</p>
+<ul>
+  <li><strong>エディタ</strong>（<code>https://userNN.handson.example.com</code>）。ブラウザで開く VS Code です。最初にパスワードを聞かれます</li>
+  <li><strong>ハンズオン UI</strong>（<code>https://userNN.handson.example.com/proxy/3000/</code>）。エージェントの動きを見る画面です。エディタにログインしたあとで開きます</li>
+</ul>
+<p>エディタを開くと <code>workspace</code> というフォルダが開いた状態で始まり、README が表示されます。左側に 3 つのフォルダが見えます。</p>
+<ul>
+  <li><code>handson-agent/</code>。今日触るファイルはここだけです</li>
+  <li><code>handson-ui/</code>。主催者側の画面。触りません</li>
+  <li><code>agentcore/</code>。デプロイ用の設定。触りません</li>
+</ul>
+<div class="note">自分の PC には何もインストールしません。AWS のログインも要りません。ブラウザだけで進みます。</div>
+
+<h2 id="step1">1. 手元でエージェントを動かす</h2>
+<p>ハンズオン UI を開き、入力欄に質問を入れて送ります。まずはこれを試してください。</p>
+<pre><code>ノートPCの空きある？</code></pre>
+<p>画面に、モデルとのやりとりが 1 周ぶん流れます。青いカードがモデルに入るもの、オレンジのカードがモデルかツールから出てくるものです。上から順に読むと、こういう順番になっています。</p>
+<ol>
+  <li>質問と、使えるツールの一覧がモデルに渡る</li>
+  <li>モデルがツールを選んで「これを呼んで」と返す</li>
+  <li>ツールが実行され、結果が返る</li>
+  <li>結果を踏まえてモデルが答えを書く</li>
+</ol>
+<p>これがエージェントの中身です。魔法ではなく、モデルとツールを交互に呼ぶループです。</p>
+
+<h2 id="step2">2. ツールを 1 つ足す</h2>
+<p>エディタで <code>handson-agent/tools.py</code> を開きます。<code>@tool</code> の付いた関数が 1 つあります。これがさっき呼ばれたツールです。</p>
+<p>同じ形で関数をもう 1 つ書きます。関数名、引数、説明文（docstring）がそのままモデルへの説明になります。書けたら保存してください。ハンズオン UI のツール一覧が自動で追随します。</p>
+<p>もう一度質問を送って、自分の関数が呼ばれるところを見ます。呼ばれなければ、説明文を読み直してみてください。モデルは説明文を見てツールを選んでいます。</p>
+<div class="note">余裕があれば、ツールの名前や説明文を変えて、モデルの選び方が変わるかを試してみてください。</div>
+
+<h2 id="step3">3. 会話を続けてみる</h2>
+<p>続けて 2 回、3 回と質問してみてください。少し前に言ったことをエージェントが忘れることに気づくはずです。毎回まっさらな状態で呼ばれているからです。</p>
+<p>これを解決するのが Memory です。今日は名前だけ覚えて帰ってください。</p>
+
+<h2 id="step4">4. 自分のエージェントを Runtime に載せる</h2>
+<p>ここまで手元（自分の EC2）で動いていたエージェントを、AWS のマネージド環境に載せます。エディタのメニューから Terminal → New Terminal でターミナルを開き、次の 1 行を打ちます。</p>
+<pre><code>agentcore deploy</code></pre>
+<p>3 分ほどかかります。その間に、Runtime が何を引き受けてくれるのかの話を聞いてください。</p>
+<p>終わったら、ハンズオン UI に「手元で動かす / Runtime で動かす」の切り替えが増えます。Runtime 側に切り替えて、同じ質問を送ってください。画面の見え方は前半とまったく同じです。違うのは、動いている場所だけです。</p>
+
+<h2 id="step5">5. 振り返りと片付け</h2>
+<p>手元とクラウドで何が変わったかを一緒に振り返ります。</p>
+<p>最後に、自分がデプロイしたものを自分で消します。ターミナルで次の 2 行を順に打ってください。数分かかります。</p>
+<pre><code>agentcore remove all
+agentcore deploy</code></pre>
+<p>1 行目で設定を空にし、2 行目で空になったことを検知して AWS 側のリソースが撤去されます。消し忘れがあっても主催者が後で片付けるので、終わるのを待たずに退出して大丈夫です。</p>
+
+<h2 id="trouble">困ったとき</h2>
+<h3>エディタのパスワードが通らない</h3>
+<p>配られた URL とパスワードの組み合わせを確認してください。userNN の番号が自分のものか見てください。</p>
+<h3>ハンズオン UI が開かない</h3>
+<p>先にエディタにログインしてから、UI の URL を開いてください。UI はエディタ経由で表示されます。</p>
+<h3>ツールを足したのに一覧に出ない</h3>
+<p>保存されているか確認してください。保存すると UI 側のサーバーが再起動して一覧が更新されます。構文エラーがあると再起動に失敗するので、エディタの赤線を見てください。</p>
+<h3>agentcore deploy が失敗した</h3>
+<p>ターミナルの最後の数行を主催者に見せてください。もう一度同じコマンドを打つと続きから進むことが多いです。</p>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,5 @@
+# 実際の値を入れて terraform.tfvars という名前で保存する（tfvars は git 管理しない）
+
+# 独自ドメインを付けるとき。付けないなら両方コメントのままで、CloudFront の既定ドメインで配信する
+# guide_hostname     = "guide.handson.example.com"
+# cloudflare_zone_id = "0123456789abcdef0123456789abcdef"
