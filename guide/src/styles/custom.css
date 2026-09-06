@@ -1,59 +1,252 @@
-/* 手順書のサイトの見た目。ハンズオン UI と同じく、白地・端末のフォント・本文 16px 以上を守る */
-:root {
-  --sl-font: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
-  --sl-font-mono: ui-monospace, Menlo, Consolas, monospace;
+/*
+  手順書サイトの見た目。mcks.log（リュウキの個人ブログ）のトーンに合わせる。
+  生成りの紙色の背景、墨色の文字、草色のアクセント、等幅フォントのラベル。
+  飾りは線と薄い色だけにして、塗りつぶしの色面を使わない。
+  ライトテーマ固定なので :root と :root[data-theme='light'] の両方に同じ値を入れる（Starlight 側の
+  ライト用定義より優先させるため）。
+*/
+:root,
+:root[data-theme='light'] {
+  /* 元になる色。mcks.log の global.css と同じ値 */
+  --bg: #faf9f4;
+  --bg-subtle: #f1efe6;
+  --ink: #3a382f;
+  --ink-strong: #211f19;
+  --muted: #8b8678;
+  --line: #e4e1d4;
+  --accent: #4a7c59;
+  --accent-soft: rgba(74, 124, 89, 0.09);
+  --note-info: #4a7ca0;
+  --note-warn: #a8842c;
+  --note-alert: #b04a4a;
+  --img-frame: color-mix(in srgb, var(--ink-strong) 30%, var(--bg));
+
+  /* Starlight のトークンへ流し込む */
+  --sl-font:
+    system-ui, -apple-system, 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans',
+    'Noto Sans JP', Meiryo, sans-serif;
+  --sl-font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
   --sl-text-base: 1.0625rem;
   --sl-line-height: 1.9;
-  --sl-content-width: 50rem;
-  --sl-color-accent-low: #e3f3f5;
-  --sl-color-accent: #2a7f8f;
-  --sl-color-accent-high: #1b5c68;
-  --sl-color-white: #1a1a1a;
-  --sl-color-gray-1: #2e2e2e;
-  --sl-color-gray-2: #444;
-  --sl-color-gray-3: #6b6b6b;
-  --sl-color-gray-4: #c8c8c8;
-  --sl-color-gray-5: #e6e6e6;
-  --sl-color-gray-6: #f4f4f4;
-  --sl-color-gray-7: #fafafa;
-  --sl-color-black: #ffffff;
+  --sl-content-width: 46rem;
+  --sl-text-h1: 1.7rem;
+  --sl-text-h2: 1.35rem;
+  --sl-text-h3: 1.15rem;
+  --sl-text-h4: 1rem;
+
+  --sl-color-white: var(--ink-strong);
+  --sl-color-gray-1: var(--ink);
+  --sl-color-gray-2: var(--ink);
+  --sl-color-gray-3: var(--muted);
+  --sl-color-gray-4: #cfcbbc;
+  --sl-color-gray-5: var(--line);
+  --sl-color-gray-6: var(--bg-subtle);
+  --sl-color-gray-7: var(--bg);
+  --sl-color-black: var(--bg);
+  --sl-color-accent-low: var(--accent-soft);
+  --sl-color-accent: var(--accent);
+  --sl-color-accent-high: #3a6346;
+  --sl-color-text: var(--ink);
+  --sl-color-text-accent: var(--accent);
+  --sl-color-bg: var(--bg);
+  --sl-color-bg-nav: var(--bg);
+  --sl-color-bg-sidebar: var(--bg);
+  --sl-color-bg-inline-code: var(--bg-subtle);
+  --sl-color-hairline: var(--line);
+  --sl-color-hairline-light: var(--line);
+  --sl-color-hairline-shade: var(--line);
 }
 
-/* 見出しの階層をはっきりさせる。h2 は上に線を引いて区切りにする */
-.sl-markdown-content h2 {
-  display: block;
-  width: 100%;
-  margin-top: 3rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--sl-color-gray-5);
-  font-size: 1.45rem;
-}
-.sl-markdown-content h3 {
-  font-size: 1.15rem;
+body {
+  color: var(--ink);
 }
 
-/* 受講者が打つコマンドは大きめに */
-.sl-markdown-content .expressive-code {
-  font-size: 1rem;
+/* --- ヘッダー。サイト名は等幅にして、ブログのロゴと同じ雰囲気にする --- */
+.site-title {
+  font-family: var(--sl-font-mono);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink-strong);
+}
+.site-title:hover {
+  color: var(--accent);
+}
+header.header {
+  border-bottom: 1px solid var(--line);
+}
+site-search button[data-open-modal] {
+  background: var(--bg-subtle);
+  border-color: var(--line);
+  color: var(--muted);
 }
 
-/* 図は白背景で枠を付け、本文との境目を分かりやすくする */
-.sl-markdown-content img {
-  display: block;
-  margin: 1.25rem auto;
-  border: 1px solid var(--sl-color-gray-5);
-  border-radius: 8px;
-  background: #fff;
+/* --- サイドメニュー。今いるページは塗らずに、色と太さで示す --- */
+.sidebar-content .large {
+  color: var(--ink-strong);
+}
+.sidebar-content a {
+  color: var(--ink);
+}
+.sidebar-content a:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.sidebar-content a[aria-current='page'],
+.sidebar-content a[aria-current='page']:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 700;
+}
+.sidebar-content summary .large {
+  color: var(--ink-strong);
 }
 
-/* 手順（Steps）の番号を目立たせる */
-.sl-steps > li::before {
-  background: var(--sl-color-accent);
-  color: #fff;
+/* --- 右の目次。線 1 本と薄い文字 --- */
+.right-sidebar-panel h2 {
+  color: var(--ink-strong);
+  font-size: 0.85rem;
+}
+.right-sidebar-panel a {
+  color: var(--muted);
+}
+.right-sidebar-panel a[aria-current='true'] {
+  color: var(--accent);
   font-weight: 700;
 }
 
-/* 注意書き */
-.starlight-aside {
+/* --- 本文の見出し。飾りを付けず、余白と太さだけで階層を出す --- */
+.content-panel h1 {
+  font-size: 1.7rem;
+  color: var(--ink-strong);
+  line-height: 1.4;
+}
+.sl-markdown-content :is(h2, h3, h4) {
+  color: var(--ink-strong);
+  line-height: 1.4;
+  font-weight: 700;
+}
+.sl-markdown-content h2 {
+  margin-top: 2.4em;
+}
+.sl-markdown-content h3 {
+  margin-top: 1.8em;
+}
+.sl-markdown-content a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.sl-markdown-content a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.sl-markdown-content strong {
+  color: var(--ink-strong);
+}
+
+/* --- 表。細い線と薄い見出し行 --- */
+.sl-markdown-content table {
+  font-size: 0.92em;
+}
+.sl-markdown-content :is(th, td) {
+  border: 1px solid var(--line);
+  padding: 0.4em 0.7em;
+}
+.sl-markdown-content th {
+  background: var(--bg-subtle);
+  color: var(--ink-strong);
+}
+.sl-markdown-content tr:nth-child(2n) {
+  background: transparent;
+}
+
+/* --- コード。インラインは薄い紙色、ブロックは枠だけ --- */
+.sl-markdown-content code:not(:where(.expressive-code *)) {
+  font-size: 0.86em;
+  padding: 0.15em 0.4em;
+  background: var(--bg-subtle);
+  border-radius: 4px;
+  color: var(--ink-strong);
+}
+.sl-markdown-content .expressive-code {
+  font-size: 0.95rem;
+}
+
+/* --- 図とスクリーンショット。紙色に溶けないように細い枠で囲む --- */
+.sl-markdown-content img {
+  display: block;
+  margin: 1.4em auto;
+  border: 2px solid var(--img-frame);
   border-radius: 6px;
+  box-sizing: border-box;
+  background: #fff;
+}
+
+/* --- 注意書き。ブログの :::note と同じく、薄い色面と文頭のアイコンだけ --- */
+.starlight-aside {
+  --aside-color: var(--note-info);
+  border: none;
+  border-radius: 6px;
+  padding: 0.85em 1.1em;
+  background: color-mix(in srgb, var(--aside-color) 14%, transparent);
+  color: var(--ink);
+  font-size: 0.95em;
+}
+.starlight-aside--tip {
+  --aside-color: var(--accent);
+}
+.starlight-aside--caution {
+  --aside-color: var(--note-warn);
+}
+.starlight-aside--danger {
+  --aside-color: var(--note-alert);
+}
+.starlight-aside__title {
+  color: var(--aside-color);
+  font-size: 0.95em;
+}
+.starlight-aside__icon {
+  color: var(--aside-color);
+}
+.starlight-aside code {
+  background: var(--bg) !important;
+}
+
+/* --- 手順の番号。塗りつぶしをやめて、線で描いた丸にする --- */
+.sl-steps > li::before {
+  background: var(--bg);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-weight: 700;
+  font-family: var(--sl-font-mono);
+  box-shadow: none;
+}
+.sl-steps > li:not(:last-of-type)::after {
+  background: var(--line);
+}
+
+/* --- 前へ / 次へ。影を消して線だけにする --- */
+.pagination-links a {
+  border: 1px solid var(--line);
+  box-shadow: none;
+  border-radius: 6px;
+  color: var(--ink-strong);
+}
+.pagination-links a:hover {
+  border-color: var(--accent);
+}
+.pagination-links a > span {
+  color: var(--muted);
+  font-family: var(--sl-font-mono);
+  font-size: 0.8rem;
+}
+.pagination-links .link-title {
+  font-size: 1.05rem;
+}
+
+/* --- スマホのメニューボタンなど --- */
+starlight-menu-button button {
+  background: var(--bg-subtle);
+  color: var(--ink);
+  box-shadow: none;
+  border: 1px solid var(--line);
 }
