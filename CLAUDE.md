@@ -12,7 +12,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - 受講者に AWS の認証情報は配らない。EC2 のインスタンスプロファイルで `agentcore deploy` まで通す
 - 入口は ALB + HTTPS。ホスト名（`userNN.handson.<ドメイン>`）で受講者ごとの EC2 に振り分ける
 - DNS は Cloudflare。ワイルドカードの CNAME を ALB に向ける（プロキシは無効）
-- EC2 は t4g.small / Amazon Linux 2023 / ARM64。1 人 1 台
+- EC2 は t4g.medium / Amazon Linux 2023 / ARM64。1 人 1 台。ルートボリュームは 15GiB（Issue #15 の実測で決めた）
 - 開発環境は AMI に焼いておく。user_data で毎回セットアップはしない
 - リージョンは ap-northeast-1（東京）
 - モデルは Amazon Nova 2 Lite。東京は In-Region 非対応なので `jp.amazon.nova-2-lite-v1:0` を使う
@@ -57,7 +57,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 
 まだ手が要るもの。
 
-- 通し確認で分かった数字。deploy 中は load average 10.81、メモリ used 1052MB / available 648MB、iowait 12〜15%。終了後は used 680MB / available 978MB。t4g.small では deploy 中に CPU が足りないので t4g.medium にする（Issue #15）。code-server が同梱する Copilot の拡張（`github.copilot-chat`）が 130MB ほど使っていて受講者には不要。`chat.disableAIFeatures` は code-server で効かない既知のバグ（coder/code-server#7540）があるので、起動引数 `--disable-extension github.copilot-chat` を次の焼き直しで試す
+- 通し確認で分かった数字。deploy 中は load average 10.81、メモリ used 1052MB / available 648MB、iowait 12〜15%。終了後は used 680MB / available 978MB。t4g.small では deploy 中に CPU が足りないので t4g.medium にする（Issue #15）。code-server が同梱する Copilot の拡張（`github.copilot-chat`）が 130MB ほど使っていて受講者には不要。code-server の CLI に `--disable-extension` は無く（coder/code-server#7601、未実装）、`chat.disableAIFeatures` は UI を隠すだけでプロセスは止まらないので、setup-instance.sh で組み込み拡張のディレクトリを消す方式にした。効いたかは焼き直し後の実機で `ps aux | grep copilot` で確認する
 
 ### 次の一歩
 

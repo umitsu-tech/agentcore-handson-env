@@ -20,5 +20,5 @@ participants = ["user01"]
 # 受講環境を焼いた AMI（scripts/build-ami.sh で作る。焼き直すと terraform.tfvars の値を書き換えてくれる）
 ami_id = "ami-00c0b0303a0921d88"
 
-# ルートボリュームのサイズ（GiB）。AMI のルートボリューム以上にする
-# root_volume_size = 30
+# ルートボリュームのサイズ（GiB）。AMI のルートボリューム（15GiB）以上にする
+# root_volume_size = 15

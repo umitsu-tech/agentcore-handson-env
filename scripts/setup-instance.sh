@@ -77,6 +77,26 @@ ExecStart=/usr/bin/code-server /home/handson/workspace
 OVERRIDE
 systemctl daemon-reload
 
+# --- 同梱の Copilot 拡張を外す ------------------------------------------------
+# code-server 4.116 以降は VS Code に組み込まれた github.copilot-chat が同梱されていて、
+# 起動直後から @github/copilot-* のプロセスが 130MB ほどメモリを使う。受講者には不要。
+# CLI に --disable-extension は無く（coder/code-server#7601、未実装）、settings.json の
+# chat.disableAIFeatures も UI を隠すだけでプロセスは止まらないため、組み込み拡張の
+# ディレクトリごと消す。update.mode は none にしてあるので AMI の中で復活しない。
+BUILTIN_EXT_DIR=/usr/lib/code-server/lib/vscode/extensions
+removed=0
+for d in "$BUILTIN_EXT_DIR"/*/; do
+  [ -f "$d/package.json" ] || continue
+  if grep -q '"name": *"copilot' "$d/package.json"; then
+    echo "remove builtin extension: $d"
+    rm -rf "$d"
+    removed=$((removed + 1))
+  fi
+done
+if [ "$removed" -eq 0 ]; then
+  echo "WARN: copilot extension not found under $BUILTIN_EXT_DIR (code-server の構成が変わった可能性)" >&2
+fi
+
 # 初回起動時の Welcome タブ・拡張機能のおすすめ・ワークスペース信頼ダイアログなど、
 # 受講者を迷わせる表示を抑える。startupEditor は README にして、開いた瞬間に
 # workspace/README.md（このスクリプトが書く）が表示されるようにする
@@ -89,6 +109,7 @@ cat > /home/handson/.local/share/code-server/User/settings.json <<'SETTINGS'
   "workbench.tips.enabled": false,
   "security.workspace.trust.enabled": false,
   "update.mode": "none",
+  "chat.disableAIFeatures": true,
   "remote.portsAttributes": {
     "3000": {
       "label": "ハンズオン UI"
