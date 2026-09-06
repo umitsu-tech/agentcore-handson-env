@@ -115,6 +115,12 @@
           <mxGeometry x="40" y="1250" width="240" height="70" as="geometry" />
         </mxCell>
 
+        <mxCell id="alb-anchor" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="770" y="562" width="60" height="4" as="geometry" />
+        </mxCell>
+        <mxCell id="students-anchor" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="130" y="562" width="60" height="4" as="geometry" />
+        </mxCell>
         <mxCell id="s3-anchor" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
           <mxGeometry x="1230" y="548" width="60" height="4" as="geometry" />
         </mxCell>
@@ -123,24 +129,24 @@
         </mxCell>
 
         <!-- 既存の経路 -->
-        <mxCell id="e-dns" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#879196;dashed=1;endArrow=blockThin;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=12;fontColor=#5A6C74;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="students" target="cloudflare">
+        <mxCell id="e-dns" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#879196;dashed=1;endArrow=blockThin;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=12;fontColor=#5A6C74;labelBackgroundColor=none;" edge="1" parent="1" source="students-anchor" target="cloudflare">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-dns-label" value="① 名前解決" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;fontColor=#5A6C74;labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="e-dns">
+        <mxCell id="e-dns-label" value="① 名前解決" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;fontColor=#5A6C74;labelBackgroundColor=none;" vertex="1" connectable="0" parent="e-dns">
           <mxGeometry x="0" y="0" relative="1" as="geometry"><mxPoint x="46" y="0" as="offset" /></mxGeometry>
         </mxCell>
 
         <mxCell id="e-in" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#232F3E;endArrow=blockThin;endFill=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="students" target="alb">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-in-label" value="② HTTPS 443" style="edgeLabel;html=1;align=center;verticalAlign=bottom;resizable=0;points=[];fontSize=12;fontColor=#232F3E;labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="e-in">
+        <mxCell id="e-in-label" value="② HTTPS 443" style="edgeLabel;html=1;align=center;verticalAlign=bottom;resizable=0;points=[];fontSize=12;fontColor=#232F3E;labelBackgroundColor=none;" vertex="1" connectable="0" parent="e-in">
           <mxGeometry x="0" y="-1" relative="1" as="geometry" />
         </mxCell>
 
-        <mxCell id="e-alb-ec2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#232F3E;endArrow=blockThin;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="alb" target="ec2">
+        <mxCell id="e-alb-ec2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#232F3E;endArrow=blockThin;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="alb-anchor" target="ec2">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-alb-ec2-label" value="③ HTTP 8080&lt;br&gt;ホスト名で受講者ごとに振り分け" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;fontColor=#232F3E;labelBackgroundColor=#F2F6E8;" vertex="1" connectable="0" parent="e-alb-ec2">
+        <mxCell id="e-alb-ec2-label" value="③ HTTP 8080&lt;br&gt;ホスト名で受講者ごとに振り分け" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;fontColor=#232F3E;labelBackgroundColor=none;" vertex="1" connectable="0" parent="e-alb-ec2">
           <mxGeometry x="0.9" y="0" relative="1" as="geometry">
             <mxPoint x="-195" y="70" as="offset" />
           </mxGeometry>
@@ -149,16 +155,16 @@
         <mxCell id="e-deploy" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#ED7100;endArrow=blockThin;endFill=1;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="ec2" target="s3">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-deploy-label" value="④ agentcore deploy&lt;br&gt;コード ZIP をアップロード" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;fontColor=#ED7100;labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="e-deploy">
-          <mxGeometry x="0.2" relative="1" as="geometry">
-            <mxPoint x="60" y="-24" as="offset" />
+        <mxCell id="e-deploy-label" value="④ agentcore deploy&lt;br&gt;コード ZIP をアップロード" style="edgeLabel;html=1;align=center;verticalAlign=bottom;resizable=0;points=[];fontSize=12;fontColor=#ED7100;labelBackgroundColor=none;" vertex="1" connectable="0" parent="e-deploy">
+          <mxGeometry x="0.63" relative="1" as="geometry">
+            <mxPoint x="0" y="-3" as="offset" />
           </mxGeometry>
         </mxCell>
 
         <mxCell id="e-code" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#7AA116;endArrow=blockThin;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="s3-anchor" target="agentcore">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-code-label" value="⑤ コード読み取り" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontSize=12;fontColor=#7AA116;labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="e-code">
+        <mxCell id="e-code-label" value="⑤ コード読み取り" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontSize=12;fontColor=#7AA116;labelBackgroundColor=none;" vertex="1" connectable="0" parent="e-code">
           <mxGeometry x="0" relative="1" as="geometry">
             <mxPoint x="10" y="0" as="offset" />
           </mxGeometry>
@@ -167,16 +173,16 @@
         <mxCell id="e-invoke" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#0073BB;endArrow=blockThin;endFill=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="ec2" target="agentcore">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-invoke-label" value="⑥ InvokeAgentRuntime&lt;br&gt;返ってきたイベントを UI に流す" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;fontColor=#0073BB;labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="e-invoke">
-          <mxGeometry x="0.28" relative="1" as="geometry">
-            <mxPoint y="-18" as="offset" />
+        <mxCell id="e-invoke-label" value="⑥ InvokeAgentRuntime&lt;br&gt;返ってきたイベントを UI に流す" style="edgeLabel;html=1;align=center;verticalAlign=top;resizable=0;points=[];fontSize=12;fontColor=#0073BB;labelBackgroundColor=none;" vertex="1" connectable="0" parent="e-invoke">
+          <mxGeometry x="0.2" relative="1" as="geometry">
+            <mxPoint y="4" as="offset" />
           </mxGeometry>
         </mxCell>
 
         <mxCell id="e-model" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#01A88D;endArrow=blockThin;endFill=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="agentcore" target="bedrock">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-model-label" value="⑦ InvokeModel" style="edgeLabel;html=1;align=center;verticalAlign=bottom;resizable=0;points=[];fontSize=12;fontColor=#01A88D;labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="e-model">
+        <mxCell id="e-model-label" value="⑦ InvokeModel" style="edgeLabel;html=1;align=center;verticalAlign=bottom;resizable=0;points=[];fontSize=12;fontColor=#01A88D;labelBackgroundColor=none;" vertex="1" connectable="0" parent="e-model">
           <mxGeometry x="0" y="-1" relative="1" as="geometry" />
         </mxCell>
 
@@ -184,21 +190,21 @@
         <mxCell id="e-dns2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#879196;dashed=1;endArrow=blockThin;endFill=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="students2" target="cloudflare">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-dns2-label" value="名前解決" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;fontColor=#5A6C74;labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="e-dns2">
+        <mxCell id="e-dns2-label" value="名前解決" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;fontColor=#5A6C74;labelBackgroundColor=none;" vertex="1" connectable="0" parent="e-dns2">
           <mxGeometry x="0" y="0" relative="1" as="geometry"><mxPoint x="36" y="0" as="offset" /></mxGeometry>
         </mxCell>
 
         <mxCell id="e-guide-in" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#8C4FFF;endArrow=blockThin;endFill=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="students2" target="cloudfront">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-guide-in-label" value="⑧ HTTPS 443（guide.handson.example.com）" style="edgeLabel;html=1;align=center;verticalAlign=bottom;resizable=0;points=[];fontSize=12;fontColor=#8C4FFF;labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="e-guide-in">
+        <mxCell id="e-guide-in-label" value="⑧ HTTPS 443（guide.handson.example.com）" style="edgeLabel;html=1;align=center;verticalAlign=bottom;resizable=0;points=[];fontSize=12;fontColor=#8C4FFF;labelBackgroundColor=none;" vertex="1" connectable="0" parent="e-guide-in">
           <mxGeometry x="-0.2" y="-1" relative="1" as="geometry" />
         </mxCell>
 
         <mxCell id="e-oac" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#8C4FFF;endArrow=blockThin;endFill=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="cloudfront" target="s3guide-anchor">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-oac-label" value="⑨ OAC で取得" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontSize=12;fontColor=#8C4FFF;labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="e-oac">
+        <mxCell id="e-oac-label" value="⑨ OAC で取得" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontSize=12;fontColor=#8C4FFF;labelBackgroundColor=none;" vertex="1" connectable="0" parent="e-oac">
           <mxGeometry x="0" relative="1" as="geometry"><mxPoint x="10" y="0" as="offset" /></mxGeometry>
         </mxCell>
 
@@ -210,7 +216,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="e-gh-s3-label" value="s3 sync（手順書を同期）" style="edgeLabel;html=1;align=center;verticalAlign=bottom;resizable=0;points=[];fontSize=12;fontColor=#24292F;labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="e-gh-s3">
+        <mxCell id="e-gh-s3-label" value="s3 sync（手順書を同期）" style="edgeLabel;html=1;align=center;verticalAlign=bottom;resizable=0;points=[];fontSize=12;fontColor=#24292F;labelBackgroundColor=none;" vertex="1" connectable="0" parent="e-gh-s3">
           <mxGeometry x="-0.55" y="-1" relative="1" as="geometry" />
         </mxCell>
 
@@ -222,7 +228,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="e-gh-cf-label" value="キャッシュ削除" style="edgeLabel;html=1;align=center;verticalAlign=top;resizable=0;points=[];fontSize=12;fontColor=#24292F;labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="e-gh-cf">
+        <mxCell id="e-gh-cf-label" value="キャッシュ削除" style="edgeLabel;html=1;align=center;verticalAlign=top;resizable=0;points=[];fontSize=12;fontColor=#24292F;labelBackgroundColor=none;" vertex="1" connectable="0" parent="e-gh-cf">
           <mxGeometry x="-0.3" y="1" relative="1" as="geometry" />
         </mxCell>
 
@@ -230,7 +236,7 @@
         <mxCell id="e-stop" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#E7157B;dashed=1;endArrow=blockThin;endFill=1;exitX=0.19;exitY=0;exitDx=0;exitDy=0;entryX=0.113;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="shutdown" target="ec2box">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e-stop-label" value="終了時刻に EC2 停止 / ALB 削除" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontSize=12;fontColor=#E7157B;labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="e-stop">
+        <mxCell id="e-stop-label" value="終了時刻に EC2 停止 / ALB 削除" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontSize=12;fontColor=#E7157B;labelBackgroundColor=none;" vertex="1" connectable="0" parent="e-stop">
           <mxGeometry x="0" relative="1" as="geometry"><mxPoint x="10" y="-12" as="offset" /></mxGeometry>
         </mxCell>
 
