@@ -1,15 +1,15 @@
 {
   "$schema": "https://schema.agentcore.aws.dev/v1/agentcore.json",
-  "name": "handson",
+  "name": "handsonPARTICIPANT",
   "version": 1,
   "managedBy": "CDK",
   "tags": {
     "agentcore:created-by": "agentcore-cli",
-    "agentcore:project-name": "handson"
+    "agentcore:project-name": "handsonPARTICIPANT"
   },
   "runtimes": [
     {
-      "name": "handson_PARTICIPANT",
+      "name": "agent",
       "build": "CodeZip",
       "entrypoint": "runtime.py",
       "codeLocation": "./handson-agent/",
