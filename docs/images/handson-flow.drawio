@@ -1,104 +1,98 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mxfile host="app.diagrams.net" agent="claude-code" version="26.0.0">
   <diagram id="agentcore-handson-flow" name="ハンズオンの流れ">
-    <mxGraphModel dx="1200" dy="900" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1240" pageHeight="960" math="0" shadow="0">
+    <mxGraphModel dx="1200" dy="900" background="#faf9f4" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1240" pageHeight="960" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="ftitle" value="ハンズオンの流れ" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=26;fontStyle=1;fontColor=#232F3E;" vertex="1" parent="1">
-          <mxGeometry x="60" y="30" width="700" height="40" as="geometry" />
-        </mxCell>
-        <mxCell id="fsub" value="手を動かして仕組みを掴んでから、それをクラウドに載せる。サービスの名前は、受講者が困ったあとに出す。" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontColor=#5A6C74;" vertex="1" parent="1">
-          <mxGeometry x="60" y="72" width="900" height="24" as="geometry" />
-        </mxCell>
-        <mxCell id="learnhead" value="ここで分かること" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=11;fontColor=#7B8B96;" vertex="1" parent="1">
+        <mxCell id="learnhead" value="ここで分かること" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=11;fontColor=#8b8678;" vertex="1" parent="1">
           <mxGeometry x="820" y="112" width="330" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="s1frame" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#D5DDE2;fillColor=#FFFFFF;strokeWidth=1;" vertex="1" parent="1">
+        <mxCell id="s1frame" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#e4e1d4;fillColor=#FFFFFF;strokeWidth=1;" vertex="1" parent="1">
           <mxGeometry x="60" y="140" width="1120" height="120" as="geometry" />
         </mxCell>
-        <mxCell id="s1num" value="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=34;fontStyle=1;fontColor=#01A88D;" vertex="1" parent="1">
+        <mxCell id="s1num" value="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=34;fontStyle=1;fontColor=#4a7c59;" vertex="1" parent="1">
           <mxGeometry x="80" y="175" width="50" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="s1title" value="&lt;b&gt;手元でエージェントを動かす&lt;/b&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;font color=&quot;#7B8B96&quot;&gt;15 分&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontColor=#232F3E;" vertex="1" parent="1">
+        <mxCell id="s1title" value="&lt;b&gt;手元でエージェントを動かす&lt;/b&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;font color=&quot;#8b8678&quot;&gt;15 分&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontColor=#211f19;" vertex="1" parent="1">
           <mxGeometry x="150" y="162" width="600" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="s1body" value="ブラウザの画面に、モデルとのやりとりが 1 周ぶん流れる。&lt;br&gt;ツール定義が渡り、モデルが選び、結果が戻り、また考える。" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=13;fontColor=#54646F;" vertex="1" parent="1">
+        <mxCell id="s1body" value="ブラウザの画面に、モデルとのやりとりが 1 周ぶん流れる。&lt;br&gt;ツール定義が渡り、モデルが選び、結果が戻り、また考える。" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=13;fontColor=#8b8678;" vertex="1" parent="1">
           <mxGeometry x="150" y="194" width="620" height="52" as="geometry" />
         </mxCell>
-        <mxCell id="s1learn" value="エージェントは&lt;br&gt;ループで動いている" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#01A88D;fillColor=#E2F1EE;fontSize=13;fontColor=#0A6B5D;fontStyle=1;verticalAlign=middle;align=center;" vertex="1" parent="1">
+        <mxCell id="s1learn" value="エージェントは&lt;br&gt;ループで動いている" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#4a7c59;fillColor=#e8eee8;fontSize=13;fontColor=#3a6346;fontStyle=1;verticalAlign=middle;align=center;" vertex="1" parent="1">
           <mxGeometry x="820" y="162" width="330" height="76" as="geometry" />
         </mxCell>
-        <mxCell id="s1arrow" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#B6C2CA;endArrow=blockThin;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="s1frame" target="s2frame">
+        <mxCell id="s1arrow" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#e4e1d4;endArrow=blockThin;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="s1frame" target="s2frame">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="s2frame" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#D5DDE2;fillColor=#FFFFFF;strokeWidth=1;" vertex="1" parent="1">
+        <mxCell id="s2frame" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#e4e1d4;fillColor=#FFFFFF;strokeWidth=1;" vertex="1" parent="1">
           <mxGeometry x="60" y="295" width="1120" height="120" as="geometry" />
         </mxCell>
-        <mxCell id="s2num" value="2" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=34;fontStyle=1;fontColor=#01A88D;" vertex="1" parent="1">
+        <mxCell id="s2num" value="2" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=34;fontStyle=1;fontColor=#4a7c59;" vertex="1" parent="1">
           <mxGeometry x="80" y="330" width="50" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="s2title" value="&lt;b&gt;ツールを 1 つ足す&lt;/b&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;font color=&quot;#7B8B96&quot;&gt;20 分&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontColor=#232F3E;" vertex="1" parent="1">
+        <mxCell id="s2title" value="&lt;b&gt;ツールを 1 つ足す&lt;/b&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;font color=&quot;#8b8678&quot;&gt;20 分&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontColor=#211f19;" vertex="1" parent="1">
           <mxGeometry x="150" y="317" width="600" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="s2body" value="自分で書いた関数がモデルから呼ばれる。&lt;br&gt;名前と説明文を変えると、モデルの選び方が変わる。" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=13;fontColor=#54646F;" vertex="1" parent="1">
+        <mxCell id="s2body" value="自分で書いた関数がモデルから呼ばれる。&lt;br&gt;名前と説明文を変えると、モデルの選び方が変わる。" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=13;fontColor=#8b8678;" vertex="1" parent="1">
           <mxGeometry x="150" y="349" width="620" height="52" as="geometry" />
         </mxCell>
-        <mxCell id="s2learn" value="ツールは&lt;br&gt;自分で定義できる" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#01A88D;fillColor=#E2F1EE;fontSize=13;fontColor=#0A6B5D;fontStyle=1;verticalAlign=middle;align=center;" vertex="1" parent="1">
+        <mxCell id="s2learn" value="ツールは&lt;br&gt;自分で定義できる" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#4a7c59;fillColor=#e8eee8;fontSize=13;fontColor=#3a6346;fontStyle=1;verticalAlign=middle;align=center;" vertex="1" parent="1">
           <mxGeometry x="820" y="317" width="330" height="76" as="geometry" />
         </mxCell>
-        <mxCell id="s2arrow" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#B6C2CA;endArrow=blockThin;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="s2frame" target="s3frame">
+        <mxCell id="s2arrow" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#e4e1d4;endArrow=blockThin;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="s2frame" target="s3frame">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="s3frame" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#D5DDE2;fillColor=#FFFFFF;strokeWidth=1;" vertex="1" parent="1">
+        <mxCell id="s3frame" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#e4e1d4;fillColor=#FFFFFF;strokeWidth=1;" vertex="1" parent="1">
           <mxGeometry x="60" y="450" width="1120" height="120" as="geometry" />
         </mxCell>
-        <mxCell id="s3num" value="3" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=34;fontStyle=1;fontColor=#01A88D;" vertex="1" parent="1">
+        <mxCell id="s3num" value="3" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=34;fontStyle=1;fontColor=#4a7c59;" vertex="1" parent="1">
           <mxGeometry x="80" y="485" width="50" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="s3title" value="&lt;b&gt;会話を続けてみる&lt;/b&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;font color=&quot;#7B8B96&quot;&gt;10 分&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontColor=#232F3E;" vertex="1" parent="1">
+        <mxCell id="s3title" value="&lt;b&gt;会話を続けてみる&lt;/b&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;font color=&quot;#8b8678&quot;&gt;10 分&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontColor=#211f19;" vertex="1" parent="1">
           <mxGeometry x="150" y="472" width="600" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="s3body" value="少し前に言ったことをエージェントが忘れる。&lt;br&gt;毎回まっさらな状態で呼ばれているから。" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=13;fontColor=#54646F;" vertex="1" parent="1">
+        <mxCell id="s3body" value="少し前に言ったことをエージェントが忘れる。&lt;br&gt;毎回まっさらな状態で呼ばれているから。" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=13;fontColor=#8b8678;" vertex="1" parent="1">
           <mxGeometry x="150" y="504" width="620" height="52" as="geometry" />
         </mxCell>
-        <mxCell id="s3learn" value="だから Memory がある" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#01A88D;fillColor=#E2F1EE;fontSize=13;fontColor=#0A6B5D;fontStyle=1;verticalAlign=middle;align=center;" vertex="1" parent="1">
+        <mxCell id="s3learn" value="だから Memory がある" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#4a7c59;fillColor=#e8eee8;fontSize=13;fontColor=#3a6346;fontStyle=1;verticalAlign=middle;align=center;" vertex="1" parent="1">
           <mxGeometry x="820" y="472" width="330" height="76" as="geometry" />
         </mxCell>
-        <mxCell id="s3arrow" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#B6C2CA;endArrow=blockThin;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="s3frame" target="s4frame">
+        <mxCell id="s3arrow" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#e4e1d4;endArrow=blockThin;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="s3frame" target="s4frame">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="s4frame" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#01A88D;fillColor=#F7FCFB;strokeWidth=2;" vertex="1" parent="1">
+        <mxCell id="s4frame" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#4a7c59;fillColor=#f3f5ef;strokeWidth=2;" vertex="1" parent="1">
           <mxGeometry x="60" y="605" width="1120" height="120" as="geometry" />
         </mxCell>
-        <mxCell id="s4num" value="4" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=34;fontStyle=1;fontColor=#01A88D;" vertex="1" parent="1">
+        <mxCell id="s4num" value="4" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=34;fontStyle=1;fontColor=#4a7c59;" vertex="1" parent="1">
           <mxGeometry x="80" y="640" width="50" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="s4title" value="&lt;b&gt;自分のエージェントを Runtime に載せる&lt;/b&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;font color=&quot;#7B8B96&quot;&gt;25 分&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontColor=#232F3E;" vertex="1" parent="1">
+        <mxCell id="s4title" value="&lt;b&gt;自分のエージェントを Runtime に載せる&lt;/b&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;font color=&quot;#8b8678&quot;&gt;25 分&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontColor=#211f19;" vertex="1" parent="1">
           <mxGeometry x="150" y="627" width="600" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="s4body" value="叩くのは agentcore deploy の 1 行。&lt;br&gt;上がるまでの数分で、Runtime が何を肩代わりするかを話す。" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=13;fontColor=#54646F;" vertex="1" parent="1">
+        <mxCell id="s4body" value="叩くのは agentcore deploy の 1 行。&lt;br&gt;上がるまでの数分で、Runtime が何を肩代わりするかを話す。" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=13;fontColor=#8b8678;" vertex="1" parent="1">
           <mxGeometry x="150" y="659" width="620" height="52" as="geometry" />
         </mxCell>
-        <mxCell id="s4learn" value="マネージド環境が&lt;br&gt;引き受ける範囲" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#01A88D;fillColor=#E2F1EE;fontSize=13;fontColor=#0A6B5D;fontStyle=1;verticalAlign=middle;align=center;" vertex="1" parent="1">
+        <mxCell id="s4learn" value="マネージド環境が&lt;br&gt;引き受ける範囲" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#4a7c59;fillColor=#e8eee8;fontSize=13;fontColor=#3a6346;fontStyle=1;verticalAlign=middle;align=center;" vertex="1" parent="1">
           <mxGeometry x="820" y="627" width="330" height="76" as="geometry" />
         </mxCell>
-        <mxCell id="s4arrow" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#B6C2CA;endArrow=blockThin;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="s4frame" target="s5frame">
+        <mxCell id="s4arrow" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#e4e1d4;endArrow=blockThin;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="s4frame" target="s5frame">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="s5frame" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#D5DDE2;fillColor=#FFFFFF;strokeWidth=1;" vertex="1" parent="1">
+        <mxCell id="s5frame" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#e4e1d4;fillColor=#FFFFFF;strokeWidth=1;" vertex="1" parent="1">
           <mxGeometry x="60" y="760" width="1120" height="120" as="geometry" />
         </mxCell>
-        <mxCell id="s5num" value="5" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=34;fontStyle=1;fontColor=#01A88D;" vertex="1" parent="1">
+        <mxCell id="s5num" value="5" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=34;fontStyle=1;fontColor=#4a7c59;" vertex="1" parent="1">
           <mxGeometry x="80" y="795" width="50" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="s5title" value="&lt;b&gt;振り返る&lt;/b&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;font color=&quot;#7B8B96&quot;&gt;10 分&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontColor=#232F3E;" vertex="1" parent="1">
+        <mxCell id="s5title" value="&lt;b&gt;振り返る&lt;/b&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;font color=&quot;#8b8678&quot;&gt;10 分&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontColor=#211f19;" vertex="1" parent="1">
           <mxGeometry x="150" y="782" width="600" height="28" as="geometry" />
         </mxCell>
-        <mxCell id="s5body" value="手元とクラウドで何が変わったかを並べる。&lt;br&gt;Gateway はここで名前だけ出す。" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=13;fontColor=#54646F;" vertex="1" parent="1">
+        <mxCell id="s5body" value="手元とクラウドで何が変わったかを並べる。&lt;br&gt;Gateway はここで名前だけ出す。" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontSize=13;fontColor=#8b8678;" vertex="1" parent="1">
           <mxGeometry x="150" y="814" width="620" height="52" as="geometry" />
         </mxCell>
-        <mxCell id="s5learn" value="次に何を調べればいいか" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#01A88D;fillColor=#E2F1EE;fontSize=13;fontColor=#0A6B5D;fontStyle=1;verticalAlign=middle;align=center;" vertex="1" parent="1">
+        <mxCell id="s5learn" value="次に何を調べればいいか" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#4a7c59;fillColor=#e8eee8;fontSize=13;fontColor=#3a6346;fontStyle=1;verticalAlign=middle;align=center;" vertex="1" parent="1">
           <mxGeometry x="820" y="782" width="330" height="76" as="geometry" />
         </mxCell>
       </root>

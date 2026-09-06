@@ -12,21 +12,24 @@ export default defineConfig({
       title: 'AgentCore ハンズオン',
       locales: { root: { label: '日本語', lang: 'ja' } },
       customCss: ['./src/styles/custom.css'],
-      // コードブロックはライト 1 つだけ。枠は影を消して線だけにする
+      // コードブロックは暗い背景にして紙色の本文と対比を付ける（mcks.log のダーク側の色）。影は消す
       expressiveCode: {
-        themes: ['github-light'],
+        themes: ['github-dark'],
         styleOverrides: {
           borderRadius: '8px',
-          borderColor: '#e4e1d4',
-          codeBackground: '#f7f6ef',
+          borderColor: '#343228',
+          codeBackground: '#24231c',
           frames: {
             shadowColor: 'transparent',
-            editorTabBarBackground: '#f1efe6',
-            editorActiveTabBackground: '#f7f6ef',
-            editorActiveTabIndicatorTopColor: '#4a7c59',
+            editorTabBarBackground: '#1b1a15',
+            editorTabBarBorderBottomColor: '#343228',
+            editorActiveTabBackground: '#24231c',
+            editorActiveTabForeground: '#edeadf',
+            editorActiveTabIndicatorTopColor: '#82b391',
             editorActiveTabIndicatorBottomColor: 'transparent',
-            terminalTitlebarBackground: '#f1efe6',
-            terminalBackground: '#f7f6ef',
+            terminalTitlebarBackground: '#1b1a15',
+            terminalTitlebarBorderBottomColor: '#343228',
+            terminalBackground: '#24231c',
           },
         },
       },
@@ -34,6 +37,7 @@ export default defineConfig({
       components: {
         ThemeProvider: './src/components/ThemeProvider.astro',
         ThemeSelect: './src/components/ThemeSelect.astro',
+        Pagination: './src/components/Pagination.astro',
       },
       sidebar: [
         { label: 'はじめに', link: '/' },

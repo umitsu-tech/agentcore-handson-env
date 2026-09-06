@@ -1,0 +1,72 @@
+---
+// Starlight の前へ / 次へを差し替える。薄い枠のカード 2 枚で、ラベルは等幅、タイトルはアクセント色、
+// ホバーで枠線だけ緑になる（VitePress 風。2026-09-07 リュウキ選択）。影は付けない。
+const { pagination } = Astro.locals.starlightRoute;
+const { prev, next } = pagination;
+---
+
+{
+  (prev || next) && (
+    <nav class="pager print:hidden" aria-label="ページ送り">
+      {prev ? (
+        <a href={prev.href} rel="prev">
+          <span class="label">‹ 前のページ</span>
+          <span class="title">{prev.label}</span>
+        </a>
+      ) : (
+        <span />
+      )}
+      {next && (
+        <a href={next.href} rel="next" class="next">
+          <span class="label">次のページ ›</span>
+          <span class="title">{next.label}</span>
+        </a>
+      )}
+    </nav>
+  )
+}
+
+<style>
+  .pager {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 3rem;
+  }
+  a {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--ink-strong);
+    transition: border-color 0.15s;
+  }
+  a:hover {
+    border-color: var(--accent);
+  }
+  a.next {
+    text-align: right;
+  }
+  .label {
+    font-family: var(--sl-font-mono);
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+  .title {
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 1.05rem;
+    line-height: 1.5;
+  }
+  @media (max-width: 480px) {
+    .pager {
+      grid-template-columns: 1fr;
+    }
+    .pager > span {
+      display: none;
+    }
+  }
+</style>

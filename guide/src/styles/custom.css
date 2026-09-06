@@ -231,24 +231,7 @@ site-search button[data-open-modal] {
   background: var(--line);
 }
 
-/* --- 前へ / 次へ。影を消して線だけにする --- */
-.pagination-links a {
-  border: 1px solid var(--line);
-  box-shadow: none;
-  border-radius: 6px;
-  color: var(--ink-strong);
-}
-.pagination-links a:hover {
-  border-color: var(--accent);
-}
-.pagination-links a > span {
-  color: var(--muted);
-  font-family: var(--sl-font-mono);
-  font-size: 0.8rem;
-}
-.pagination-links .link-title {
-  font-size: 1.05rem;
-}
+/* 前へ / 次へは src/components/Pagination.astro に差し替えてあり、スタイルもそこに書いている */
 
 /* --- スマホのメニューボタンなど --- */
 starlight-menu-button button {
