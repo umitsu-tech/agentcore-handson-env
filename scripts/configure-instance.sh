@@ -39,6 +39,12 @@ sed -i "s/handsonPARTICIPANT/handson${participant}/" "$AGENTCORE_JSON"
 # aws-targets.json のアカウント ID も同様にプレースホルダから実アカウントへ差し替える。
 sed -i "s/000000000000/${account_id}/" "$AWS_TARGETS_JSON"
 
+# --- workspace の README -------------------------------------------------------
+# scripts/setup-instance.sh が書いた README.md には UI の URL のプレースホルダが
+# 入っているので、受講者のホスト名から実 URL に差し替える。URL に `/` を含むため
+# sed の区切り文字は `|` を使う。
+sed -i "s|HANDSON_UI_URL_PLACEHOLDER|https://${hostname}/proxy/3000/|" /home/handson/workspace/README.md
+
 # --- 受講者キーの記録 -----------------------------------------------------------
 # 他のスクリプトやハンズオン UI から参照できるよう、受講者キーをファイルに残しておく。
 install -d -m 755 /etc/handson
