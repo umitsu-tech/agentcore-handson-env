@@ -1,0 +1,203 @@
+---
+// 受講者情報のページ。中身（/participants/data.json）は git に入れず、
+// guide/publish-participants.sh が S3 に直接置く。このページと data.json は
+// CloudFront 側で Basic 認証がかかっている（terraform/guide/participants.tf）。
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+---
+
+<StarlightPage
+  frontmatter={{
+    title: '受講者情報',
+    description: '受講者ごとのエディタの URL、ハンズオン UI の URL、パスワード',
+    tableOfContents: false,
+    prev: false,
+  }}
+>
+  <p>受講者ごとの URL とパスワードです。主催者から伝えられた自分の番号の行を見てください。</p>
+
+  <div class="finder">
+    <label for="filter">自分の番号で絞り込む</label>
+    <input id="filter" type="text" inputmode="numeric" placeholder="例: 07" autocomplete="off" />
+  </div>
+
+  <p id="status" class="status" aria-live="polite">読み込んでいます。</p>
+
+  <div class="table-wrap">
+    <table id="participants" hidden>
+      <thead>
+        <tr>
+          <th>番号</th>
+          <th>エディタの URL</th>
+          <th>ハンズオン UI の URL</th>
+          <th>パスワード</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</StarlightPage>
+
+<style is:global>
+  .finder {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+  .finder input {
+    font-size: 1.1rem;
+    padding: 0.4rem 0.6rem;
+    width: 8rem;
+    border: 1px solid var(--sl-color-gray-4);
+    border-radius: 6px;
+  }
+  .status {
+    color: var(--sl-color-gray-3);
+  }
+  .table-wrap {
+    overflow-x: auto;
+  }
+  /* Starlight は本文の table を display:block にして横スクロールさせるので、ここでは表に戻して折り返す。
+     行は JS で作るのでスコープ付きスタイルが当たらない。is:global にして #participants 配下に限定している */
+  #participants {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    font-size: 1rem;
+  }
+  #participants th:first-child {
+    width: 5rem;
+  }
+  #participants th:last-child {
+    width: 12rem;
+  }
+  #participants th,
+  #participants td {
+    text-align: left;
+    padding: 0.55rem 0.7rem;
+    border-bottom: 1px solid var(--sl-color-gray-5);
+    word-break: break-all;
+    vertical-align: top;
+  }
+  #participants td:first-child,
+  #participants td.password {
+    white-space: nowrap;
+  }
+  #participants th {
+    background: var(--sl-color-gray-6);
+  }
+  #participants td.password {
+    font-family: var(--sl-font-mono);
+    font-size: 1.05rem;
+    letter-spacing: 0.04em;
+  }
+  #participants tr.hit {
+    background: var(--sl-color-accent-low);
+  }
+  /* スマホでは 1 人分を縦に積む。横スクロールだとパスワードの列が見えないため */
+  @media (max-width: 640px) {
+    #participants,
+    #participants thead,
+    #participants tbody,
+    #participants tr,
+    #participants td {
+      display: block;
+    }
+    #participants thead {
+      display: none;
+    }
+    #participants tr {
+      padding: 0.6rem 0;
+      border-bottom: 1px solid var(--sl-color-gray-5);
+    }
+    #participants tr.hit {
+      padding-left: 0.6rem;
+      border-left: 4px solid var(--sl-color-accent);
+    }
+    #participants td {
+      border: none;
+      padding: 0.15rem 0;
+      white-space: normal;
+      word-break: break-all;
+    }
+    #participants td::before {
+      content: attr(data-label);
+      display: block;
+      font-size: 0.8rem;
+      color: var(--sl-color-gray-3);
+    }
+  }
+</style>
+
+<script>
+  // data.json を読んで表にする。無ければその旨を出す（受講環境を立てる前や片付けたあと）。
+  type Row = { id: string; editor_url: string; ui_url: string; password: string };
+
+  const status = document.getElementById('status') as HTMLParagraphElement;
+  const table = document.getElementById('participants') as HTMLTableElement;
+  const tbody = table.querySelector('tbody') as HTMLTableSectionElement;
+  const filter = document.getElementById('filter') as HTMLInputElement;
+
+  function link(url: string): HTMLAnchorElement {
+    const a = document.createElement('a');
+    a.href = url;
+    a.textContent = url;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    return a;
+  }
+
+  function render(rows: Row[]) {
+    tbody.replaceChildren();
+    for (const r of rows) {
+      const tr = document.createElement('tr');
+      tr.dataset.id = r.id;
+      const id = document.createElement('td');
+      id.dataset.label = '番号';
+      id.textContent = r.id;
+      const editor = document.createElement('td');
+      editor.dataset.label = 'エディタの URL';
+      editor.append(link(r.editor_url));
+      const ui = document.createElement('td');
+      ui.dataset.label = 'ハンズオン UI の URL';
+      ui.append(link(r.ui_url));
+      const pw = document.createElement('td');
+      pw.dataset.label = 'パスワード';
+      pw.className = 'password';
+      pw.textContent = r.password;
+      tr.append(id, editor, ui, pw);
+      tbody.append(tr);
+    }
+    table.hidden = false;
+  }
+
+  function applyFilter() {
+    const q = filter.value.trim();
+    let hit = 0;
+    for (const tr of tbody.querySelectorAll<HTMLTableRowElement>('tr')) {
+      const id = tr.dataset.id ?? '';
+      const match = q === '' || id.endsWith(q.padStart(2, '0')) || id.includes(q);
+      tr.hidden = !match;
+      tr.classList.toggle('hit', q !== '' && match);
+      if (match) hit++;
+    }
+    status.textContent = q === '' ? `${tbody.rows.length} 人分` : `${hit} 件`;
+  }
+
+  filter.addEventListener('input', applyFilter);
+
+  fetch('/participants/data.json', { cache: 'no-store' })
+    .then((res) => {
+      if (!res.ok) throw new Error(String(res.status));
+      return res.json();
+    })
+    .then((data: { generated_at: string; participants: Row[] }) => {
+      render(data.participants);
+      applyFilter();
+      status.textContent += `（${new Date(data.generated_at).toLocaleString('ja-JP')} 時点）`;
+    })
+    .catch(() => {
+      status.textContent = 'まだ受講者情報は置かれていません。主催者に確認してください。';
+    });
+</script>

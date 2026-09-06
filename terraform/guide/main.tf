@@ -93,6 +93,23 @@ resource "aws_cloudfront_distribution" "site" {
     compress               = true
   }
 
+  # 受講者情報（participants.html と participants/data.json）だけ Basic 認証を挟む。
+  # 関数は viewer-request で毎回動くので、キャッシュに乗っていても認証は通らない
+  ordered_cache_behavior {
+    path_pattern           = "/participants*"
+    target_origin_id       = local.origin_id
+    viewer_protocol_policy = "redirect-to-https"
+    allowed_methods        = ["GET", "HEAD"]
+    cached_methods         = ["GET", "HEAD"]
+    cache_policy_id        = data.aws_cloudfront_cache_policy.caching_optimized.id
+    compress               = true
+
+    function_association {
+      event_type   = "viewer-request"
+      function_arn = aws_cloudfront_function.participants_auth.arn
+    }
+  }
+
   restrictions {
     geo_restriction {
       restriction_type = "none"

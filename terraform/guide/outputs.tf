@@ -22,3 +22,8 @@ output "github_actions_role_arn" {
   description = "GitHub の Variables（AWS_ROLE_ARN）に登録するロール ARN。github_repository を指定していなければ null"
   value       = var.github_repository != null ? aws_iam_role.github_actions[0].arn : null
 }
+
+output "participants_url" {
+  description = "受講者情報ページ。開くと Basic 認証を聞かれる（participants_user / participants_password）"
+  value       = local.custom_domain ? "https://${var.guide_hostname}/participants.html" : "https://${aws_cloudfront_distribution.site.domain_name}/participants.html"
+}
