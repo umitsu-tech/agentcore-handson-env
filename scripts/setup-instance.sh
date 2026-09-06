@@ -177,6 +177,13 @@ HANDSON_UI_URL_PLACEHOLDER
 # ターミナル
 
 メニューの Terminal → New Terminal で /home/handson/workspace が開きます。後半で打つのは agentcore deploy の1行です。
+
+# 最後に
+
+自分が deploy したものを自分で消します。次の2行を順に打ちます（数分かかります）。
+
+    agentcore remove all
+    agentcore deploy
 README
 chown handson:handson /home/handson/workspace/README.md
 

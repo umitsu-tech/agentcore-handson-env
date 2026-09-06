@@ -78,3 +78,14 @@ agentcore deploy
 このコマンドはワークスペース直下（`agentcore/` がある場所。`handson-agent/` の1つ上の階層）で実行します。code-server はワークスペース直下を開いているので、ターミナルを開いた場所がそのまま実行場所になります。
 
 `agentcore/` は agentcore CLI の設定ファイルと CDK のコード一式で、`agentcore create` / `agentcore add agent` で生成したものをそのまま置いています。中身は触らなくて大丈夫です。`agentcore.json` の `name`（プロジェクト名）は受講者ごとに `handsonuser01` のようにインスタンス起動時に自動で置き換わっています（AMI に焼いてある設定はプレースホルダ `handsonPARTICIPANT` のままです）。Bedrock 側の Runtime の実名はそこに runtime 名 `agent` を足した `handsonuser01_agent` になります。
+
+## 片付け（ハンズオンの最後）
+
+deploy した Runtime は自分で消します。agentcore CLI の公式の片付け手順どおり、設定を空にしてからもう一度 deploy します。
+
+```bash
+agentcore remove all
+agentcore deploy
+```
+
+`deploy` が空の状態を検知して、アカウント側の Runtime と実行ロールを撤去します。`remove all` のあとは `agentcore/` の設定が初期化されるので、同じ環境で deploy し直すことはできません。必ず最後にやってください。
