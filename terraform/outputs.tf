@@ -23,3 +23,11 @@ output "instance_ids" {
   description = "トラブル対応で Session Manager から入るときに使う"
   value       = { for k, v in aws_instance.participant : k => v.id }
 }
+
+output "handson_deadline" {
+  description = "自動停止が発火する時刻（設定していなければ null）。壁時計の時刻と UTC の両方を出す"
+  value = local.deadline_enabled ? {
+    local = "${local.deadline_wall} (${var.handson_timezone})"
+    utc   = local.deadline_utc
+  } : null
+}

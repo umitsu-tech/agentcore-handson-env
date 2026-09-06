@@ -70,3 +70,20 @@ variable "cloudflare_zone_id" {
   description = "base_domain を管理している Cloudflare ゾーンの ID。*.<base_domain> の CNAME をこのゾーンに作る。ゾーンの概要ページに表示される 32 桁の値で、秘密ではない"
   type        = string
 }
+
+variable "handson_end_time" {
+  description = "ハンズオンの終了時刻（RFC3339、例: 2026-10-31T17:00:00+09:00）。指定すると、この時刻を過ぎたら受講者ロールから Bedrock と Runtime の呼び出しを Deny し、EventBridge Scheduler が EC2 を停止して ALB を削除する。null なら仕組みごと作らない（検証用）"
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.handson_end_time == null || can(regex("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(Z|[+-]\\d{2}:\\d{2})$", var.handson_end_time))
+    error_message = "handson_end_time は 2026-10-31T17:00:00+09:00 のように秒とオフセットまで書いてください。"
+  }
+}
+
+variable "handson_timezone" {
+  description = "handson_end_time のオフセットに対応する IANA タイムゾーン名。EventBridge Scheduler の at() 式に使う。handson_end_time の +09:00 と食い違わせないこと"
+  type        = string
+  default     = "Asia/Tokyo"
+}

@@ -198,3 +198,28 @@ resource "aws_iam_instance_profile" "instance" {
   name = "${local.name}-instance"
   role = aws_iam_role.instance.name
 }
+
+# 終了時刻を過ぎたら、受講者の EC2 から Bedrock と Runtime を呼べなくする（scheduler.tf の a）。
+# 追加リソース無しで効く。Deny なので上の Allow より優先される。
+resource "aws_iam_role_policy" "deadline" {
+  count = local.deadline_enabled ? 1 : 0
+  name  = "${local.name}-deadline"
+  role  = aws_iam_role.instance.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid    = "DenyModelCallsAfterEnd"
+      Effect = "Deny"
+      Action = [
+        "bedrock:InvokeModel",
+        "bedrock:InvokeModelWithResponseStream",
+        "bedrock-agentcore:InvokeAgentRuntime",
+      ]
+      Resource = "*"
+      Condition = {
+        DateGreaterThan = { "aws:CurrentTime" = local.deadline_utc }
+      }
+    }]
+  })
+}
