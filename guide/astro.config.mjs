@@ -38,6 +38,7 @@ export default defineConfig({
         ThemeProvider: './src/components/ThemeProvider.astro',
         ThemeSelect: './src/components/ThemeSelect.astro',
         Pagination: './src/components/Pagination.astro',
+        Footer: './src/components/Footer.astro',
       },
       sidebar: [
         { label: 'はじめに', link: '/' },
