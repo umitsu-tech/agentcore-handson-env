@@ -17,3 +17,8 @@ output "distribution_id" {
   description = "publish.sh がキャッシュ削除に使う"
   value       = aws_cloudfront_distribution.site.id
 }
+
+output "github_actions_role_arn" {
+  description = "GitHub の Variables（AWS_ROLE_ARN）に登録するロール ARN。github_repository を指定していなければ null"
+  value       = var.github_repository != null ? aws_iam_role.github_actions[0].arn : null
+}
