@@ -8,7 +8,7 @@
         <mxCell id="r1" value="1 周目" style="text;html=1;strokeColor=none;fillColor=#4a7c59;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=14;fontStyle=1;fontColor=#FFFFFF;rounded=1;" vertex="1" parent="1">
           <mxGeometry x="40" y="140" width="70" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="r1sub" value="モデルを呼ぶ。質問とツールの一覧を渡す" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontColor=#8b8678;" vertex="1" parent="1">
+        <mxCell id="r1sub" value="質問とツールの一覧を渡してモデルを呼ぶ" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontColor=#8b8678;" vertex="1" parent="1">
           <mxGeometry x="120" y="140" width="400" height="30" as="geometry" />
         </mxCell>
         <mxCell id="q" value="&lt;b&gt;あなたの質問&lt;/b&gt;&lt;br&gt;モニター借りたいんだけど" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#4a7c59;fillColor=#e8eee8;fontSize=14;fontColor=#211f19;" vertex="1" parent="1">
@@ -34,7 +34,7 @@
         <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#8b8678;endArrow=block;endFill=1;" edge="1" parent="1" source="m1" target="out1"><mxGeometry relative="1" as="geometry" /></mxCell>
         <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#8b8678;endArrow=block;endFill=1;" edge="1" parent="1" source="out1" target="tool"><mxGeometry relative="1" as="geometry" /></mxCell>
         <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#8b8678;endArrow=block;endFill=1;" edge="1" parent="1" source="tool" target="res1"><mxGeometry relative="1" as="geometry" /></mxCell>
-        <mxCell id="turn" value="出てきたものを、次は入れる" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#4a7c59;strokeWidth=2;endArrow=block;endFill=1;fontSize=13;fontColor=#4a7c59;labelBackgroundColor=none;verticalAlign=bottom;" edge="1" parent="1" source="res1" target="in2">
+        <mxCell id="turn" value="出てきたものを次は入れる" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#4a7c59;strokeWidth=2;endArrow=block;endFill=1;fontSize=13;fontColor=#4a7c59;labelBackgroundColor=none;verticalAlign=bottom;" edge="1" parent="1" source="res1" target="in2">
           <mxGeometry relative="1" as="geometry">
             <Array as="points"><mxPoint x="1130" y="330" /><mxPoint x="365" y="330" /></Array>
             <mxPoint x="-1" y="-6" as="offset" />
@@ -43,7 +43,7 @@
         <mxCell id="r2" value="2 周目" style="text;html=1;strokeColor=none;fillColor=#4a7c59;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=14;fontStyle=1;fontColor=#FFFFFF;rounded=1;" vertex="1" parent="1">
           <mxGeometry x="40" y="350" width="70" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="r2sub" value="ツールの結果を渡して、もう一度モデルを呼ぶ" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontColor=#8b8678;" vertex="1" parent="1">
+        <mxCell id="r2sub" value="ツールの結果を渡してもう一度モデルを呼ぶ" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontColor=#8b8678;" vertex="1" parent="1">
           <mxGeometry x="120" y="350" width="400" height="30" as="geometry" />
         </mxCell>
         <mxCell id="in2" value="&lt;b&gt;モデルへの入力&lt;/b&gt;&lt;br&gt;ツールの結果 + ここまでの流れ" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#6b7aa1;fillColor=#eceef3;fontSize=14;fontColor=#211f19;" vertex="1" parent="1">
@@ -58,7 +58,7 @@
         <mxCell id="ans" value="&lt;b&gt;最終的な答え&lt;/b&gt;&lt;br&gt;画面に出る" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#4a7c59;fillColor=#e8eee8;fontSize=14;fontColor=#211f19;" vertex="1" parent="1">
           <mxGeometry x="880" y="400" width="150" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="stop" value="ツールを呼ばずに文章を返したので、&lt;br&gt;ループはここで止まる。&lt;br&gt;またツールを呼んでいたら、&lt;br&gt;3 周目に進んでいた。" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontColor=#8b8678;" vertex="1" parent="1">
+        <mxCell id="stop" value="ツールを呼ばずに文章を返したので&lt;br&gt;ループはここで止まる&lt;br&gt;またツールを呼んでいたら&lt;br&gt;3 周目に進んでいた" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontColor=#8b8678;" vertex="1" parent="1">
           <mxGeometry x="1050" y="390" width="240" height="100" as="geometry" />
         </mxCell>
         <mxCell id="f1" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#8b8678;endArrow=block;endFill=1;" edge="1" parent="1" source="in2" target="m2"><mxGeometry relative="1" as="geometry" /></mxCell>
