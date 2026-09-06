@@ -63,7 +63,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証情報が要るので、リュウキがブラウザで認証できるタイミングで進める。
 
 1. #31 と #32 の修正を `scripts/build-ami.sh` で AMI に焼き直す（インスタンスタイプは t4g.medium、Copilot の無効化も試す）。受講者 2 人分で apply して deploy し、Runtime の実名（`handsonuserNN_agent`）と CloudFormation のスタック（`AgentCore-handsonuserNN-default`）が受講者ごとに分かれることを確認する。ここまでで Issue #5 と #15 を閉じる。#36（UI への導線）もこの焼き直しに含める
-2. Cloudflare のワイルドカード CNAME の Terraform 管理（Issue #30）を実機で確認する。コードは入っているので、Cloudflare で DNS 編集だけのトークンを発行して `CLOUDFLARE_API_TOKEN` に入れ、`terraform.tfvars` に `cloudflare_zone_id` を足し、手で入れた `*.<base_domain>` の CNAME を消してから apply する（`terraform validate` は通っているが apply は未実施）
+2. Cloudflare のワイルドカード CNAME の Terraform 管理（Issue #30）を実機で確認する。コードは入っていて、DNS 編集だけのトークン発行、`terraform.tfvars` への `cloudflare_zone_id` の追記、手で入れていた `*.<base_domain>` の CNAME の削除まで済んでいる（2026-09-06）。トークンは git 管理外の `~/.config/agentcore-handson/cloudflare.env` に置いてあるので、`source` してから `terraform init` と plan / apply を実行する（`terraform validate` は通っているが apply は未実施）
 3. 後片付けの仕組み（Issue #17）を実装する
 4. 人数ぶんへの展開（Issue #6）
 
