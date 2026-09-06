@@ -32,7 +32,7 @@ ALB は HTTPS:443 のリスナーを持ち、ACM で発行したワイルドカ�
 
 リスナールールはホストベースで、`user01.handson.example.com` を受講者 01 のターゲットグループに、`user02...` を 02 に、という形で振り分けます。受講者を増やしてもルールとターゲットグループが増えるだけで、ALB は 1 つのままです。
 
-DNS は Cloudflare で管理します。`*.handson.example.com` の CNAME を ALB の DNS 名に向けるレコードを 1 本引けば、サブドメインが何個あっても解決します。Cloudflare のプロキシ（オレンジクラウド）はワイルドカードでは有料プランが必要になるため、DNS only（グレークラウド）で運用します。TLS は ALB 上の ACM 証明書がそのまま使われます。
+DNS は Cloudflare で管理します。`*.handson.example.com` の CNAME を ALB の DNS 名に向けるレコードを 1 本引けば、サブドメインが何個あっても解決します。このレコードは Terraform が Cloudflare のプロバイダー経由で作るので、ALB を作り直して DNS 名が変わっても手で差し替える必要はありません。Cloudflare のプロキシ（オレンジクラウド）はワイルドカードでは有料プランが必要になるため、DNS only（グレークラウド）で運用します。TLS は ALB 上の ACM 証明書がそのまま使われます。
 
 ACM の証明書検証も DNS 検証なので、Cloudflare に検証用の CNAME を 1 本追加します。
 

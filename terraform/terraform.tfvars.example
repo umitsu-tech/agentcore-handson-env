@@ -6,6 +6,11 @@ base_domain = "handson.example.com"
 # *.handson.example.com のワイルドカード証明書。ALB と同じリージョンで発行しておく
 certificate_arn = "arn:aws:acm:ap-northeast-1:123456789012:certificate/00000000-0000-0000-0000-000000000000"
 
+# base_domain を管理している Cloudflare ゾーンの ID（ゾーンの概要ページに出る）。
+# *.handson.example.com の CNAME を ALB に向けるレコードは Terraform が作る。
+# API トークンはここに書かず、環境変数 CLOUDFLARE_API_TOKEN で渡す
+cloudflare_zone_id = "0123456789abcdef0123456789abcdef"
+
 # まずは 1 人で通す。増やすときはここに足す
 participants = ["user01"]
 

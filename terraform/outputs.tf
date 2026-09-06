@@ -15,7 +15,7 @@ output "participant_passwords" {
 }
 
 output "alb_dns_name" {
-  description = "DNS の CNAME をこの名前に向ける。*.<base_domain> のワイルドカードを 1 本引けば人数が増えてもレコードは増えない"
+  description = "ALB の DNS 名。*.<base_domain> の CNAME は Terraform が向けるので手作業は不要。Cloudflare 側の値と突き合わせるときに見る"
   value       = aws_lb.this.dns_name
 }
 

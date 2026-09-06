@@ -46,11 +46,19 @@ AMI には次のものが入ります。
 
 スクリプトが確認するのは code-server の `/healthz` とハンズオン UI の `/api/context` が応答することまでです。`agentcore deploy` が最後まで通ること、デプロイしたエージェントをハンズオン UI から呼んで動きが画面に出ることは、Terraform で 1 台立ててから確認します。
 
-### DNS のレコードを引く
+### Cloudflare の API トークンを用意する
 
-ALB を作ったあと、`*.handson.example.com` の CNAME を ALB の DNS 名に向けて Cloudflare に追加します。プロキシは無効（DNS only）にします。
+`*.handson.example.com` の CNAME を ALB の DNS 名に向けるレコードは、Terraform が Cloudflare のプロバイダー経由で作ります。ALB は `destroy` と `apply` のたびに DNS 名が変わるので、手で差し替える代わりに Terraform に追随させます。
 
-このレコードはハンズオンが終わっても残して構いません。向き先の ALB が消えると名前解決の結果が返らなくなるだけです。
+Cloudflare のダッシュボードで API トークンを発行します。「カスタムトークン」を選び、権限は「ゾーン / DNS / 編集」だけ、ゾーンリソースは `base_domain` を管理しているゾーン 1 つだけに絞ります。トークンは tfvars に書かず、`terraform` を実行するシェルの環境変数で渡します。
+
+```bash
+export CLOUDFLARE_API_TOKEN=<発行したトークン>
+```
+
+ゾーン ID はゾーンの概要ページに表示される値を `terraform.tfvars` の `cloudflare_zone_id` に書きます（秘密ではありません）。
+
+以前に手で入れた `*.handson.example.com` の CNAME が残っている場合は、最初の `apply` の前に Cloudflare 側で削除しておきます。同じ名前の CNAME は 2 本置けないので、残っていると `apply` が失敗します。証明書の検証用 CNAME は Terraform の管理外なので、そのまま残します。
 
 ## 2. 当日
 
@@ -61,7 +69,9 @@ terraform plan
 terraform apply
 ```
 
-受講者数は変数で指定します。apply が終わると、受講者ごとの URL とパスワードが出力されます。
+受講者数は変数で指定します。apply が終わると、受講者ごとの URL とパスワードが出力されます。`*.handson.example.com` の CNAME も同じ apply の中で ALB に向けられます。DNS の反映に数十秒かかるので、URL を開いて確認するのは少し待ってからにします。
+
+ハンズオン当日は `destroy` せず apply したままにしておきます。`destroy` すると CNAME も一緒に消えます。
 
 ### 動作確認
 
@@ -103,12 +113,12 @@ aws ssm start-session --target <インスタンスID>
 terraform destroy
 ```
 
-EC2、ALB、ターゲットグループ、セキュリティグループ、VPC が消えます。
+EC2、ALB、ターゲットグループ、セキュリティグループ、VPC と、Cloudflare の `*.handson.example.com` の CNAME が消えます。`CLOUDFLARE_API_TOKEN` が環境変数に入っていないと CNAME の削除で止まるので、`apply` のときと同じシェルか、トークンを入れ直したシェルで実行します。
 
 ### 残ってよいもの
 
 - ACM の証明書（次回も使う。無料）
-- Cloudflare の DNS レコード（次回も使う）
+- Cloudflare の証明書検証用の CNAME（次回も使う。`*.handson.example.com` の CNAME のほうは Terraform が消す）
 - AMI とそのスナップショット（次回も使う。EBS スナップショットの保管料がかかる）
 - CDK のブートストラップ（次回も使う）
 
