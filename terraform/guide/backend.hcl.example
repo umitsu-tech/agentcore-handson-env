@@ -1,4 +1,4 @@
 # 実際の値を入れて backend.hcl という名前で保存する（backend.hcl は git 管理しない）。
-# 受講環境（terraform/backend.hcl）と同じバケット。キーは versions.tf 側で分けてある。
+# 受講環境（terraform/handson/backend.hcl）と同じバケット。キーは versions.tf 側で分けてある。
 bucket = "agentcore-handson-assets-123456789012"
 region = "ap-northeast-1"

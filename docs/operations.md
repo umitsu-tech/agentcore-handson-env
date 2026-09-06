@@ -35,7 +35,7 @@ scripts/build-ami.sh --volume-size 20   # サイズを変えて試すとき
 scripts/build-ami.sh --prune            # 古い AMI とスナップショットも消すとき
 ```
 
-終わると新しい AMI ID が表示され、`terraform/terraform.tfvars` があれば `ami_id` を書き換えます。
+終わると新しい AMI ID が表示され、`terraform/handson/terraform.tfvars` があれば `ami_id` を書き換えます。
 
 AMI には次のものが入ります。
 
@@ -64,10 +64,10 @@ terraform version                   # 1.10 以降であること
 aws s3api put-bucket-versioning --bucket agentcore-handson-assets-<アカウントID> --versioning-configuration Status=Enabled
 ```
 
-バケット名にはアカウント ID が入るので、`terraform/versions.tf` には書かず、`terraform/backend.hcl`（git 管理外）で渡します。`backend.hcl.example` を写して作り、`init` のときに指定します。
+バケット名にはアカウント ID が入るので、`terraform/handson/versions.tf` には書かず、`terraform/handson/backend.hcl`（git 管理外）で渡します。`backend.hcl.example` を写して作り、`init` のときに指定します。
 
 ```bash
-cd terraform
+cd terraform/handson
 cp backend.hcl.example backend.hcl   # bucket をアカウントの値に直す
 terraform init -backend-config=backend.hcl
 ```
@@ -76,34 +76,34 @@ terraform init -backend-config=backend.hcl
 
 別のマシンで引き継ぐときは、リポジトリを clone したうえで、git 管理外の 3 つを揃えれば同じ state に対して plan / apply / destroy が打てます。
 
-- `terraform/backend.hcl`（上の手順で作る）
-- `terraform/terraform.tfvars`（証明書の ARN、AMI ID、Cloudflare のゾーン ID など。元のマシンからコピーする）
+- `terraform/handson/backend.hcl`（上の手順で作る）
+- `terraform/handson/terraform.tfvars`（証明書の ARN、AMI ID、Cloudflare のゾーン ID など。元のマシンからコピーする）
 - 環境変数 `CLOUDFLARE_API_TOKEN`（次の項）
 
 同じ state に対して 2 か所から同時に apply すると、後から始めたほうがロックの取得で止まります。止まったら先に動いているほうが終わるのを待ちます。
 
 ### 受講者向けの手順書を配信する
 
-受講者が読む手順書（`guide/site/index.html`）は S3 + CloudFront で配信します。受講環境とは寿命が違う（手順書は前もって公開して当日まで置いておく）ので、Terraform のルートを `guide/terraform/` に分けてあり、state も同じバケットの別のキーです。
+受講者が読む手順書（`guide/site/index.html`）は S3 + CloudFront で配信します。受講環境とは寿命が違う（手順書は前もって公開して当日まで置いておく）ので、Terraform のルートを受講環境の `terraform/handson/` とは別の `terraform/guide/` に分けてあり、state も同じバケットの別のキーです。
 
 ```bash
-cd guide/terraform
+cd terraform/guide
 cp backend.hcl.example backend.hcl        # bucket を受講環境と同じ値にする
 terraform init -backend-config=backend.hcl
 terraform apply                           # CloudFront の作成に数分かかる
-cd ..
+cd ../../guide
 ./publish.sh                              # site/ を S3 に上げてキャッシュを消す
 ```
 
 apply の出力 `guide_url` が受講者に配る URL です。中身を直したら `guide/site/` を編集して main に push するだけで、GitHub Actions（`.github/workflows/publish-guide.yml`）が S3 に同期して CloudFront のキャッシュを消します。手で反映したいときは `publish.sh` を打っても同じです。Terraform は触りません。
 
-Actions の認証は OIDC で、GitHub にアクセスキーは置きません。`guide/terraform/terraform.tfvars` に `github_repository`（owner/repo）と、リポジトリと所有者の数値 ID（`gh api repos/<owner>/<repo> --jq .id` と `--jq .owner.id`）を書いて apply すると、このリポジトリの main で動くワークフローだけが assume できるロールができます。数値 ID が要るのは、2026 年 7 月以降に作られたリポジトリでは OIDC トークンの sub に ID が付く形（immutable subject claim）になるためです。apply の出力 `github_actions_role_arn` と `bucket_name`、`distribution_id` を、リポジトリの Settings → Secrets and variables → Actions → Variables に `AWS_ROLE_ARN`、`GUIDE_BUCKET`、`GUIDE_DISTRIBUTION_ID` として登録します（`gh variable set` でもよい）。GitHub の OIDC プロバイダーはアカウントに 1 つあればよく、既にある前提で参照しています。
+Actions の認証は OIDC で、GitHub にアクセスキーは置きません。`terraform/guide/terraform.tfvars` に `github_repository`（owner/repo）と、リポジトリと所有者の数値 ID（`gh api repos/<owner>/<repo> --jq .id` と `--jq .owner.id`）を書いて apply すると、このリポジトリの main で動くワークフローだけが assume できるロールができます。数値 ID が要るのは、2026 年 7 月以降に作られたリポジトリでは OIDC トークンの sub に ID が付く形（immutable subject claim）になるためです。apply の出力 `github_actions_role_arn` と `bucket_name`、`distribution_id` を、リポジトリの Settings → Secrets and variables → Actions → Variables に `AWS_ROLE_ARN`、`GUIDE_BUCKET`、`GUIDE_DISTRIBUTION_ID` として登録します（`gh variable set` でもよい）。GitHub の OIDC プロバイダーはアカウントに 1 つあればよく、既にある前提で参照しています。
 
 ワークフローの手動実行（Actions タブの Run workflow）は、ワークフローのファイルが main に入ってからでないと選べません。
 
-独自ドメイン（`guide.handson.example.com` など）を付けるときは、`guide/terraform/terraform.tfvars` に `guide_hostname` と `cloudflare_zone_id` を書いて apply します。CloudFront 用の証明書は us-east-1 で発行する決まりなので、受講環境のワイルドカード証明書（ap-northeast-1）は使えず、Terraform がホスト名単体の証明書を us-east-1 で発行し、検証用の CNAME と本体の CNAME を Cloudflare に入れます。`CLOUDFLARE_API_TOKEN` は受講環境と同じもので構いません。
+独自ドメイン（`guide.handson.example.com` など）を付けるときは、`terraform/guide/terraform.tfvars` に `guide_hostname` と `cloudflare_zone_id` を書いて apply します。CloudFront 用の証明書は us-east-1 で発行する決まりなので、受講環境のワイルドカード証明書（ap-northeast-1）は使えず、Terraform がホスト名単体の証明書を us-east-1 で発行し、検証用の CNAME と本体の CNAME を Cloudflare に入れます。`CLOUDFLARE_API_TOKEN` は受講環境と同じもので構いません。
 
-ハンズオンが終わったら `guide/terraform` で `terraform destroy` すると、バケットの中身ごと消えます。次回も同じ手順書を使うなら残しておいても構いません（費用はほぼゼロ）。
+ハンズオンが終わったら `terraform/guide` で `terraform destroy` すると、バケットの中身ごと消えます。次回も同じ手順書を使うなら残しておいても構いません（費用はほぼゼロ）。
 
 ### Cloudflare の API トークンを用意する
 
@@ -138,7 +138,7 @@ terraform apply
 
 ### 受講者に配る
 
-code-server の URL とパスワードに加えて、ハンズオン UI の URL（`participant_ui_urls`）と手順書の URL（`guide/terraform` の `guide_url`）も一緒に配ります。受講者側で必要なのはブラウザだけです。
+code-server の URL とパスワードに加えて、ハンズオン UI の URL（`participant_ui_urls`）と手順書の URL（`terraform/guide` の `guide_url`）も一緒に配ります。受講者側で必要なのはブラウザだけです。
 
 配ったあとの進行は [curriculum.md](curriculum.md) を参照してください。
 

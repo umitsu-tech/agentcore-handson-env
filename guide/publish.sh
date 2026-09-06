@@ -5,12 +5,12 @@
 #   guide/publish.sh            # 同期 + キャッシュ削除
 #   guide/publish.sh --dry-run  # 何が上がるかだけ見る
 #
-# 同期先は guide/terraform の output から取る（terraform init 済みであること）。
+# 同期先は terraform/guide の output から取る（terraform init 済みであること）。
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 SITE_DIR="$HERE/site"
-TF_DIR="$HERE/terraform"
+TF_DIR="$HERE/../terraform/guide"
 DRY_RUN=false
 
 while [ $# -gt 0 ]; do

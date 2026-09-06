@@ -1,5 +1,5 @@
 terraform {
-  # 受講環境（../../terraform）と同じく S3 バックエンド + use_lockfile。1.10 以降が要る
+  # 受講環境（../handson）と同じく S3 バックエンド + use_lockfile。1.10 以降が要る
   required_version = ">= 1.10"
 
   required_providers {

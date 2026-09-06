@@ -125,7 +125,7 @@ systemctl enable code-server@handson
 # handson-agent/・handson-ui/ に加えて agentcore/（agentcore deploy 用の CLI 設定と
 # CDK コード）もここで展開される。agentcore/agentcore.json と aws-targets.json には
 # handsonPARTICIPANT / 000000000000 のプレースホルダが入っており、実際の値への
-# 差し替えは起動時に terraform/templates/configure-instance.sh.tftpl（user_data）が行う。
+# 差し替えは起動時に terraform/handson/templates/configure-instance.sh.tftpl（user_data）が行う。
 if [ -n "$ASSET_BUCKET" ]; then
   aws s3 cp "s3://${ASSET_BUCKET}/${ASSET_KEY}" /tmp/handson-workspace.tar.gz
   tar -xzf /tmp/handson-workspace.tar.gz -C /home/handson/workspace
@@ -158,7 +158,7 @@ fi
 
 # --- workspace の README --------------------------------------------------------
 # tar.gz のワークスペース展開のあとに書く（展開で上書きされないように）。
-# UI の URL は起動時に terraform/templates/configure-instance.sh.tftpl（user_data）がプレースホルダを実 URL に差し替える。
+# UI の URL は起動時に terraform/handson/templates/configure-instance.sh.tftpl（user_data）がプレースホルダを実 URL に差し替える。
 cat > /home/handson/workspace/README.md <<'README'
 # このフォルダにあるもの
 
