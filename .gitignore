@@ -18,6 +18,7 @@ terraform.rc
 
 # S3 バックエンドの接続情報（バケット名にアカウント ID が入る）。example だけコミットする
 terraform/backend.hcl
+guide/terraform/backend.hcl
 
 # 認証情報・秘密情報
 *.pem

@@ -82,6 +82,25 @@ terraform init -backend-config=backend.hcl
 
 同じ state に対して 2 か所から同時に apply すると、後から始めたほうがロックの取得で止まります。止まったら先に動いているほうが終わるのを待ちます。
 
+### 受講者向けの手順書を配信する
+
+受講者が読む手順書（`guide/site/index.html`）は S3 + CloudFront で配信します。受講環境とは寿命が違う（手順書は前もって公開して当日まで置いておく）ので、Terraform のルートを `guide/terraform/` に分けてあり、state も同じバケットの別のキーです。
+
+```bash
+cd guide/terraform
+cp backend.hcl.example backend.hcl        # bucket を受講環境と同じ値にする
+terraform init -backend-config=backend.hcl
+terraform apply                           # CloudFront の作成に数分かかる
+cd ..
+./publish.sh                              # site/ を S3 に上げてキャッシュを消す
+```
+
+apply の出力 `guide_url` が受講者に配る URL です。中身を直したら `guide/site/index.html` を編集して `publish.sh` を打つだけで、Terraform は触りません。
+
+独自ドメイン（`guide.handson.example.com` など）を付けるときは、`guide/terraform/terraform.tfvars` に `guide_hostname` と `cloudflare_zone_id` を書いて apply します。CloudFront 用の証明書は us-east-1 で発行する決まりなので、受講環境のワイルドカード証明書（ap-northeast-1）は使えず、Terraform がホスト名単体の証明書を us-east-1 で発行し、検証用の CNAME と本体の CNAME を Cloudflare に入れます。`CLOUDFLARE_API_TOKEN` は受講環境と同じもので構いません。
+
+ハンズオンが終わったら `guide/terraform` で `terraform destroy` すると、バケットの中身ごと消えます。次回も同じ手順書を使うなら残しておいても構いません（費用はほぼゼロ）。
+
 ### Cloudflare の API トークンを用意する
 
 `*.handson.example.com` の CNAME を ALB の DNS 名に向けるレコードは、Terraform が Cloudflare のプロバイダー経由で作ります。ALB は `destroy` と `apply` のたびに DNS 名が変わるので、手で差し替える代わりに Terraform に追随させます。
@@ -115,7 +134,7 @@ terraform apply
 
 ### 受講者に配る
 
-code-server の URL とパスワードに加えて、ハンズオン UI の URL（`participant_ui_urls`）も一緒に配ります。受講者側で必要なのはブラウザだけです。
+code-server の URL とパスワードに加えて、ハンズオン UI の URL（`participant_ui_urls`）と手順書の URL（`guide/terraform` の `guide_url`）も一緒に配ります。受講者側で必要なのはブラウザだけです。
 
 配ったあとの進行は [curriculum.md](curriculum.md) を参照してください。
 

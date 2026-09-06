@@ -37,6 +37,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - モデルは比較のうえ Nova 2 Lite に据え置く。Nova Micro や旧 Nova Lite は安いが世代が古く、オープンモデルは Converse API でのツール呼び出しが未確認。下がる幅も最大 1 USD 程度で、ツール選択の確実さを優先した
 - 受講者には code-server と UI（/proxy/3000/）の 2 つの URL を配り、workspace の README を起動時に開いて導線にする（Issue #36）
 - Terraform の state は S3（build-ami.sh の資材バケットの `terraform-state/`）に置き、ロックは Terraform 1.10 以降の `use_lockfile` で取る。DynamoDB は使わない。バケット名は `terraform/backend.hcl`（git 管理外）で渡す（Issue #40）
+- 受講者向けの手順書は HTML 直書き（`guide/site/index.html`、原稿は curriculum から変換せず別で書く）を S3 非公開 + CloudFront OAC で配信する。Terraform のルートは寿命が違うので `guide/terraform/` に分け、state は同じバケットの別キー。中身の更新は `guide/publish.sh`。独自ドメインは `guide_hostname` を指定したときだけ（証明書は us-east-1 でホスト名単体を発行）（Issue #48）
 - Cloudflare の `*.<base_domain>` の CNAME は Terraform（cloudflare プロバイダー v5 の `cloudflare_dns_record`）で管理し、ALB の作り直しに自動で追随させる。API トークンは環境変数 `CLOUDFLARE_API_TOKEN` で渡し、ゾーン ID だけ tfvars に書く。証明書の検証用 CNAME は手で入れたまま管理外にする（Issue #30）
 
 ### できているもの
@@ -46,6 +47,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - 構成図とドキュメント（README.md、docs/architecture.md、docs/curriculum.md、docs/operations.md）
 - Strands Agent の雛形（`handson-agent/`）。実機でモデル呼び出し、Nova 2 Lite のツール選択、Runtime へのデプロイまで確認した。ツールはデータ（dict / list）を返す
 - ハンズオン UI（`handson-ui/`、React + Vite + FastAPI）。周ごとの見出しと折りたたみ、入力と出力の 2 色、ツールの結果の JSON 表示、Markdown 記号の抑制、ラベルの補足まで入っている
+- 受講者向けの手順書の配信（Issue #48、2026-09-06）。`guide/site/index.html` を S3 非公開 + CloudFront OAC で配信し、`https://guide.handson.<base_domain>/` で HTTPS 200、HTTP は 301、S3 直アクセスは 403 まで確認した。us-east-1 の証明書はホスト名単体で発行し、検証用 CNAME と本体の CNAME は Terraform が Cloudflare に入れる。中身の更新は `guide/publish.sh`
 - 後片付けの仕組み（Issue #17）。棚卸しスクリプト `scripts/cleanup-participant-resources.sh`（一覧モードは実機で確認済み、削除モードは未確認）と、`handson_end_time` で発火する Deny・EC2 停止・ALB 削除（`terraform validate` まで。apply は未実施）
 - 受講環境のセットアップスクリプト（`scripts/setup-instance.sh`）。`handson-ui/` 分離後の構成に追随済み
 - AMI を焼き直す一括スクリプト（`scripts/build-ami.sh`、Issue #19）。tar.gz の作成と S3 アップロード、固定名の IAM ロール `agentcore-handson-ami-builder` の用意、EC2 起動、cloud-init 完了待ち、再起動後の疎通確認、AMI 作成、EC2 削除、`terraform.tfvars` の `ami_id` 書き換えまで行う
@@ -63,8 +65,10 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 
 AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証情報が要るので、リュウキがブラウザで認証できるタイミングで進める。
 
-1. 人数ぶんへの展開（Issue #6）
-2. 後片付けの仕組み（Issue #17）を実機で確認する。`handson_end_time` を 10 分後などにして apply し、時刻を過ぎたら EC2 が停止・ALB が削除・受講者ロールで Bedrock が Deny されることを見る。Scheduler の universal target の ARN（`elasticloadbalancingv2:deleteLoadBalancer`）は apply で初めて検証される
+1. 手順書の中身を受講者向けに詰める（`guide/site/`。複数ページにしてもよい。フォルダ形式の URL は index.html を補わないので `step1.html` のようにファイル名で分ける）
+2. Terraform のルートを `terraform/handson/` と `terraform/guide/` に並べ直す（Issue #50）
+3. 人数ぶんへの展開（Issue #6）
+4. 後片付けの仕組み（Issue #17）を実機で確認する。`handson_end_time` を 10 分後などにして apply し、時刻を過ぎたら EC2 が停止・ALB が削除・受講者ロールで Bedrock が Deny されることを見る。Scheduler の universal target の ARN（`elasticloadbalancingv2:deleteLoadBalancer`）は apply で初めて検証される
 
 当日の運営（事前準備、リハーサル）はこのリポジトリの範囲外にした（Issue #7、#8 はクローズ）。
 

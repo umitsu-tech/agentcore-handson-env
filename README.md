@@ -37,7 +37,7 @@ Amazon Bedrock AgentCore のハンズオンを開催するための環境を Ter
         └── handson-flow.png      ハンズオンの流れ
 ```
 
-Terraform のコード、受講者のワークスペース（`handson-agent/`、`handson-ui/`）、AMI のセットアップスクリプトが入っています。
+Terraform のコード（`terraform/`）、受講者のワークスペース（`handson-agent/`、`handson-ui/`）、AMI のセットアップスクリプト（`scripts/`）、受講者向けの手順書とその配信用 Terraform（`guide/`）が入っています。
 
 ## 前提条件
 
