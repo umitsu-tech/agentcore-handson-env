@@ -51,3 +51,7 @@ terraform/*/.terraform/
 # 誤って `git add -f` されたときの二重の網。
 agentcore/.env.local
 agentcore/.cli/
+
+# 手順書サイトのビルド成果物（GitHub Actions がビルドして S3 に置く）
+guide/dist/
+guide/.astro/

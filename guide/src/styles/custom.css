@@ -1,0 +1,59 @@
+/* 手順書のサイトの見た目。ハンズオン UI と同じく、白地・端末のフォント・本文 16px 以上を守る */
+:root {
+  --sl-font: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --sl-font-mono: ui-monospace, Menlo, Consolas, monospace;
+  --sl-text-base: 1.0625rem;
+  --sl-line-height: 1.9;
+  --sl-content-width: 46rem;
+  --sl-color-accent-low: #e3f3f5;
+  --sl-color-accent: #2a7f8f;
+  --sl-color-accent-high: #1b5c68;
+  --sl-color-white: #1a1a1a;
+  --sl-color-gray-1: #2e2e2e;
+  --sl-color-gray-2: #444;
+  --sl-color-gray-3: #6b6b6b;
+  --sl-color-gray-4: #c8c8c8;
+  --sl-color-gray-5: #e6e6e6;
+  --sl-color-gray-6: #f4f4f4;
+  --sl-color-gray-7: #fafafa;
+  --sl-color-black: #ffffff;
+}
+
+/* 見出しの階層をはっきりさせる。h2 は上に線を引いて区切りにする */
+.sl-markdown-content h2 {
+  display: block;
+  width: 100%;
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--sl-color-gray-5);
+  font-size: 1.45rem;
+}
+.sl-markdown-content h3 {
+  font-size: 1.15rem;
+}
+
+/* 受講者が打つコマンドは大きめに */
+.sl-markdown-content .expressive-code {
+  font-size: 1rem;
+}
+
+/* 図は白背景で枠を付け、本文との境目を分かりやすくする */
+.sl-markdown-content img {
+  display: block;
+  margin: 1.25rem auto;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 8px;
+  background: #fff;
+}
+
+/* 手順（Steps）の番号を目立たせる */
+.sl-steps > li::before {
+  background: var(--sl-color-accent);
+  color: #fff;
+  font-weight: 700;
+}
+
+/* 注意書き */
+.starlight-aside {
+  border-radius: 6px;
+}

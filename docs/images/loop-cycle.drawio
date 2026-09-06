@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" agent="claude-code" version="26.0.0">
+  <diagram id="loop-cycle" name="エージェントのループ">
+    <mxGraphModel dx="1200" dy="900" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1300" pageHeight="600" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="エージェントの 1 回の実行" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=24;fontStyle=1;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="40" y="24" width="700" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="sub" value="モデルは文章を返すだけ。ツールを実際に動かすのは手元のプログラム。その結果をもう一度モデルに渡す。" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=14;fontColor=#54646F;" vertex="1" parent="1">
+          <mxGeometry x="40" y="64" width="1000" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="r1" value="1 周目" style="text;html=1;strokeColor=none;fillColor=#01A88D;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=14;fontStyle=1;fontColor=#FFFFFF;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="140" width="70" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="r1sub" value="モデルを呼ぶ。質問とツールの一覧を渡す" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontColor=#54646F;" vertex="1" parent="1">
+          <mxGeometry x="120" y="140" width="400" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="q" value="&lt;b&gt;あなたの質問&lt;/b&gt;&lt;br&gt;モニター借りたいんだけど" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#01A88D;fillColor=#E2F1EE;fontSize=14;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="40" y="190" width="190" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="in1" value="&lt;b&gt;モデルへの入力&lt;/b&gt;&lt;br&gt;質問 + 使えるツールの一覧" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1A5FB4;fillColor=#E8F0FB;fontSize=14;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="270" y="190" width="190" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="m1" value="&lt;b&gt;モデル&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#232F3E;fillColor=#232F3E;fontSize=15;fontColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="500" y="200" width="110" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="out1" value="&lt;b&gt;モデルの判断&lt;/b&gt;&lt;br&gt;search_equipment を&lt;br&gt;「モニター」で呼んで" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#C2620F;fillColor=#FDF1E5;fontSize=14;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="650" y="185" width="190" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="tool" value="&lt;b&gt;ツールを実行&lt;/b&gt;&lt;br&gt;Python の関数が動く" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#24292F;fillColor=#F6F8FA;fontSize=14;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="880" y="190" width="150" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="res1" value="&lt;b&gt;ツールの結果&lt;/b&gt;&lt;br&gt;備品のデータ（JSON）" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#C2620F;fillColor=#FDF1E5;fontSize=14;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="190" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#54646F;endArrow=block;endFill=1;" edge="1" parent="1" source="q" target="in1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#54646F;endArrow=block;endFill=1;" edge="1" parent="1" source="in1" target="m1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#54646F;endArrow=block;endFill=1;" edge="1" parent="1" source="m1" target="out1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#54646F;endArrow=block;endFill=1;" edge="1" parent="1" source="out1" target="tool"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#54646F;endArrow=block;endFill=1;" edge="1" parent="1" source="tool" target="res1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="turn" value="出てきたものを、次は入れる" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#01A88D;strokeWidth=2;endArrow=block;endFill=1;fontSize=13;fontColor=#01A88D;labelBackgroundColor=none;verticalAlign=bottom;" edge="1" parent="1" source="res1" target="in2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="1130" y="330" /><mxPoint x="365" y="330" /></Array>
+            <mxPoint x="-1" y="-6" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="r2" value="2 周目" style="text;html=1;strokeColor=none;fillColor=#01A88D;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=14;fontStyle=1;fontColor=#FFFFFF;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="350" width="70" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="r2sub" value="ツールの結果を渡して、もう一度モデルを呼ぶ" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontColor=#54646F;" vertex="1" parent="1">
+          <mxGeometry x="120" y="350" width="400" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="in2" value="&lt;b&gt;モデルへの入力&lt;/b&gt;&lt;br&gt;ツールの結果 + ここまでの流れ" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1A5FB4;fillColor=#E8F0FB;fontSize=14;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="260" y="400" width="210" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="m2" value="&lt;b&gt;モデル&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#232F3E;fillColor=#232F3E;fontSize=15;fontColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="500" y="410" width="110" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="out2" value="&lt;b&gt;モデルの答え&lt;/b&gt;&lt;br&gt;空いているのは 27 インチの&lt;br&gt;モニターです（文章）" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#C2620F;fillColor=#FDF1E5;fontSize=14;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="650" y="395" width="190" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="ans" value="&lt;b&gt;最終的な答え&lt;/b&gt;&lt;br&gt;画面に出る" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#01A88D;fillColor=#E2F1EE;fontSize=14;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="880" y="400" width="150" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="stop" value="ツールを呼ばずに文章を返したので、&lt;br&gt;ループはここで止まる。&lt;br&gt;またツールを呼んでいたら、&lt;br&gt;3 周目に進んでいた。" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontColor=#54646F;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="390" width="240" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="f1" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#54646F;endArrow=block;endFill=1;" edge="1" parent="1" source="in2" target="m2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="f2" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#54646F;endArrow=block;endFill=1;" edge="1" parent="1" source="m2" target="out2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="f3" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#54646F;endArrow=block;endFill=1;" edge="1" parent="1" source="out2" target="ans"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="lg1" value="緑 = ループの入口と出口" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13;fontColor=#01A88D;" vertex="1" parent="1"><mxGeometry x="40" y="520" width="200" height="24" as="geometry" /></mxCell>
+        <mxCell id="lg2" value="青 = モデルに入るもの" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13;fontColor=#1A5FB4;" vertex="1" parent="1"><mxGeometry x="250" y="520" width="200" height="24" as="geometry" /></mxCell>
+        <mxCell id="lg3" value="オレンジ = モデルかツールから出てくるもの" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13;fontColor=#C2620F;" vertex="1" parent="1"><mxGeometry x="450" y="520" width="320" height="24" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

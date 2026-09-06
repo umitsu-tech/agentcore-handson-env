@@ -47,7 +47,7 @@ Amazon Bedrock AgentCore のハンズオンを開く側のための環境です�
 │   ├── setup-instance.sh         AMI に入れるものを揃える（build-ami.sh が流す）
 │   └── cleanup-participant-resources.sh  受講者が作ったものを棚卸しして消す
 └── .github/workflows/
-    └── publish-guide.yml         guide/site/ が main に入ったら自動で配信する
+    └── publish-guide.yml         guide/ が main に入ったらビルドして自動で配信する
 ```
 
 Terraform は受講環境と手順書で寿命が違うので、ルートを 2 つに分けています。state はどちらも S3 に置きます。
