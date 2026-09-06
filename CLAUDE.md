@@ -55,16 +55,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - 1 人分の通し確認（2026-09-06、AMI `ami-00c0b0303a0921d88` = agentcore-handson-20260906-0825、arm64、ルートボリューム 15GiB）。code-server にログインすると `/home/handson/workspace` が開いた状態で始まる / `agentcore deploy` が受講者の権限で 1 行で通る（約 3 分）/ ハンズオン UI から手元と Runtime のどちらでも同じ画面で動く、の 3 点を確認した。確認後に Runtime のスタック（CloudFormation）と Terraform の環境は削除し、古い AMI 2 本（`ami-04d14015e8f390da7`、`ami-0687e031e99ce5eaf`）も削除した。この AMI には Issue #32（`runtime.py` の `app.run()`）と #31（受講者ごとのプロジェクト名）の修正が入っていないので、次に焼き直す
 - Cloudflare のワイルドカード CNAME の Terraform 管理（Issue #30、2026-09-06）。DNS 編集だけの API トークンを発行し、手で入れていた CNAME を消してから apply（27 リソース）したところ、ALB の作成直後に CNAME が新しい DNS 名へ向き、`https://user01.<base_domain>/login` が 200 を返した。apply 直後の再 plan は No changes。destroy で CNAME も一緒に消え、証明書の検証用 CNAME だけが残ることも確認した。トークンは git 管理外の `~/.config/agentcore-handson/cloudflare.env` に置き、terraform の前に `source` する
 
-インスタンスタイプの実測（Issue #15、2026-09-06、AMI `ami-0e6e145f65e038cd9` = agentcore-handson-20260906-1805）。t4g.small と t4g.medium で `agentcore deploy --yes` を SSM 経由で計測した。
-
-| | small（新規スタック） | medium（新規スタック） | medium（再 deploy） |
-|---|---|---|---|
-| 所要時間 | 99 秒 | 112 秒 | 27 秒 |
-| CPU user 平均 | 26% | 24% | 47% |
-| iowait 平均 / 最大 | 3% / 24% | 10% / 52% | 11% / 17% |
-| free の最小値 | 210MB | 2114MB | 1964MB |
-
-small でも CPU が張り付くのは最初の 30 秒だけで、残りは CloudFormation 待ち。free が 210MB まで落ちてもキャッシュが 660MB あり、メモリ不足ではない。medium の新規で iowait が高いのは起動直後の EBS の初回読み込み。前回の「3 分・load 10」は同梱の Copilot 拡張と起動直後の読み込みが重なっていたと見ている。結論は t4g.small のまま、ルート 15GiB。Copilot 拡張の削除は効いている（プロセス 0、拡張ディレクトリなし、再起動後の使用メモリ 301MB）。Runtime 名（`handsonuserNN_agent`）と CloudFormation スタック（`AgentCore-handsonuserNN-default`）が受講者ごとに分かれることも 2 人分で確認した（Issue #31）
+インスタンスタイプの実測（Issue #15、2026-09-06、AMI `ami-0e6e145f65e038cd9` = agentcore-handson-20260906-1805）。t4g.small と t4g.medium で `agentcore deploy` を計測し、所要時間に差が無かった（small 99 秒、medium 112 秒）ので t4g.small のまま、ルート 15GiB。表と考察は [docs/architecture.md](docs/architecture.md) の「インスタンスタイプは実測で t4g.small にした」にある。Copilot 拡張の削除は効いている（プロセス 0、拡張ディレクトリなし、再起動後の使用メモリ 301MB）。Runtime 名（`handsonuserNN_agent`）と CloudFormation スタック（`AgentCore-handsonuserNN-default`）が受講者ごとに分かれることも 2 人分で確認した（Issue #31）。確認後に Terraform の環境と Runtime のスタック 2 つは削除した
 
 ### 次の一歩
 
