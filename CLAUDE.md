@@ -35,6 +35,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - UI のサーバーは `uvicorn --reload --reload-dir ../handson-agent` で起動し、受講者が `tools.py` を保存したら画面のツール一覧が追随するようにする
 - 後片付けは仕組みで担保する（Issue #17）。ハンズオン由来のリソースだけを選んで消す棚卸しスクリプトを本命に、終了時刻を Terraform の変数で渡して IAM の Deny・EC2 停止・ALB 削除を時刻で発火させる。Budgets は既存のものを使う
 - モデルは比較のうえ Nova 2 Lite に据え置く。Nova Micro や旧 Nova Lite は安いが世代が古く、オープンモデルは Converse API でのツール呼び出しが未確認。下がる幅も最大 1 USD 程度で、ツール選択の確実さを優先した
+- 受講者には code-server と UI（/proxy/3000/）の 2 つの URL を配り、workspace の README を起動時に開いて導線にする（Issue #36）
 
 ### できているもの
 
@@ -60,7 +61,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 
 AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証情報が要るので、リュウキがブラウザで認証できるタイミングで進める。
 
-1. #31 と #32 の修正を `scripts/build-ami.sh` で AMI に焼き直す（インスタンスタイプは t4g.medium、Copilot の無効化も試す）。受講者 2 人分で apply して deploy し、Runtime の実名（`handsonuserNN_agent`）と CloudFormation のスタック（`AgentCore-handsonuserNN-default`）が受講者ごとに分かれることを確認する。ここまでで Issue #5 と #15 を閉じる
+1. #31 と #32 の修正を `scripts/build-ami.sh` で AMI に焼き直す（インスタンスタイプは t4g.medium、Copilot の無効化も試す）。受講者 2 人分で apply して deploy し、Runtime の実名（`handsonuserNN_agent`）と CloudFormation のスタック（`AgentCore-handsonuserNN-default`）が受講者ごとに分かれることを確認する。ここまでで Issue #5 と #15 を閉じる。#36（UI への導線）もこの焼き直しに含める
 2. Cloudflare のワイルドカード CNAME を Terraform で管理する（Issue #30）。いまは apply のたびに手で差し替えている
 3. 後片付けの仕組み（Issue #17）を実装する
 4. 人数ぶんへの展開（Issue #6）

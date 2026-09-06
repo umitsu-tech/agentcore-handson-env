@@ -18,6 +18,7 @@ resource "aws_instance" "participant" {
     code_server_password = random_password.code_server[each.key].result
     participant          = each.key
     account_id           = data.aws_caller_identity.current.account_id
+    hostname             = local.participants[each.key].hostname
   })
   user_data_replace_on_change = true
 

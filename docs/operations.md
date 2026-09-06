@@ -69,7 +69,7 @@ terraform apply
 
 ### 受講者に配る
 
-URL とパスワードを配布します。受講者側で必要なのはブラウザだけです。
+code-server の URL とパスワードに加えて、ハンズオン UI の URL（`participant_ui_urls`）も一緒に配ります。受講者側で必要なのはブラウザだけです。
 
 配ったあとの進行は [curriculum.md](curriculum.md) を参照してください。
 

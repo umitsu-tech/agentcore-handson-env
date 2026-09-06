@@ -78,16 +78,22 @@ OVERRIDE
 systemctl daemon-reload
 
 # 初回起動時の Welcome タブ・拡張機能のおすすめ・ワークスペース信頼ダイアログなど、
-# 受講者を迷わせる表示を抑える
+# 受講者を迷わせる表示を抑える。startupEditor は README にして、開いた瞬間に
+# workspace/README.md（このスクリプトが書く）が表示されるようにする
 install -d -o handson -g handson /home/handson/.local/share/code-server/User
 cat > /home/handson/.local/share/code-server/User/settings.json <<'SETTINGS'
 {
-  "workbench.startupEditor": "none",
+  "workbench.startupEditor": "readme",
   "extensions.ignoreRecommendations": true,
   "telemetry.telemetryLevel": "off",
   "workbench.tips.enabled": false,
   "security.workspace.trust.enabled": false,
-  "update.mode": "none"
+  "update.mode": "none",
+  "remote.portsAttributes": {
+    "3000": {
+      "label": "ハンズオン UI"
+    }
+  }
 }
 SETTINGS
 chown handson:handson /home/handson/.local/share/code-server/User/settings.json
@@ -128,6 +134,30 @@ if [ -n "$ASSET_BUCKET" ]; then
   sudo -u handson env PATH="$PATH" npm run build
   popd
 fi
+
+# --- workspace の README --------------------------------------------------------
+# tar.gz のワークスペース展開のあとに書く（展開で上書きされないように）。
+# UI の URL は起動時に scripts/configure-instance.sh がプレースホルダを実 URL に差し替える。
+cat > /home/handson/workspace/README.md <<'README'
+# このフォルダにあるもの
+
+- handson-agent/ : 受講者が触る雛形
+- handson-ui/ : 主催者側の画面
+- agentcore/ : deploy 用の設定。触らない
+
+# 最初に開くもの
+
+ハンズオン UI を開いてください。
+
+HANDSON_UI_URL_PLACEHOLDER
+
+エージェントの動きを見る画面です。tools.py を保存すると自動で追随します。
+
+# ターミナル
+
+メニューの Terminal → New Terminal で /home/handson/workspace が開きます。後半で打つのは agentcore deploy の1行です。
+README
+chown handson:handson /home/handson/workspace/README.md
 
 # --- ハンズオン UI を自動起動 --------------------------------------------------
 cat > /etc/systemd/system/handson-ui.service <<'UNIT'

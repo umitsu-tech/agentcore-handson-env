@@ -3,6 +3,11 @@ output "participant_urls" {
   value       = { for k, v in local.participants : k => "https://${v.hostname}" }
 }
 
+output "participant_ui_urls" {
+  description = "受講者に配るハンズオン UI の URL。code-server にログイン済みのブラウザで開く"
+  value       = { for k, v in local.participants : k => "https://${v.hostname}/proxy/3000/" }
+}
+
 output "participant_passwords" {
   description = "受講者ごとの code-server のパスワード"
   value       = { for k, v in random_password.code_server : k => v.result }
