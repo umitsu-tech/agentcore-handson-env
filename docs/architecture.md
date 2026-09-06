@@ -135,6 +135,14 @@ user_data でセットアップを実行する方式だと、当日 30 台が同
 
 事前に 1 台を作り込んで AMI にしておけば、当日は起動するだけです。セットアップの成否は前日までに確定します。
 
+### 後片付けは仕組みで担保する
+
+EC2 と ALB は起動している限り課金されます。金額は小さくても、消し忘れて数日放置すると桁が変わります。受講者が `agentcore deploy` で作る Runtime やスタックは Terraform の管理外で人数ぶんバラバラに残るので、手順書だけに頼らず仕組みで担保します（Issue #17）。
+
+本命は棚卸しスクリプト（`scripts/cleanup-participant-resources.sh`）です。名前が `handson` で始まるものだけを選んで一覧し、`--delete` を付けたときだけ消します。同じアカウントに別案件のリソースがあるため、タグではなく名前の接頭辞で絞っています。接頭辞は `agentcore.json` のプロジェクト名（`handsonPARTICIPANT` を起動時に `handsonuserNN` へ置換）で固定されているので、Runtime 名・スタック名・ロール名・ロググループ名がすべて同じ規則から派生します。
+
+保険として、Terraform の変数 `handson_end_time` を 1 つ渡すと、その時刻に受講者ロールの Deny（`aws:CurrentTime` 条件）で Bedrock と Runtime の呼び出しを止め、EventBridge Scheduler の一回きりスケジュールで EC2 を停止し、ALB を削除します。Scheduler は universal target で API を直接呼ぶので Lambda は置きません。自動で行うのは「停止」までで、最終的な削除は人が棚卸しスクリプトと `terraform destroy` まで通します。
+
 ### Terraform の state は S3 に置く
 
 state を手元にしか置かないと、作業しているマシンが当日使えなくなったときに `terraform destroy` の経路が塞がり、別のマシンや別の人が apply / destroy を引き継げません。ロックも効かないので、同じ state に二重に apply する事故も防げません。当日は 30 人ぶんのリソースを Terraform で持つので、state は S3 に置きます（Issue #40）。

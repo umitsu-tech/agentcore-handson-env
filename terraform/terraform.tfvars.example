@@ -22,3 +22,9 @@ ami_id = "ami-00c0b0303a0921d88"
 
 # ルートボリュームのサイズ（GiB）。AMI のルートボリューム（15GiB）以上にする
 # root_volume_size = 15
+
+# ハンズオンの終了時刻（RFC3339、オフセット付き）。この時刻を過ぎると受講者ロールから
+# Bedrock と Runtime の呼び出しが Deny され、EventBridge Scheduler が EC2 を停止して ALB を消す。
+# 当日の apply で設定する。検証のときは書かない（仕組みごと作られない）
+# handson_end_time = "2026-10-31T17:00:00+09:00"
+# handson_timezone = "Asia/Tokyo"

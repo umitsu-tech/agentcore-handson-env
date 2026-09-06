@@ -33,7 +33,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - ハンズオン UI の見せ方は、ループの 1 周を「モデルを呼んで、ツールを実行して、結果を受け取るまで」とし、周ごとに折りたためる見出しで区切る。色は 3 つだけで、青緑はループの入口と出口（お題の質問と最終的な答え）、青はモデルに入るもの、オレンジはモデルかツールから出てくるもの。周の境目では同じカードを重複して出し、色をオレンジから青に切り替えて「出てきたものを次は入れる」を見せる
 - UI は常にライトテーマ、端末のフォントだけを使い、本文 16px・補助 13px 以上、白地でコントラスト比 4.5 以上を保つ（プロジェクターで見にくかったため）
 - UI のサーバーは `uvicorn --reload --reload-dir ../handson-agent` で起動し、受講者が `tools.py` を保存したら画面のツール一覧が追随するようにする
-- 後片付けは仕組みで担保する（Issue #17）。ハンズオン由来のリソースだけを選んで消す棚卸しスクリプトを本命に、終了時刻を Terraform の変数で渡して IAM の Deny・EC2 停止・ALB 削除を時刻で発火させる。Budgets は既存のものを使う
+- 後片付けは仕組みで担保する（Issue #17、実装済み）。名前が `handson` で始まるものだけを選んで消す棚卸しスクリプト `scripts/cleanup-participant-resources.sh` を本命に、終了時刻 `handson_end_time` を Terraform の変数で渡して IAM の Deny・EC2 停止（EventBridge Scheduler）・ALB 削除を時刻で発火させる。時刻後は apply せず destroy の一方向。Budgets は既存のものを使う
 - モデルは比較のうえ Nova 2 Lite に据え置く。Nova Micro や旧 Nova Lite は安いが世代が古く、オープンモデルは Converse API でのツール呼び出しが未確認。下がる幅も最大 1 USD 程度で、ツール選択の確実さを優先した
 - 受講者には code-server と UI（/proxy/3000/）の 2 つの URL を配り、workspace の README を起動時に開いて導線にする（Issue #36）
 - Terraform の state は S3（build-ami.sh の資材バケットの `terraform-state/`）に置き、ロックは Terraform 1.10 以降の `use_lockfile` で取る。DynamoDB は使わない。バケット名は `terraform/backend.hcl`（git 管理外）で渡す（Issue #40）
@@ -46,6 +46,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - 構成図とドキュメント（README.md、docs/architecture.md、docs/curriculum.md、docs/operations.md）
 - Strands Agent の雛形（`handson-agent/`）。実機でモデル呼び出し、Nova 2 Lite のツール選択、Runtime へのデプロイまで確認した。ツールはデータ（dict / list）を返す
 - ハンズオン UI（`handson-ui/`、React + Vite + FastAPI）。周ごとの見出しと折りたたみ、入力と出力の 2 色、ツールの結果の JSON 表示、Markdown 記号の抑制、ラベルの補足まで入っている
+- 後片付けの仕組み（Issue #17）。棚卸しスクリプト `scripts/cleanup-participant-resources.sh`（一覧モードは実機で確認済み、削除モードは未確認）と、`handson_end_time` で発火する Deny・EC2 停止・ALB 削除（`terraform validate` まで。apply は未実施）
 - 受講環境のセットアップスクリプト（`scripts/setup-instance.sh`）。`handson-ui/` 分離後の構成に追随済み
 - AMI を焼き直す一括スクリプト（`scripts/build-ami.sh`、Issue #19）。tar.gz の作成と S3 アップロード、固定名の IAM ロール `agentcore-handson-ami-builder` の用意、EC2 起動、cloud-init 完了待ち、再起動後の疎通確認、AMI 作成、EC2 削除、`terraform.tfvars` の `ami_id` 書き換えまで行う
 - 1 人分の Terraform（`terraform/`）。AMI 前提の構成で、`ami_id` を必須で受け取り、user_data は code-server のパスワードを差し込むだけ。`terraform plan` が 26 リソースで通るところまで（apply は証明書と DNS 待ち）
@@ -62,8 +63,8 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 
 AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証情報が要るので、リュウキがブラウザで認証できるタイミングで進める。
 
-1. 後片付けの仕組み（Issue #17）を実装する
-2. 人数ぶんへの展開（Issue #6）
+1. 人数ぶんへの展開（Issue #6）
+2. 後片付けの仕組み（Issue #17）を実機で確認する。`handson_end_time` を 10 分後などにして apply し、時刻を過ぎたら EC2 が停止・ALB が削除・受講者ロールで Bedrock が Deny されることを見る。Scheduler の universal target の ARN（`elasticloadbalancingv2:deleteLoadBalancer`）は apply で初めて検証される
 
 当日の運営（事前準備、リハーサル）はこのリポジトリの範囲外にした（Issue #7、#8 はクローズ）。
 

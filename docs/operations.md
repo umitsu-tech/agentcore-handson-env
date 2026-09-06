@@ -131,17 +131,52 @@ aws ssm start-session --target <インスタンスID>
 
 ## 3. 後片付け
 
-### 受講者が作ったリソースを消す
+後片付けは 3 段階です。当日の終了時刻で自動停止が発火し、翌日以降に棚卸しスクリプトで受講者が作ったものを消し、最後に `terraform destroy` で Terraform が作ったものを消します。手順書だけに頼らず、消し忘れても課金が翌日まで伸びないように仕組みで止めます。
 
-`terraform destroy` で消えるのは Terraform が作ったものだけです。受講者が `agentcore deploy` で作った AgentCore Runtime、その実行ロール、CDK が作った CloudFormation スタックは Terraform の管理外なので残ります。
+これとは別に、受講者には当日の最後に自分の deploy を自分で消してもらいます（`agentcore remove all` のあと `agentcore deploy`。[docs/curriculum.md](curriculum.md) の「5. 振り返る」）。受講者が消す → 消し忘れた分を翌日のスクリプトが拾う、の二段構えです。
 
-これらを先に片付けます。残っている AgentCore Runtime は課金対象になり得るので、消し忘れないようにします。
+### 終了時刻で自動停止する（当日の apply で仕込む）
 
-プロジェクト名は受講者ごとに `handsonuserNN`（`userNN` は Terraform の `participants` に渡した受講者キー）という規則になっており、Runtime の実名はそこに runtime 名 `agent` を足した `handsonuserNN_agent`、CloudFormation のスタック名は `AgentCore-handsonuserNN-default` になります。一覧を見れば取りこぼしがないか確認できます。
+`terraform.tfvars` に `handson_end_time` を書いて apply すると、その時刻に次の 3 つが起きます。
 
-- AgentCore Runtime の一覧を確認して削除する（`handsonuserNN_agent` が全員ぶん揃っているはず）
-- CDK が作った CloudFormation スタック（`AgentCore-handsonuserNN-default`）を削除する
-- `*BedrockAgentCore*` のロールが残っていないか確認する
+- 受講者の EC2 のロールに Deny が効き、Bedrock のモデル呼び出しと AgentCore Runtime の呼び出しができなくなる（IAM の `aws:CurrentTime` 条件。追加リソースはなし）
+- EventBridge Scheduler が受講者の EC2 を全台停止する
+- 同じ時刻に ALB を削除する（ALB は停止できないので削除する）
+
+```hcl
+# terraform.tfvars
+handson_end_time = "2026-10-31T17:00:00+09:00"   # 秒とオフセットまで書く
+handson_timezone = "Asia/Tokyo"                   # 既定値。オフセットと食い違わせない
+```
+
+apply の出力 `handson_deadline` に、壁時計の時刻と UTC の両方が出るので、意図した時刻になっているか確認します。
+
+時刻を過ぎたあとの状態と注意点です。
+
+- 止まるのは EC2 と Bedrock の呼び出しで、消えるのは ALB だけです。EBS、AMI のスナップショット、受講者が作った Runtime は残ります。Runtime は呼ばれなければ課金されません
+- ALB を Terraform の外で消すので、**時刻を過ぎたあとは `terraform apply` を打たないでください**。apply すると ALB を作り直します。以降は `terraform destroy` の一方向です（destroy は消えたものを refresh で検知するので問題ありません）
+- 実行後のスケジュールは自動で消えます（`action_after_completion = DELETE`）。destroy のときに見つからなくても正常です
+- 終了時刻を延ばしたいときは、時刻が来る前に `handson_end_time` を書き換えて apply します。すでに過ぎてしまった場合は apply せず、手で `terraform destroy` に進みます
+- 検証や試し焼きのときは `handson_end_time` を書かないでおくと、この仕組みは作られません
+
+### 受講者が作ったリソースを消す（翌日以降）
+
+`terraform destroy` で消えるのは Terraform が作ったものだけです。受講者が `agentcore deploy` で作った AgentCore Runtime、その実行ロール、CDK が作った CloudFormation スタック、Runtime のロググループは Terraform の管理外なので残ります。これらは棚卸しスクリプトで消します。
+
+```bash
+scripts/cleanup-participant-resources.sh            # 一覧だけ。何も消さない
+scripts/cleanup-participant-resources.sh --delete   # 一覧のあと削除する
+```
+
+スクリプトは名前が `handson` で始まるものだけを対象にします（`--prefix` で変えられます）。同じアカウントにある別案件の Runtime や EC2 には触りません。
+
+- CloudFormation スタック `AgentCore-handsonuserNN-default` を削除する。Runtime `handsonuserNN_agent` と実行ロールはこの中なので、一緒に消える
+- スタックを消したあとに取り残された Runtime と `AgentCore-handson*` のロールがあれば直接消す
+- ロググループ `/aws/bedrock-agentcore/runtimes/handson*` を消す（スタックを消しても残る）
+
+ECR は対象外です。deploy は CodeZip 方式で、受講者ごとのリポジトリは作られません。CDK のブートストラップ（`cdk-hnb659fds-*`）は次回も使うので触りません。
+
+削除には受講者数に応じて数分かかります。終わったら一覧モードでもう一度実行し、すべて「なし」になっていることを確認します。
 
 ### Terraform で作ったものを消す
 
@@ -149,7 +184,7 @@ aws ssm start-session --target <インスタンスID>
 terraform destroy
 ```
 
-EC2、ALB、ターゲットグループ、セキュリティグループ、VPC と、Cloudflare の `*.handson.example.com` の CNAME が消えます。state は S3 にあるので、apply したマシンでなくても `backend.hcl` と `terraform.tfvars` を揃えれば別のマシンから打てます。`CLOUDFLARE_API_TOKEN` が環境変数に入っていないと CNAME の削除で止まるので、`apply` のときと同じシェルか、トークンを入れ直したシェルで実行します。
+EC2、ALB、ターゲットグループ、セキュリティグループ、VPC、Scheduler と、Cloudflare の `*.handson.example.com` の CNAME が消えます。自動停止で EC2 が停止済み・ALB が削除済みでも、そのまま destroy できます。state は S3 にあるので、apply したマシンでなくても `backend.hcl` と `terraform.tfvars` を揃えれば別のマシンから打てます。`CLOUDFLARE_API_TOKEN` が環境変数に入っていないと CNAME の削除で止まるので、`apply` のときと同じシェルか、トークンを入れ直したシェルで実行します。
 
 ### 残ってよいもの
 
@@ -157,6 +192,7 @@ EC2、ALB、ターゲットグループ、セキュリティグループ、VPC �
 - Cloudflare の証明書検証用の CNAME（次回も使う。`*.handson.example.com` の CNAME のほうは Terraform が消す）
 - AMI とそのスナップショット（次回も使う。EBS スナップショットの保管料がかかる）
 - CDK のブートストラップ（次回も使う）
+- Terraform の state（S3。次回も同じ場所を使う）
 
 ## コスト
 
