@@ -133,6 +133,8 @@ aws ssm start-session --target <インスタンスID>
 
 後片付けは 3 段階です。当日の終了時刻で自動停止が発火し、翌日以降に棚卸しスクリプトで受講者が作ったものを消し、最後に `terraform destroy` で Terraform が作ったものを消します。手順書だけに頼らず、消し忘れても課金が翌日まで伸びないように仕組みで止めます。
 
+これとは別に、受講者には当日の最後に自分の deploy を自分で消してもらいます（`agentcore remove all` のあと `agentcore deploy`。[docs/curriculum.md](curriculum.md) の「5. 振り返る」）。受講者が消す → 消し忘れた分を翌日のスクリプトが拾う、の二段構えです。
+
 ### 終了時刻で自動停止する（当日の apply で仕込む）
 
 `terraform.tfvars` に `handson_end_time` を書いて apply すると、その時刻に次の 3 つが起きます。
