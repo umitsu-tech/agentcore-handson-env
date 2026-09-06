@@ -51,24 +51,26 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - 東京リージョンで使えるモデルの単価比較（結論は Nova 2 Lite 据え置き）
 - 1 人分の通し確認（2026-09-05）。ACM のワイルドカード証明書を発行し、Cloudflare に検証用と `*.<base_domain>` の CNAME を入れ、`terraform apply`（26 リソース）で 1 台立てて、ブラウザから `https://user01.<base_domain>` で code-server にログインできるところまで確認した。確認後に `terraform destroy` で消した。証明書と DNS レコードは次回も使うので残してある
 
+- 1 人分の通し確認（2026-09-06、AMI `ami-00c0b0303a0921d88` = agentcore-handson-20260906-0825、arm64、ルートボリューム 15GiB）。code-server にログインすると `/home/handson/workspace` が開いた状態で始まる / `agentcore deploy` が受講者の権限で 1 行で通る（約 3 分）/ ハンズオン UI から手元と Runtime のどちらでも同じ画面で動く、の 3 点を確認した。確認後に Runtime のスタック（CloudFormation）と Terraform の環境は削除し、古い AMI 2 本（`ami-04d14015e8f390da7`、`ami-0687e031e99ce5eaf`）も削除した。この AMI には Issue #32（`runtime.py` の `app.run()`）と #31（受講者ごとのプロジェクト名）の修正が入っていないので、次に焼き直す
+
 まだ手が要るもの。
 
-- AMI は `scripts/build-ami.sh` で焼き直し済み。`ami-0687e031e99ce5eaf`（agentcore-handson-20260906-0811、arm64、ルートボリューム 15GiB。Issue #21 の agentcore CLI 設定と cdk の依存、Issue #22 の code-server 設定を含む）。再起動後に code-server と handson-ui が自動起動し、`/healthz` と `/api/context` が 200 を返すところまでスクリプトで確認した（ディスク 4.6GB、再起動後メモリ 303MB）。1 つ前の `ami-04d14015e8f390da7` は通し確認が済んだら削除する
-- AMI `ami-00c0b0303a0921d88`（1 台）での通し確認（2026-09-06）。`agentcore deploy` が受講者の権限で通り、所要は約 3 分（deploy 中は load average 10.81、メモリ used 1052MB / available 648MB、iowait 12〜15%。終了後は used 680MB / available 978MB）。一方で、CLI がプロジェクト名を Runtime 名の頭に付けるため実名が `handson_handson_user01` になりハンズオン UI から見つからない点、CloudFormation のスタック名がプロジェクト名だけで決まり受講者ごとに分かれない点の 2 つが分かった。原因と対処は Issue #31 にまとめ、プレースホルダをプロジェクト名（`handsonPARTICIPANT` → `handsonuserNN`）に付け替えて修正した
+- 通し確認で分かった数字。deploy 中は load average 10.81、メモリ used 1052MB / available 648MB、iowait 12〜15%。終了後は used 680MB / available 978MB。t4g.small では deploy 中に CPU が足りないので t4g.medium にする（Issue #15）。code-server が同梱する Copilot の拡張（`github.copilot-chat`）が 130MB ほど使っていて受講者には不要。`chat.disableAIFeatures` は code-server で効かない既知のバグ（coder/code-server#7540）があるので、起動引数 `--disable-extension github.copilot-chat` を次の焼き直しで試す
 
 ### 次の一歩
 
 AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証情報が要るので、リュウキがブラウザで認証できるタイミングで進める。
 
-1. Issue #31 の修正（プレースホルダをプロジェクト名へ付け替え、`handson-ui/server.py` の Runtime 解決順を変更）を `scripts/build-ami.sh` で AMI に焼き直し、もう一度 1 台立てて Runtime の実名とスタック名が受講者ごとに分かれることを確認する。#36 も含める
-2. 後片付けの仕組み（Issue #17）を実装する
-3. 人数ぶんへの展開（Issue #6）。受講者 2 人分で deploy してスタックが分かれることの確認は #6 の前提として #31 の中で行う
+1. #31 と #32 の修正を `scripts/build-ami.sh` で AMI に焼き直す（インスタンスタイプは t4g.medium、Copilot の無効化も試す）。受講者 2 人分で apply して deploy し、Runtime の実名（`handsonuserNN_agent`）と CloudFormation のスタック（`AgentCore-handsonuserNN-default`）が受講者ごとに分かれることを確認する。ここまでで Issue #5 と #15 を閉じる。#36（UI への導線）もこの焼き直しに含める
+2. Cloudflare のワイルドカード CNAME を Terraform で管理する（Issue #30）。いまは apply のたびに手で差し替えている
+3. 後片付けの仕組み（Issue #17）を実装する
+4. 人数ぶんへの展開（Issue #6）
 
 当日の運営（事前準備、リハーサル）はこのリポジトリの範囲外にした（Issue #7、#8 はクローズ）。
 
 ### 未確定
 
-- EBS のサイズとインスタンスタイプ。AMI は 15GiB で焼き直した（使用 4.2GB）。再起動直後のメモリは 330MB で t4g.small は余っている。t4g.micro に落とすかは `agentcore deploy` 中のメモリを測ってから（Issue #15）
+- インスタンスタイプは t4g.medium で進める（Issue #15。deploy を速くしたければ burstable でない c7g.medium / m7g.medium も候補）。EBS は 15GiB のまま（使用 4.6GB）
 - `aws login` の認証情報が 15 分ほどで更新に失敗して切れる（AWS CLI 側の既知の不具合と同じ症状）。`terraform apply` や `build-ami.sh` のような長い操作は直前にログインし直す。認証方式そのものの見直しはこのプロジェクトの外で扱う
 - 本番でモデル制限をどうかけるか（検証の段階ではかけない方針）
 - UI のサーバー側で Bedrock の呼び出しが失敗したとき、画面には「network error」としか出ない。例外を捕まえてエラーの内容を流す改善を別 Issue にする予定
