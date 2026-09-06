@@ -1,6 +1,7 @@
 #!/bin/bash
 # AMI に焼いた環境を前提に、起動時に受講者固有の値を差し込むスクリプト。
-# templatefile 経由なので `$` は `$$` にエスケープする（波かっこを使わない
+# ec2.tf の user_data が templatefile() で読む Terraform のテンプレート（拡張子 .tftpl）で、
+# ドル記号に波かっこが続く形は Terraform の変数として展開される。templatefile 経由なので `$` は `$$` にエスケープする（波かっこを使わない
 # 素の `$VAR` の形はエスケープ不要）。
 #
 # AMI（scripts/setup-instance.sh で作る）には code-server が

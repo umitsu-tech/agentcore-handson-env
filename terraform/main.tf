@@ -1,3 +1,7 @@
+# 複数のファイルから参照するデータソースはここに置く（iam.tf と ec2.tf の user_data が使う）
+data "aws_caller_identity" "current" {}
+data "aws_partition" "current" {}
+
 data "aws_availability_zones" "available" {
   state = "available"
 }

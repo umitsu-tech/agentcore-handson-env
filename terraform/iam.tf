@@ -1,6 +1,3 @@
-data "aws_caller_identity" "current" {}
-data "aws_partition" "current" {}
-
 # 受講者に AWS の認証情報を配らないかわりに、EC2 のインスタンスプロファイルへ
 # ハンズオンに必要な権限を持たせる。EC2 の中で叩く AWS CLI も agentcore deploy も
 # このロールの権限で動くので、受講者が自分の認証情報を持つ必要がない。
@@ -24,7 +21,7 @@ resource "aws_iam_role_policy_attachment" "ssm" {
 }
 
 resource "aws_iam_role_policy" "agentcore" {
-  name = "agentcore-handson"
+  name = "${local.name}-agentcore"
   role = aws_iam_role.instance.id
 
   policy = jsonencode({
