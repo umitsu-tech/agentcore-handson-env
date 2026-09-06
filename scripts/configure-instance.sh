@@ -7,7 +7,7 @@
 # code-server@handson として有効化済みで、config.yaml には
 # password: CHANGE_ME_AT_BOOT というプレースホルダが入っている。
 # ワークスペースの agentcore/agentcore.json と aws-targets.json にも
-# handson_PARTICIPANT / 000000000000 というプレースホルダが焼き込まれている。
+# handsonPARTICIPANT / 000000000000 というプレースホルダが焼き込まれている。
 # ここではそれらを Terraform が渡した受講者固有の値に差し替える。
 set -euo pipefail
 
@@ -32,9 +32,10 @@ for _ in $(seq 1 30); do
 done
 
 # --- agentcore CLI の設定 -------------------------------------------------------
-# Runtime 名は受講者ごとに一意にする必要があるため、AMI では
-# handson_PARTICIPANT というプレースホルダにしてあり、ここで実名に差し替える。
-sed -i "s/handson_PARTICIPANT/handson_${participant}/" "$AGENTCORE_JSON"
+# プロジェクト名（CloudFormation のスタック名にもなる）は受講者ごとに一意にする
+# 必要があるため、AMI では handsonPARTICIPANT というプレースホルダにしてあり、
+# ここで実名に差し替える。
+sed -i "s/handsonPARTICIPANT/handson${participant}/" "$AGENTCORE_JSON"
 # aws-targets.json のアカウント ID も同様にプレースホルダから実アカウントへ差し替える。
 sed -i "s/000000000000/${account_id}/" "$AWS_TARGETS_JSON"
 

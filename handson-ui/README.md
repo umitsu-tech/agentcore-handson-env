@@ -55,7 +55,8 @@ npm --prefix frontend run dev
 Runtime の特定は次の順で行います。
 
 1. 環境変数 `HANDSON_RUNTIME_ARN` があればそれをそのまま使う
-2. 無ければ環境変数 `HANDSON_PARTICIPANT` → `/etc/handson/participant`（`scripts/configure-instance.sh` が起動時に書く）の順で受講者キーを取り、`handson_<キー>` という名前の Runtime を `ListAgentRuntimes` で探す
+2. 無ければ `agentcore/.cli/deployed-state.json`（`agentcore deploy` が書く）の `targets.default.resources.runtimes` から ARN を読む。`agentcore/` の場所は既定で `HANDSON_AGENT_DIR` の1つ上だが、環境変数 `HANDSON_AGENTCORE_DIR` で上書きできる
+3. それも無ければ `agentcore/agentcore.json` のプロジェクト名と runtime 名から実名（`<プロジェクト名>_<runtime 名>`、例 `handsonuser01_agent`）を組み立て、`ListAgentRuntimes` で探す
 
 見つかった結果だけをプロセス内でキャッシュします。未デプロイ→デプロイ済みへの変化は、
 画面をリロードすれば拾えます（キャッシュは「見つかったとき」だけ効くため）。

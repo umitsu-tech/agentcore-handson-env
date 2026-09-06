@@ -91,10 +91,10 @@ aws ssm start-session --target <インスタンスID>
 
 これらを先に片付けます。残っている AgentCore Runtime は課金対象になり得るので、消し忘れないようにします。
 
-Runtime 名は受講者ごとに `handson_userNN`（`userNN` は Terraform の `participants` に渡した受講者キー）という規則になっているので、一覧を見れば取りこぼしがないか確認できます。
+プロジェクト名は受講者ごとに `handsonuserNN`（`userNN` は Terraform の `participants` に渡した受講者キー）という規則になっており、Runtime の実名はそこに runtime 名 `agent` を足した `handsonuserNN_agent`、CloudFormation のスタック名は `AgentCore-handsonuserNN-default` になります。一覧を見れば取りこぼしがないか確認できます。
 
-- AgentCore Runtime の一覧を確認して削除する（`handson_userNN` が全員ぶん揃っているはず）
-- CDK が作った CloudFormation スタックを削除する
+- AgentCore Runtime の一覧を確認して削除する（`handsonuserNN_agent` が全員ぶん揃っているはず）
+- CDK が作った CloudFormation スタック（`AgentCore-handsonuserNN-default`）を削除する
 - `*BedrockAgentCore*` のロールが残っていないか確認する
 
 ### Terraform で作ったものを消す

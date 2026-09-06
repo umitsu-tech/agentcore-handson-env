@@ -97,7 +97,7 @@ systemctl enable code-server@handson
 # --- ワークスペース -----------------------------------------------------------
 # handson-agent/・handson-ui/ に加えて agentcore/（agentcore deploy 用の CLI 設定と
 # CDK コード）もここで展開される。agentcore/agentcore.json と aws-targets.json には
-# handson_PARTICIPANT / 000000000000 のプレースホルダが入っており、実際の値への
+# handsonPARTICIPANT / 000000000000 のプレースホルダが入っており、実際の値への
 # 差し替えは起動時に scripts/configure-instance.sh が行う。
 if [ -n "$ASSET_BUCKET" ]; then
   aws s3 cp "s3://${ASSET_BUCKET}/${ASSET_KEY}" /tmp/handson-workspace.tar.gz

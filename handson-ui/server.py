@@ -47,8 +47,6 @@ from lib.events import to_ui_event  # noqa: E402
 app = FastAPI()
 DIST_DIR = Path(__file__).parent / "frontend" / "dist"
 
-PARTICIPANT_FILE = Path("/etc/handson/participant")
-
 # list_agent_runtimes で見つかったときだけ埋める。未デプロイ→デプロイ済みへの変化は
 # 画面のリロードで拾えるように、「見つからなかった」結果はキャッシュしない。
 _runtime_cache: dict | None = None
@@ -59,28 +57,71 @@ class AskBody(BaseModel):
     target: Literal["local", "runtime"] = "local"
 
 
-def _participant_key() -> str | None:
-    """受講者キーを環境変数 → /etc/handson/participant の順で取る。"""
-    key = os.environ.get("HANDSON_PARTICIPANT")
-    if key:
-        return key
-    if PARTICIPANT_FILE.exists():
-        key = PARTICIPANT_FILE.read_text().strip()
-        return key or None
-    return None
+def _agentcore_dir() -> Path:
+    """agentcore CLI の設定ディレクトリ（agentcore.json・.cli/ がある場所）。
+
+    既定は AGENT_DIR（handson-agent/）の 1 つ上の agentcore/。環境変数
+    HANDSON_AGENTCORE_DIR で上書きできる（配置替えやテストのため）。
+    """
+    override = os.environ.get("HANDSON_AGENTCORE_DIR")
+    return Path(override) if override else AGENT_DIR.parent / "agentcore"
+
+
+def _read_agentcore_config(agentcore_dir: Path) -> tuple[str, str] | None:
+    """agentcore.json からプロジェクト名と runtime 名を読む。
+
+    Bedrock 側の Runtime の実名は `<プロジェクト名>_<runtime 名>` になる。
+    """
+    try:
+        config = json.loads((agentcore_dir / "agentcore.json").read_text())
+    except (OSError, json.JSONDecodeError):
+        return None
+    project = config.get("name")
+    runtimes = config.get("runtimes") or []
+    if not project or not runtimes:
+        return None
+    runtime_name = runtimes[0].get("name")
+    if not runtime_name:
+        return None
+    return project, runtime_name
+
+
+def _read_deployed_state_arn(agentcore_dir: Path, runtime_name: str | None) -> str | None:
+    """`agentcore deploy` が書く .cli/deployed-state.json から Runtime の ARN を読む。
+
+    targets.default.resources.runtimes は agentcore.json の runtime 名をキーにした
+    辞書。設定と同じ runtime 名があればそれを使い、無ければ最初の 1 件を使う。
+    """
+    try:
+        state = json.loads((agentcore_dir / ".cli" / "deployed-state.json").read_text())
+    except (OSError, json.JSONDecodeError):
+        return None
+    runtimes = state.get("targets", {}).get("default", {}).get("resources", {}).get("runtimes", {})
+    if not runtimes:
+        return None
+    if runtime_name and runtime_name in runtimes:
+        return runtimes[runtime_name].get("runtimeArn")
+    return next(iter(runtimes.values()), {}).get("runtimeArn")
 
 
 def resolve_runtime() -> dict:
     """デプロイ済みの Runtime を探す。ブロッキングする（boto3 呼び出し）ので、
     呼び出し側で asyncio.to_thread に包むか、同期のパスオペレーション内で呼ぶこと。
+
+    探す順序は次のとおり。
+    1. 環境変数 HANDSON_RUNTIME_ARN があればそれをそのまま使う
+    2. agentcore/.cli/deployed-state.json に書かれた ARN を使う（agentcore deploy 直後はこれで見つかる）
+    3. agentcore.json のプロジェクト名と runtime 名から実名を組み立て、ListAgentRuntimes で探す
     """
     global _runtime_cache
     if _runtime_cache is not None:
         return _runtime_cache
 
     region = os.environ.get("AWS_REGION", "ap-northeast-1")
-    participant = _participant_key()
-    name = f"handson_{participant}" if participant else ""
+    agentcore_dir = _agentcore_dir()
+    config = _read_agentcore_config(agentcore_dir)
+    project, runtime_name = config if config else (None, None)
+    name = f"{project}_{runtime_name}" if project and runtime_name else ""
 
     env_arn = os.environ.get("HANDSON_RUNTIME_ARN")
     if env_arn:
@@ -88,13 +129,19 @@ def resolve_runtime() -> dict:
         _runtime_cache = result
         return result
 
-    if not participant:
+    state_arn = _read_deployed_state_arn(agentcore_dir, runtime_name)
+    if state_arn:
+        result = {"available": True, "name": name, "arn": state_arn, "region": region}
+        _runtime_cache = result
+        return result
+
+    if not project or not runtime_name:
         return {
             "available": False,
             "name": name,
             "arn": None,
             "region": region,
-            "reason": "受講者キーが分かりません（HANDSON_PARTICIPANT も /etc/handson/participant も無い）",
+            "reason": f"{agentcore_dir}/agentcore.json からプロジェクト名や runtime 名を読めません",
         }
 
     try:

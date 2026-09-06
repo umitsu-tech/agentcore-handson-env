@@ -4,7 +4,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 
 ## 現在の状況
 
-最終更新: 2026-09-05
+最終更新: 2026-09-06
 
 ### 決まっていること
 
@@ -53,16 +53,15 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 まだ手が要るもの。
 
 - AMI は `scripts/build-ami.sh` で焼き直し済み。`ami-0687e031e99ce5eaf`（agentcore-handson-20260906-0811、arm64、ルートボリューム 15GiB。Issue #21 の agentcore CLI 設定と cdk の依存、Issue #22 の code-server 設定を含む）。再起動後に code-server と handson-ui が自動起動し、`/healthz` と `/api/context` が 200 を返すところまでスクリプトで確認した（ディスク 4.6GB、再起動後メモリ 303MB）。1 つ前の `ami-04d14015e8f390da7` は通し確認が済んだら削除する
+- AMI `ami-00c0b0303a0921d88`（1 台）での通し確認（2026-09-06）。`agentcore deploy` が受講者の権限で通り、所要は約 3 分（deploy 中は load average 10.81、メモリ used 1052MB / available 648MB、iowait 12〜15%。終了後は used 680MB / available 978MB）。一方で、CLI がプロジェクト名を Runtime 名の頭に付けるため実名が `handson_handson_user01` になりハンズオン UI から見つからない点、CloudFormation のスタック名がプロジェクト名だけで決まり受講者ごとに分かれない点の 2 つが分かった。原因と対処は Issue #31 にまとめ、プレースホルダをプロジェクト名（`handsonPARTICIPANT` → `handsonuserNN`）に付け替えて修正した
 
 ### 次の一歩
 
 AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証情報が要るので、リュウキがブラウザで認証できるタイミングで進める。
 
-1. `agentcore deploy` が 1 行で通るように `handson-agent/` に CLI の設定を用意する（Issue #21）。設定済み。受講者権限で通るかと所要時間・メモリの実測（Issue #15）は AMI 焼き直し後に PC で
-2. code-server を開いたときに `/home/handson/workspace` が開いた状態にする（Issue #22）。実装済み・AMI 焼き直しで確認待ち
-3. 1 と 2 を `scripts/build-ami.sh` で AMI に焼き直し、もう一度 1 台立てて「`tools.py` を保存すると画面のツール一覧が追随する」「デプロイしたエージェントをハンズオン UI から呼べる」まで確認する。ここまでで Issue #5 を閉じる。ハンズオン UI から Runtime を呼ぶ処理（`GET /api/runtime`、`/api/ask` の `target: "runtime"`、画面の切り替え）は実装済み（Issue #26）。実機確認は AMI 焼き直し後
-4. 後片付けの仕組み（Issue #17）を実装する
-5. 人数ぶんへの展開（Issue #6）
+1. Issue #31 の修正（プレースホルダをプロジェクト名へ付け替え、`handson-ui/server.py` の Runtime 解決順を変更）を `scripts/build-ami.sh` で AMI に焼き直し、もう一度 1 台立てて Runtime の実名とスタック名が受講者ごとに分かれることを確認する
+2. 後片付けの仕組み（Issue #17）を実装する
+3. 人数ぶんへの展開（Issue #6）。受講者 2 人分で deploy してスタックが分かれることの確認は #6 の前提として #31 の中で行う
 
 当日の運営（事前準備、リハーサル）はこのリポジトリの範囲外にした（Issue #7、#8 はクローズ）。
 
