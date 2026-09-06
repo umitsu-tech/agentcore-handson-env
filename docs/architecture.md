@@ -148,7 +148,7 @@ t4g.small（2 vCPU / 2GB）と t4g.medium（2 vCPU / 4GB）で `agentcore deploy
 
 所要時間のほとんどは CloudFormation の完了待ちで、CPU が張り付くのは最初の 30 秒（CDK の synth と CodeZip の作成）だけです。small で free が 210MB まで落ちてもファイルキャッシュが 660MB あり、メモリ不足ではありません。medium の新規で iowait が高いのは、AMI から起動した直後に EBS がスナップショットから読み込んでいる最中だったためで、インスタンスタイプの差ではありません。
 
-t4g.medium は vCPU 数も CPU のベースラインも small と同じで、増えるのはメモリだけです。メモリが足りているので選ぶ理由がなく、30 人 × 5 時間で EC2 代が倍（3.24 USD → 6.48 USD）になるだけでした。
+t4g.medium は vCPU 数も CPU のベースラインも small と同じで、増えるのはメモリだけです。メモリが足りているので選ぶ理由がなく、30 人 × 5 時間で EC2 代が倍（3.24 USD → 6.48 USD）になるだけでした。加えて t4g.small には 2026 年末までの無料トライアル（月 750 時間）があり、medium は対象外です。条件は [docs/operations.md](operations.md) の「t4g.small の無料トライアル」にまとめています。
 
 code-server に同梱される Copilot 拡張（`github.copilot-chat`）は起動直後から 130MB ほど使うので、AMI を作るときにディレクトリごと削除しています。code-server の CLI に拡張を無効化するフラグは無く、`chat.disableAIFeatures` も画面から隠すだけでプロセスは止まらないためです。
 
