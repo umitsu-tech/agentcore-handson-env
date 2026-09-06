@@ -1,0 +1,94 @@
+---
+// Starlight の Footer にライトボックス（画像の拡大表示）を足す。
+// 本文の画像を押すと画面いっぱいに表示し、もう一度押すか Esc で閉じる。
+// Footer を使うのは、全ページに 1 回だけ差し込める場所だから。
+import Default from '@astrojs/starlight/components/Footer.astro';
+---
+
+<Default />
+
+<div id="lightbox" class="lightbox" hidden role="dialog" aria-modal="true" aria-label="画像の拡大表示">
+  <img alt="" />
+  <button type="button" class="close" aria-label="閉じる">×</button>
+</div>
+
+<style is:global>
+  .sl-markdown-content img {
+    cursor: zoom-in;
+  }
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: rgba(33, 31, 25, 0.86);
+    cursor: zoom-out;
+    /* スマホではピンチで寄れるようにする */
+    touch-action: pinch-zoom;
+    overflow: auto;
+  }
+  .lightbox[hidden] {
+    display: none;
+  }
+  .lightbox img {
+    max-width: 100%;
+    max-height: calc(100vh - 4rem);
+    object-fit: contain;
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+  }
+  .lightbox .close {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    width: 2.6rem;
+    height: 2.6rem;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .lightbox .close:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+  @media (max-width: 640px) {
+    .lightbox {
+      padding: 0.75rem;
+    }
+    .lightbox img {
+      max-height: calc(100vh - 1.5rem);
+    }
+  }
+</style>
+
+<script>
+  const box = document.getElementById('lightbox') as HTMLDivElement | null;
+  const big = box?.querySelector('img') as HTMLImageElement | null;
+  if (box && big) {
+    const open = (src: string, alt: string) => {
+      big.src = src;
+      big.alt = alt;
+      box.hidden = false;
+      document.body.style.overflow = 'hidden';
+    };
+    const close = () => {
+      box.hidden = true;
+      big.removeAttribute('src');
+      document.body.style.overflow = '';
+    };
+    document.querySelectorAll<HTMLImageElement>('.sl-markdown-content img').forEach((img) => {
+      img.addEventListener('click', () => open(img.currentSrc || img.src, img.alt));
+    });
+    box.addEventListener('click', close);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !box.hidden) close();
+    });
+  }
+</script>
