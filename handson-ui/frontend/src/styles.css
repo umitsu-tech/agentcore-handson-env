@@ -1,18 +1,21 @@
 :root {
-  --bg: #f2f5f7;
+  /* 手順書サイト（guide/）と同じ、生成りの紙色と草色のパレット。
+     3 色の意味分けは変えない。緑はループの入口と出口、青紫はモデルへの入力、茶色寄りのオレンジは出力。
+     文字色は白地でコントラスト比 4.5 以上（プロジェクター向け） */
+  --bg: #faf9f4;
   --panel: #ffffff;
-  --panel-soft: #f7f9fa;
-  --ink: #111417;
-  --muted: #3f4a52;
-  --faint: #5b6870;
-  --line: #dde4e9;
-  --accent: #00796b;
-  --accent-soft: #e2f1ee;
-  --input: #1d5fa8;
-  --input-soft: #e8f0fb;
-  --output: #a64b00;
-  --output-soft: #fdf2e8;
-  --danger: #b3261e;
+  --panel-soft: #f1efe6;
+  --ink: #211f19;
+  --muted: #55524a;
+  --faint: #6f6b5f;
+  --line: #e4e1d4;
+  --accent: #446f52;
+  --accent-soft: #eff3ee;
+  --input: #4f5c86;
+  --input-soft: #eceef3;
+  --output: #8f5a2c;
+  --output-soft: #f5ede4;
+  --danger: #b04a4a;
   --radius: 10px;
   --sans: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Yu Gothic UI', system-ui, sans-serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -328,7 +331,8 @@ body {
   font-family: var(--mono);
   font-size: 13px;
   line-height: 1.6;
-  background: var(--panel-soft);
+  /* 色付きのカードの中に置くので、薄い紙色ではなく白にして上の JSON の箱と揃える */
+  background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 6px;
   padding: 10px 12px;
