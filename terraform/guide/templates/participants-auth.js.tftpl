@@ -1,0 +1,17 @@
+// /participants* に付ける Basic 認証。Authorization ヘッダーが合っていればそのまま通し、
+// 違えば 401 を返してブラウザに入力ダイアログを出させる。
+function handler(event) {
+  var request = event.request;
+  var auth = request.headers.authorization;
+  if (auth && auth.value === "${expected}") {
+    return request;
+  }
+  return {
+    statusCode: 401,
+    statusDescription: "Unauthorized",
+    headers: {
+      "www-authenticate": { value: 'Basic realm="participants", charset="UTF-8"' },
+      "cache-control": { value: "no-store" }
+    }
+  };
+}

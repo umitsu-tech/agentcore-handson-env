@@ -54,6 +54,7 @@ export default defineConfig({
           ],
         },
         { label: 'トラブルシューティング', link: '/trouble' },
+        { label: '受講者情報（合言葉が要る）', link: '/participants' },
       ],
       pagination: true,
       lastUpdated: false,

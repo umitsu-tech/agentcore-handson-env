@@ -97,6 +97,19 @@ cd ../../guide
 
 apply の出力 `guide_url` が受講者に配る URL です。中身を直したら `guide/src/content/docs/` の Markdown を編集して main に push するだけで、GitHub Actions（`.github/workflows/publish-guide.yml`）がビルドして S3 に同期し、CloudFront のキャッシュを消します。手で反映したいときは `guide/publish.sh` を打っても同じです（Node.js が要ります）。Terraform は触りません。手元で見た目を確かめるには `guide/` で `npm install` のあと `npm run dev` を打ちます。
 
+### 受講者情報の配り方
+
+手順書サイトの `/participants.html` に、受講者ごとのエディタの URL、ハンズオン UI の URL、パスワードの表を出せます（Issue #58）。このページと中身の `participants/data.json` だけは CloudFront Function の Basic 認証で守られていて、他のページは今までどおり誰でも開けます。ユーザー名と合言葉は `terraform/guide/terraform.tfvars` の `participants_user` / `participants_password` で渡し、当日その場で口頭で伝えます。合言葉を変えたら `terraform/guide` を apply し直します。
+
+表の中身は git に入れません。受講環境（`terraform/handson`）を apply したあとに次を打つと、output から JSON を組み立てて S3 に直接置き、キャッシュを消します。
+
+```bash
+guide/publish-participants.sh --dry-run   # 置かずに中身だけ見る
+guide/publish-participants.sh             # 置く
+```
+
+手順書を更新しても消えません（`publish.sh` と GitHub Actions の sync は `participants/*` を対象外にしています）。受講環境を destroy したら `guide/publish-participants.sh --remove` で消します。合言葉を知っていれば全員分のパスワードが見えるので、ハンズオンが終わったら消すところまでを片付けに含めます。
+
 Actions の認証は OIDC で、GitHub にアクセスキーは置きません。`terraform/guide/terraform.tfvars` に `github_repository`（owner/repo）と、リポジトリと所有者の数値 ID（`gh api repos/<owner>/<repo> --jq .id` と `--jq .owner.id`）を書いて apply すると、このリポジトリの main で動くワークフローだけが assume できるロールができます。数値 ID が要るのは、2026 年 7 月以降に作られたリポジトリでは OIDC トークンの sub に ID が付く形（immutable subject claim）になるためです。apply の出力 `github_actions_role_arn` と `bucket_name`、`distribution_id` を、リポジトリの Settings → Secrets and variables → Actions → Variables に `AWS_ROLE_ARN`、`GUIDE_BUCKET`、`GUIDE_DISTRIBUTION_ID` として登録します（`gh variable set` でもよい）。GitHub の OIDC プロバイダーはアカウントに 1 つあればよく、既にある前提で参照しています。
 
 ワークフローの手動実行（Actions タブの Run workflow）は、ワークフローのファイルが main に入ってからでないと選べません。
