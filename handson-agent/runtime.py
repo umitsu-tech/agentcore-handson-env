@@ -5,6 +5,10 @@
 
     agentcore deploy
 
+agentcore CLI はデプロイ先でこのファイルを `python runtime.py` として直接実行し、
+サーバーが立ち上がるのを待ちます。なので末尾の app.run() が要ります。これが無いと
+プロセスがすぐ終わり、「Runtime initialization time exceeded」で呼び出しが失敗します。
+
 イベントは lib/events.py の to_ui_event を通してから返します。手元で動かすときも
 同じ関数を通すので、呼び出し側にはまったく同じ形のイベントが届きます。
 ハンズオン UI は前半と同じ画面のまま、実行場所だけが変わった状態を表示できます。
@@ -33,3 +37,7 @@ async def invoke(payload, context=None):
         ui_event = to_ui_event(event)
         if ui_event is not None:
             yield ui_event
+
+
+if __name__ == "__main__":
+    app.run()
