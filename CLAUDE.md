@@ -61,15 +61,14 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 
 AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証情報が要るので、リュウキがブラウザで認証できるタイミングで進める。
 
-1. #31 と #32 の修正を `scripts/build-ami.sh` で AMI に焼き直す（インスタンスタイプは t4g.medium、Copilot の無効化も試す）。受講者 2 人分で apply して deploy し、Runtime の実名（`handsonuserNN_agent`）と CloudFormation のスタック（`AgentCore-handsonuserNN-default`）が受講者ごとに分かれることを確認する。ここまでで Issue #5 と #15 を閉じる。#36（UI への導線）もこの焼き直しに含める
-2. 後片付けの仕組み（Issue #17）を実装する
-3. 人数ぶんへの展開（Issue #6）
+1. 後片付けの仕組み（Issue #17）を実装する
+2. 人数ぶんへの展開（Issue #6）
+3. Terraform の整理（Issue #39）と state の置き場（Issue #40）
 
 当日の運営（事前準備、リハーサル）はこのリポジトリの範囲外にした（Issue #7、#8 はクローズ）。
 
 ### 未確定
 
-- インスタンスタイプは t4g.medium で進める（Issue #15。deploy を速くしたければ burstable でない c7g.medium / m7g.medium も候補）。EBS は 15GiB のまま（使用 4.6GB）
 - `aws login` の認証情報が 15 分ほどで更新に失敗して切れる（AWS CLI 側の既知の不具合と同じ症状）。`terraform apply` や `build-ami.sh` のような長い操作は直前にログインし直す。認証方式そのものの見直しはこのプロジェクトの外で扱う
 - 本番でモデル制限をどうかけるか（検証の段階ではかけない方針）
 - UI のサーバー側で Bedrock の呼び出しが失敗したとき、画面には「network error」としか出ない。例外を捕まえてエラーの内容を流す改善を別 Issue にする予定
