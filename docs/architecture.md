@@ -38,7 +38,7 @@ ACM の証明書検証も DNS 検証なので、Cloudflare に検証用の CNAME
 
 ### 受講者の作業環境（EC2）
 
-- インスタンスタイプ: t4g.medium（ARM64 / AWS Graviton、2 vCPU / 4GB）。t4g.small だと `agentcore deploy` の最中に CPU とメモリが足りなかった
+- インスタンスタイプ: t4g.small（ARM64 / AWS Graviton、2 vCPU / 2GB）。t4g.medium と比べて `agentcore deploy` の所要時間に差が無かった（Issue #15）
 - OS: Amazon Linux 2023
 - 1 人 1 台
 

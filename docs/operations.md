@@ -128,7 +128,7 @@ EC2、ALB、ターゲットグループ、セキュリティグループ、VPC �
 
 | 項目 | 単価 |
 |---|---|
-| EC2 t4g.medium | 0.0432 USD / 時間 |
+| EC2 t4g.small | 0.0216 USD / 時間 |
 | EBS gp3 | 0.096 USD / GB・月 |
 | ALB | 0.0243 USD / 時間 + 0.008 USD / LCU・時間 |
 | AgentCore Runtime | 0.0895 USD / vCPU・時間、0.00945 USD / GB・時間 |
@@ -141,15 +141,15 @@ EC2、ALB、ターゲットグループ、セキュリティグループ、VPC �
 
 | 項目 | 計算 | 金額 |
 |---|---|---|
-| EC2 | 0.0432 × 30 台 × 5 時間 | 6.48 USD |
+| EC2 | 0.0216 × 30 台 × 5 時間 | 3.24 USD |
 | EBS | 15GB × 30 台 × 5/730 か月 | 0.31 USD |
 | ALB | 0.0243 × 5 時間 + LCU | 0.16 USD |
 | AgentCore Runtime | 1 人 10 分 / 1vCPU / 2GB として 30 人ぶん | 0.54 USD |
 | Bedrock 入力 | 2,250K トークン | 0.89 USD |
 | Bedrock 出力 | 90K トークン | 0.30 USD |
-| **合計** | | **約 8.7 USD** |
+| **合計** | | **約 5.4 USD** |
 
-半日のハンズオンで 9 ドル程度です。t4g.small なら EC2 が半額になりますが、`agentcore deploy` の最中に CPU とメモリが足りなくなるので t4g.medium にしています（Issue #15）。リハーサルを数回やっても同じ桁に収まります。
+半日のハンズオンで 6 ドル程度です。t4g.medium も試しましたが `agentcore deploy` の所要時間は変わらなかった（small 99 秒、medium 112 秒）ので t4g.small にしています（Issue #15）。リハーサルを数回やっても同じ桁に収まります。
 
 ### コスト管理で気をつけること
 

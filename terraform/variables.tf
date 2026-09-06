@@ -32,9 +32,9 @@ variable "certificate_arn" {
 }
 
 variable "instance_type" {
-  description = "AgentCore Runtime に合わせて ARM64 のインスタンスを使う。t4g.small だと agentcore deploy 中に CPU とメモリが足りなかった（Issue #15）"
+  description = "AgentCore Runtime に合わせて ARM64 のインスタンスを使う。t4g.small と t4g.medium で agentcore deploy を実測して差が無かったので small（Issue #15）"
   type        = string
-  default     = "t4g.medium"
+  default     = "t4g.small"
 }
 
 variable "ami_id" {
