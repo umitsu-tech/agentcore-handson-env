@@ -64,7 +64,6 @@ AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証�
 
 1. 後片付けの仕組み（Issue #17）を実装する
 2. 人数ぶんへの展開（Issue #6）
-3. Terraform の整理（Issue #39）と state の置き場（Issue #40）
 
 当日の運営（事前準備、リハーサル）はこのリポジトリの範囲外にした（Issue #7、#8 はクローズ）。
 

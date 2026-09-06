@@ -14,7 +14,7 @@ resource "aws_instance" "participant" {
   vpc_security_group_ids = [aws_security_group.instance.id]
   iam_instance_profile   = aws_iam_instance_profile.instance.name
 
-  user_data = templatefile("${path.module}/../scripts/configure-instance.sh", {
+  user_data = templatefile("${path.module}/templates/configure-instance.sh.tftpl", {
     code_server_password = random_password.code_server[each.key].result
     participant          = each.key
     account_id           = data.aws_caller_identity.current.account_id
