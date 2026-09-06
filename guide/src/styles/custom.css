@@ -26,12 +26,12 @@
     system-ui, -apple-system, 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans',
     'Noto Sans JP', Meiryo, sans-serif;
   --sl-font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
-  --sl-text-base: 1.0625rem;
+  --sl-text-base: 1.125rem;
   --sl-line-height: 1.9;
   --sl-content-width: 46rem;
-  --sl-text-h1: 1.7rem;
-  --sl-text-h2: 1.35rem;
-  --sl-text-h3: 1.15rem;
+  --sl-text-h1: 1.8rem;
+  --sl-text-h2: 1.45rem;
+  --sl-text-h3: 1.2rem;
   --sl-text-h4: 1rem;
 
   --sl-color-white: var(--ink-strong);
@@ -80,12 +80,18 @@ site-search button[data-open-modal] {
   color: var(--muted);
 }
 
-/* --- サイドメニュー。今いるページは塗らずに、色と太さで示す --- */
+/* --- サイドメニュー。今いるページは塗らずに、色と太さで示す。文字は本文と同じくらいの大きさにする --- */
 .sidebar-content .large {
   color: var(--ink-strong);
+  font-size: 1.1rem;
 }
 .sidebar-content a {
   color: var(--ink);
+  font-size: 1.02rem;
+  padding: 0.45em 0.6em;
+}
+.sidebar-content ul ul a {
+  font-size: 1rem;
 }
 .sidebar-content a:hover {
   color: var(--accent);
@@ -104,10 +110,11 @@ site-search button[data-open-modal] {
 /* --- 右の目次。線 1 本と薄い文字 --- */
 .right-sidebar-panel h2 {
   color: var(--ink-strong);
-  font-size: 0.85rem;
+  font-size: 0.95rem;
 }
 .right-sidebar-panel a {
   color: var(--muted);
+  font-size: 0.95rem;
 }
 .right-sidebar-panel a[aria-current='true'] {
   color: var(--accent);
@@ -224,24 +231,7 @@ site-search button[data-open-modal] {
   background: var(--line);
 }
 
-/* --- 前へ / 次へ。影を消して線だけにする --- */
-.pagination-links a {
-  border: 1px solid var(--line);
-  box-shadow: none;
-  border-radius: 6px;
-  color: var(--ink-strong);
-}
-.pagination-links a:hover {
-  border-color: var(--accent);
-}
-.pagination-links a > span {
-  color: var(--muted);
-  font-family: var(--sl-font-mono);
-  font-size: 0.8rem;
-}
-.pagination-links .link-title {
-  font-size: 1.05rem;
-}
+/* 前へ / 次へは src/components/Pagination.astro に差し替えてあり、スタイルもそこに書いている */
 
 /* --- スマホのメニューボタンなど --- */
 starlight-menu-button button {
