@@ -1,0 +1,42 @@
+# 手順書（guide/site/）を S3 に同期して CloudFront のキャッシュを消す。
+# guide/site/ の変更が main に入ったときだけ動く。手動でも実行できる（Actions タブの Run workflow）。
+# guide/publish.sh と同じことをしている。
+#
+# 必要な Variables（リポジトリの Settings → Secrets and variables → Actions → Variables）:
+#   AWS_ROLE_ARN          guide/terraform の output github_actions_role_arn
+#   GUIDE_BUCKET          同 bucket_name
+#   GUIDE_DISTRIBUTION_ID 同 distribution_id
+name: publish-guide
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "guide/site/**"
+      - ".github/workflows/publish-guide.yml"
+  workflow_dispatch:
+
+permissions:
+  id-token: write # OIDC トークンを取るため
+  contents: read
+
+concurrency:
+  group: publish-guide
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ap-northeast-1
+
+      - name: Sync site to S3
+        run: aws s3 sync guide/site "s3://${{ vars.GUIDE_BUCKET }}/" --delete
+
+      - name: Invalidate CloudFront cache
+        run: aws cloudfront create-invalidation --distribution-id "${{ vars.GUIDE_DISTRIBUTION_ID }}" --paths "/*"

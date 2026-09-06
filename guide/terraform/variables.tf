@@ -21,3 +21,27 @@ variable "cloudflare_zone_id" {
   type        = string
   default     = null
 }
+
+variable "github_repository" {
+  description = "GitHub Actions から自動配信するリポジトリ（owner/repo）。null なら Actions 用のロールを作らない"
+  type        = string
+  default     = null
+}
+
+variable "github_branch" {
+  description = "自動配信を許可するブランチ。このブランチで動くワークフローだけがロールを assume できる"
+  type        = string
+  default     = "main"
+}
+
+variable "github_owner_id" {
+  description = "リポジトリ所有者の数値 ID（gh api repos/<owner>/<repo> --jq .owner.id）。2026-07-15 以降に作ったリポジトリは OIDC の sub に ID が付くので要る"
+  type        = number
+  default     = null
+}
+
+variable "github_repository_id" {
+  description = "リポジトリの数値 ID（gh api repos/<owner>/<repo> --jq .id）"
+  type        = number
+  default     = null
+}

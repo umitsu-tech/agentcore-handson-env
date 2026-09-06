@@ -3,3 +3,8 @@
 # 独自ドメインを付けるとき。付けないなら両方コメントのままで、CloudFront の既定ドメインで配信する
 # guide_hostname     = "guide.handson.example.com"
 # cloudflare_zone_id = "0123456789abcdef0123456789abcdef"
+
+# GitHub Actions から自動配信するとき（Issue #52）。ロールを assume できるのはこのリポジトリの main だけ
+# github_repository    = "owner/agentcore-handson-env"
+# github_owner_id      = 123456      # gh api repos/owner/agentcore-handson-env --jq .owner.id
+# github_repository_id = 7890123     # gh api repos/owner/agentcore-handson-env --jq .id
