@@ -38,7 +38,7 @@ ACM の証明書検証も DNS 検証なので、Cloudflare に検証用の CNAME
 
 ### 受講者の作業環境（EC2）
 
-- インスタンスタイプ: t4g.small（ARM64 / AWS Graviton）
+- インスタンスタイプ: t4g.small（ARM64 / AWS Graviton、2 vCPU / 2GB）。t4g.medium と比べて `agentcore deploy` の所要時間に差が無かった（Issue #15）
 - OS: Amazon Linux 2023
 - 1 人 1 台
 
@@ -134,6 +134,23 @@ ALB で TLS を終端すれば、証明書は ACM のワイルドカード 1 枚
 user_data でセットアップを実行する方式だと、当日 30 台が同時にパッケージを取得することになり、起動から使えるまでに数分かかります。さらに、途中で失敗した数台のデバッグに主催者が張り付くことになります。
 
 事前に 1 台を作り込んで AMI にしておけば、当日は起動するだけです。セットアップの成否は前日までに確定します。
+
+### インスタンスタイプは実測で t4g.small にした
+
+t4g.small（2 vCPU / 2GB）と t4g.medium（2 vCPU / 4GB）で `agentcore deploy` を実測しました（2026-09-06、Issue #15）。deploy は SSM 経由で `agentcore deploy --yes --target default` を流し、裏で `vmstat 5` を取っています。
+
+| | t4g.small（新規スタック） | t4g.medium（新規スタック） | t4g.medium（再 deploy） |
+|---|---|---|---|
+| 所要時間 | 99 秒 | 112 秒 | 27 秒 |
+| CPU user 平均 | 26% | 24% | 47% |
+| iowait 平均 / 最大 | 3% / 24% | 10% / 52% | 11% / 17% |
+| free の最小値 | 210MB | 2114MB | 1964MB |
+
+所要時間のほとんどは CloudFormation の完了待ちで、CPU が張り付くのは最初の 30 秒（CDK の synth と CodeZip の作成）だけです。small で free が 210MB まで落ちてもファイルキャッシュが 660MB あり、メモリ不足ではありません。medium の新規で iowait が高いのは、AMI から起動した直後に EBS がスナップショットから読み込んでいる最中だったためで、インスタンスタイプの差ではありません。
+
+t4g.medium は vCPU 数も CPU のベースラインも small と同じで、増えるのはメモリだけです。メモリが足りているので選ぶ理由がなく、30 人 × 5 時間で EC2 代が倍（3.24 USD → 6.48 USD）になるだけでした。加えて t4g.small には 2026 年末までの無料トライアル（月 750 時間）があり、medium は対象外です。条件は [docs/operations.md](operations.md) の「t4g.small の無料トライアル」にまとめています。
+
+code-server に同梱される Copilot 拡張（`github.copilot-chat`）は起動直後から 130MB ほど使うので、AMI を作るときにディレクトリごと削除しています。code-server の CLI に拡張を無効化するフラグは無く、`chat.disableAIFeatures` も画面から隠すだけでプロセスは止まらないためです。
 
 ## 検討して採用しなかった案
 

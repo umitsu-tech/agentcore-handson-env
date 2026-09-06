@@ -32,7 +32,7 @@ variable "certificate_arn" {
 }
 
 variable "instance_type" {
-  description = "AgentCore Runtime に合わせて ARM64 のインスタンスを使う"
+  description = "AgentCore Runtime に合わせて ARM64 のインスタンスを使う。t4g.small と t4g.medium で agentcore deploy を実測して差が無かったので small（Issue #15）"
   type        = string
   default     = "t4g.small"
 }
@@ -43,9 +43,9 @@ variable "ami_id" {
 }
 
 variable "root_volume_size" {
-  description = "ルートボリュームのサイズ（GiB）。AMI のルートボリューム以上にする。Issue #15 の結論で 15 に下げる予定"
+  description = "ルートボリュームのサイズ（GiB）。AMI のルートボリューム（15GiB）以上にする。使用量は 5GB 弱（Issue #15）"
   type        = number
-  default     = 30
+  default     = 15
 }
 
 variable "allowed_cidr_blocks" {
