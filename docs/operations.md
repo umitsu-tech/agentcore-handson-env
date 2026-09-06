@@ -95,7 +95,11 @@ cd ..
 ./publish.sh                              # site/ を S3 に上げてキャッシュを消す
 ```
 
-apply の出力 `guide_url` が受講者に配る URL です。中身を直したら `guide/site/index.html` を編集して `publish.sh` を打つだけで、Terraform は触りません。
+apply の出力 `guide_url` が受講者に配る URL です。中身を直したら `guide/site/` を編集して main に push するだけで、GitHub Actions（`.github/workflows/publish-guide.yml`）が S3 に同期して CloudFront のキャッシュを消します。手で反映したいときは `publish.sh` を打っても同じです。Terraform は触りません。
+
+Actions の認証は OIDC で、GitHub にアクセスキーは置きません。`guide/terraform/terraform.tfvars` に `github_repository`（owner/repo）と、リポジトリと所有者の数値 ID（`gh api repos/<owner>/<repo> --jq .id` と `--jq .owner.id`）を書いて apply すると、このリポジトリの main で動くワークフローだけが assume できるロールができます。数値 ID が要るのは、2026 年 7 月以降に作られたリポジトリでは OIDC トークンの sub に ID が付く形（immutable subject claim）になるためです。apply の出力 `github_actions_role_arn` と `bucket_name`、`distribution_id` を、リポジトリの Settings → Secrets and variables → Actions → Variables に `AWS_ROLE_ARN`、`GUIDE_BUCKET`、`GUIDE_DISTRIBUTION_ID` として登録します（`gh variable set` でもよい）。GitHub の OIDC プロバイダーはアカウントに 1 つあればよく、既にある前提で参照しています。
+
+ワークフローの手動実行（Actions タブの Run workflow）は、ワークフローのファイルが main に入ってからでないと選べません。
 
 独自ドメイン（`guide.handson.example.com` など）を付けるときは、`guide/terraform/terraform.tfvars` に `guide_hostname` と `cloudflare_zone_id` を書いて apply します。CloudFront 用の証明書は us-east-1 で発行する決まりなので、受講環境のワイルドカード証明書（ap-northeast-1）は使えず、Terraform がホスト名単体の証明書を us-east-1 で発行し、検証用の CNAME と本体の CNAME を Cloudflare に入れます。`CLOUDFLARE_API_TOKEN` は受講環境と同じもので構いません。
 

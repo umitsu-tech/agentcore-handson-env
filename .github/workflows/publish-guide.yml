@@ -10,7 +10,7 @@ name: publish-guide
 
 on:
   push:
-    branches: [main, feature/52-guide-ci] # feature/... はテスト中だけ
+    branches: [main]
     paths:
       - "guide/site/**"
       - ".github/workflows/publish-guide.yml"
