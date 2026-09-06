@@ -1,6 +1,7 @@
-# 手順書（guide/site/）を S3 に同期して CloudFront のキャッシュを消す。
-# guide/site/ の変更が main に入ったときだけ動く。手動でも実行できる（Actions タブの Run workflow）。
+# 手順書（guide/）をビルドして S3 に同期し、CloudFront のキャッシュを消す。
+# guide/ の変更が main に入ったときだけ動く。手動でも実行できる（Actions タブの Run workflow）。
 # guide/publish.sh と同じことをしている。
+# 受講者情報（participants/ 配下）は同期の対象外にして消さない（guide/publish-participants.sh が置く）。
 #
 # 必要な Variables（リポジトリの Settings → Secrets and variables → Actions → Variables）:
 #   AWS_ROLE_ARN          terraform/guide の output github_actions_role_arn
@@ -12,7 +13,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "guide/site/**"
+      - "guide/**"
       - ".github/workflows/publish-guide.yml"
   workflow_dispatch:
 
@@ -30,13 +31,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: guide/package-lock.json
+
+      - name: Build site
+        working-directory: guide
+        run: |
+          npm ci
+          npm run build
+
       - uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ap-northeast-1
 
       - name: Sync site to S3
-        run: aws s3 sync guide/site "s3://${{ vars.GUIDE_BUCKET }}/" --delete
+        run: aws s3 sync guide/dist "s3://${{ vars.GUIDE_BUCKET }}/" --delete --exclude "participants/*"
 
       - name: Invalidate CloudFront cache
         run: aws cloudfront create-invalidation --distribution-id "${{ vars.GUIDE_DISTRIBUTION_ID }}" --paths "/*"

@@ -141,7 +141,7 @@ user_data でセットアップを実行する方式だと、当日 30 台が同
 
 Terraform のルートは受講環境（`terraform/handson/`）と分けて `terraform/guide/` に置いています。手順書は前もって公開して当日まで置いておくもので、受講環境は当日に作って終わったら消すものなので、寿命が違います。同じ state に入れると、手順書だけ見たいときにも EC2 と ALB を作ることになります。ルートが 2 つになるぶん init が 1 回増えますが、その代わり apply と destroy を別々に打てます。
 
-原稿は `docs/curriculum.md` から変換せず、受講者向けに別で書いています。curriculum.md は主催者の進行台本で、受講者が読むには情報が多いためです。内容の更新は `guide/site/` を直して main に入れるだけで、GitHub Actions が S3 に同期してキャッシュを消します（Issue #52）。Actions の認証は OIDC で、GitHub にアクセスキーは置きません。Terraform は触らずに済みます。
+原稿は `docs/curriculum.md` から変換せず、受講者向けに別で書いています。curriculum.md は主催者の進行台本で、受講者が読むには情報が多いためです。サイトは Astro Starlight で作り（`guide/`。本文は `guide/src/content/docs/` の Markdown）、S3 + OAC がフォルダ形式の URL で index.html を補わないので `step1.html` のようにファイル名で出力しています。内容の更新は `guide/` を直して main に入れるだけで、GitHub Actions がビルドして S3 に同期し、キャッシュを消します（Issue #52、#51）。Actions の認証は OIDC で、GitHub にアクセスキーは置きません。Terraform は触らずに済みます。
 
 ### 後片付けの仕組み
 

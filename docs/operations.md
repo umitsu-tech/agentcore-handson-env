@@ -84,7 +84,7 @@ terraform init -backend-config=backend.hcl
 
 ### 手順書の配信
 
-受講者が読む手順書（`guide/site/index.html`）は S3 + CloudFront で配信します。受講環境とは寿命が違う（手順書は前もって公開して当日まで置いておく）ので、Terraform のルートを受講環境の `terraform/handson/` とは別の `terraform/guide/` に分けてあり、state も同じバケットの別のキーです。
+受講者が読む手順書（`guide/`。Astro Starlight で作る静的サイト）は S3 + CloudFront で配信します。受講環境とは寿命が違う（手順書は前もって公開して当日まで置いておく）ので、Terraform のルートを受講環境の `terraform/handson/` とは別の `terraform/guide/` に分けてあり、state も同じバケットの別のキーです。
 
 ```bash
 cd terraform/guide
@@ -95,7 +95,7 @@ cd ../../guide
 ./publish.sh                              # site/ を S3 に上げてキャッシュを消す
 ```
 
-apply の出力 `guide_url` が受講者に配る URL です。中身を直したら `guide/site/` を編集して main に push するだけで、GitHub Actions（`.github/workflows/publish-guide.yml`）が S3 に同期して CloudFront のキャッシュを消します。手で反映したいときは `publish.sh` を打っても同じです。Terraform は触りません。
+apply の出力 `guide_url` が受講者に配る URL です。中身を直したら `guide/src/content/docs/` の Markdown を編集して main に push するだけで、GitHub Actions（`.github/workflows/publish-guide.yml`）がビルドして S3 に同期し、CloudFront のキャッシュを消します。手で反映したいときは `guide/publish.sh` を打っても同じです（Node.js が要ります）。Terraform は触りません。手元で見た目を確かめるには `guide/` で `npm install` のあと `npm run dev` を打ちます。
 
 Actions の認証は OIDC で、GitHub にアクセスキーは置きません。`terraform/guide/terraform.tfvars` に `github_repository`（owner/repo）と、リポジトリと所有者の数値 ID（`gh api repos/<owner>/<repo> --jq .id` と `--jq .owner.id`）を書いて apply すると、このリポジトリの main で動くワークフローだけが assume できるロールができます。数値 ID が要るのは、2026 年 7 月以降に作られたリポジトリでは OIDC トークンの sub に ID が付く形（immutable subject claim）になるためです。apply の出力 `github_actions_role_arn` と `bucket_name`、`distribution_id` を、リポジトリの Settings → Secrets and variables → Actions → Variables に `AWS_ROLE_ARN`、`GUIDE_BUCKET`、`GUIDE_DISTRIBUTION_ID` として登録します（`gh variable set` でもよい）。GitHub の OIDC プロバイダーはアカウントに 1 つあればよく、既にある前提で参照しています。
 

@@ -1,0 +1,9 @@
+---
+// Starlight の ThemeProvider を差し替えて、常にライトテーマにする。
+// 既定はブラウザの設定に追随するため、暗い画面のままプロジェクターに映ると読めない。
+---
+
+<script is:inline>
+	document.documentElement.dataset.theme = 'light';
+	window.StarlightThemeProvider = { updatePickers() {} };
+</script>
