@@ -135,6 +135,12 @@ user_data でセットアップを実行する方式だと、当日 30 台が同
 
 事前に 1 台を作り込んで AMI にしておけば、当日は起動するだけです。セットアップの成否は前日までに確定します。
 
+### Terraform の state は S3 に置く
+
+state を手元にしか置かないと、作業しているマシンが当日使えなくなったときに `terraform destroy` の経路が塞がり、別のマシンや別の人が apply / destroy を引き継げません。ロックも効かないので、同じ state に二重に apply する事故も防げません。当日は 30 人ぶんのリソースを Terraform で持つので、state は S3 に置きます（Issue #40）。
+
+置き場は `scripts/build-ami.sh` が使っている資材バケットの `terraform-state/` です。state 専用のバケットを分ける案もありましたが、数十 KB のファイル 1 つのためにバケットを増やすより、ハンズオン由来の S3 を 1 つにまとめておくほうが後片付けでも把握しやすいと判断しました。ロックは Terraform 1.10 以降の `use_lockfile` で取り、DynamoDB は使いません。手順は [docs/operations.md](operations.md) の「Terraform の state を S3 に置く」にあります。
+
 ### インスタンスタイプは実測で t4g.small にした
 
 t4g.small（2 vCPU / 2GB）と t4g.medium（2 vCPU / 4GB）で `agentcore deploy` を実測しました（2026-09-06、Issue #15）。deploy は SSM 経由で `agentcore deploy --yes --target default` を流し、裏で `vmstat 5` を取っています。

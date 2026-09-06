@@ -46,6 +46,42 @@ AMI には次のものが入ります。
 
 スクリプトが確認するのは code-server の `/healthz` とハンズオン UI の `/api/context` が応答することまでです。`agentcore deploy` が最後まで通ること、デプロイしたエージェントをハンズオン UI から呼んで動きが画面に出ることは、Terraform で 1 台立ててから確認します。
 
+### Terraform の state を S3 に置く
+
+Terraform の state は手元ではなく S3 に置きます。当日 30 人ぶんのリソースを Terraform で持つので、作業しているマシンが使えなくなっても別のマシンから `terraform destroy` を打てるようにするためです。置き場は `scripts/build-ami.sh` が資材置き場に使っているバケット（`agentcore-handson-assets-<アカウントID>`）の `terraform-state/` で、バケットは分けません。ロックは Terraform 1.10 以降の `use_lockfile`（S3 の条件付き書き込み）で取るので、DynamoDB のテーブルは要りません。
+
+Terraform は 1.10 以降が必要です。Homebrew の `terraform` は 1.5.7 で止まっているので、HashiCorp の tap から入れます。
+
+```bash
+brew uninstall terraform            # Homebrew 本体の 1.5.7 が入っている場合
+brew install hashicorp/tap/terraform
+terraform version                   # 1.10 以降であること
+```
+
+バケットにはバージョニングを有効にしておきます（state を戻せるように）。`build-ami.sh` が作ったバケットは無効のままなので、初回に 1 度だけ有効にします。
+
+```bash
+aws s3api put-bucket-versioning --bucket agentcore-handson-assets-<アカウントID> --versioning-configuration Status=Enabled
+```
+
+バケット名にはアカウント ID が入るので、`terraform/versions.tf` には書かず、`terraform/backend.hcl`（git 管理外）で渡します。`backend.hcl.example` を写して作り、`init` のときに指定します。
+
+```bash
+cd terraform
+cp backend.hcl.example backend.hcl   # bucket をアカウントの値に直す
+terraform init -backend-config=backend.hcl
+```
+
+手元に `terraform.tfstate` が残っている状態から移す場合は `terraform init -migrate-state -backend-config=backend.hcl` で S3 へコピーされます。
+
+別のマシンで引き継ぐときは、リポジトリを clone したうえで、git 管理外の 3 つを揃えれば同じ state に対して plan / apply / destroy が打てます。
+
+- `terraform/backend.hcl`（上の手順で作る）
+- `terraform/terraform.tfvars`（証明書の ARN、AMI ID、Cloudflare のゾーン ID など。元のマシンからコピーする）
+- 環境変数 `CLOUDFLARE_API_TOKEN`（次の項）
+
+同じ state に対して 2 か所から同時に apply すると、後から始めたほうがロックの取得で止まります。止まったら先に動いているほうが終わるのを待ちます。
+
 ### Cloudflare の API トークンを用意する
 
 `*.handson.example.com` の CNAME を ALB の DNS 名に向けるレコードは、Terraform が Cloudflare のプロバイダー経由で作ります。ALB は `destroy` と `apply` のたびに DNS 名が変わるので、手で差し替える代わりに Terraform に追随させます。
@@ -113,7 +149,7 @@ aws ssm start-session --target <インスタンスID>
 terraform destroy
 ```
 
-EC2、ALB、ターゲットグループ、セキュリティグループ、VPC と、Cloudflare の `*.handson.example.com` の CNAME が消えます。`CLOUDFLARE_API_TOKEN` が環境変数に入っていないと CNAME の削除で止まるので、`apply` のときと同じシェルか、トークンを入れ直したシェルで実行します。
+EC2、ALB、ターゲットグループ、セキュリティグループ、VPC と、Cloudflare の `*.handson.example.com` の CNAME が消えます。state は S3 にあるので、apply したマシンでなくても `backend.hcl` と `terraform.tfvars` を揃えれば別のマシンから打てます。`CLOUDFLARE_API_TOKEN` が環境変数に入っていないと CNAME の削除で止まるので、`apply` のときと同じシェルか、トークンを入れ直したシェルで実行します。
 
 ### 残ってよいもの
 
