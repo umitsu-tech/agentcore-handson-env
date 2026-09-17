@@ -4,7 +4,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 
 ## 現在の状況
 
-最終更新: 2026-09-07
+最終更新: 2026-09-18
 
 ### 決まっていること
 
@@ -44,15 +44,15 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 
 ### できているもの
 
-すべて main にマージ済み（2026-09-06 時点）。
+すべて main にマージ済み（2026-09-18 時点。PR #67 だけ未マージ）。
 
 - 構成図とドキュメント（README.md、docs/architecture.md、docs/curriculum.md、docs/operations.md、docs/images/ の構成図・流れ図・Terraform の管理体系図）
 - Strands Agent の雛形（`handson-agent/`）。モデル呼び出し、Nova 2 Lite のツール選択、Runtime へのデプロイまで確認済み。ツールはデータ（dict / list）を返す
 - ハンズオン UI（`handson-ui/`、React + Vite + FastAPI）。周ごとの見出しと折りたたみ、入力と出力の 2 色、ツールの結果の JSON 表示、Markdown 記号の抑制、ラベルの補足。手元と Runtime のどちらでも同じ画面で動く
 - 受講環境のセットアップスクリプト（`scripts/setup-instance.sh`）と、AMI を焼く一括スクリプト（`scripts/build-ami.sh`、Issue #19）。同梱の Copilot 拡張はディレクトリごと消している（Issue #15）
 - 受講環境の Terraform（`terraform/handson/`）。AMI 前提で、`ami_id` を必須で受け取り、user_data は受講者固有の値を差し込むだけ。Cloudflare のワイルドカード CNAME も一緒に作る（Issue #30）。state は S3、ロックは `use_lockfile`（Issue #40）
-- 後片付けの仕組み（Issue #17）。棚卸しスクリプト `scripts/cleanup-participant-resources.sh`（一覧モードは確認済み、`--delete` は未確認）と、`handson_end_time` で発火する Deny・EC2 停止・ALB 削除（validate まで。apply は未実施）
-- 受講者向けの手順書（`guide/`、Issue #48。#51 で Astro Starlight に作り直し、mcks.log と同じ紙色のパレット、セクションごとのページ + サイドメニュー + 図 4 枚 + 画像の拡大表示）。受講者情報ページ `participants.html` と `/participants*` の Basic 認証は #58 で追加し、apply 済み（2026-09-07。認証なしは 401、他のページは今までどおり）。表の中身はまだ置いていない（`guide/publish-participants.sh`）。S3 非公開 + CloudFront OAC で配信し、`https://guide.handson.<base_domain>/` で HTTPS 200、HTTP は 301、S3 直アクセスは 403 まで確認済み。証明書は us-east-1 でホスト名単体を発行し、検証用と本体の CNAME は Terraform が Cloudflare に入れる。中身は GitHub Actions（OIDC、Issue #52）か `guide/publish.sh` で同期する。環境は立てたまま
+- 後片付けの仕組み（Issue #17）。棚卸しスクリプト `scripts/cleanup-participant-resources.sh`（一覧モードは確認済み、`--delete` は未確認）と、`handson_end_time` で発火する Deny・EC2 停止・ALB 削除。EC2 停止と ALB 削除は実機で発火を確認した（2026-09-17。下の記録参照）。Deny は未確認
+- 受講者向けの手順書（`guide/`、Issue #48。#51 で Astro Starlight に作り直し、mcks.log と同じ紙色のパレット、セクションごとのページ + サイドメニュー + 図 4 枚 + 画像の拡大表示）。受講者情報ページ `participants.html` と `/participants*` の Basic 認証は #58 で追加し、apply 済み（2026-09-07。認証なしは 401、他のページは今までどおり）。表の中身はまだ置いていない（`guide/publish-participants.sh`）。S3 非公開 + CloudFront OAC で配信し、`https://guide.handson.<base_domain>/` で HTTPS 200、HTTP は 301、S3 直アクセスは 403 まで確認済み。証明書は us-east-1 でホスト名単体を発行し、検証用と本体の CNAME は Terraform が Cloudflare に入れる。中身は GitHub Actions（OIDC、Issue #52）か `guide/publish.sh` で同期する。環境は本番まで立てたままにする
 - コストの試算。30 人 5 時間で約 2.2 USD（t4g.small の無料トライアル適用時。無ければ約 5.4 USD。内訳は docs/operations.md）。東京で使えるモデルの単価比較は Nova 2 Lite 据え置き
 
 通し確認の記録（2026-09-05〜06）。
@@ -63,12 +63,19 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - Runtime 名（`handsonuserNN_agent`）と CloudFormation スタック（`AgentCore-handsonuserNN-default`）が受講者ごとに分かれることを 2 人分で確認した（Issue #31）
 - 確認後の環境と Runtime のスタック、古い AMI は削除済み。Cloudflare の API トークンは git 管理外の `~/.config/agentcore-handson/cloudflare.env` に置き、terraform の前に `source` する
 
+後片付けの仕組みの確認記録（2026-09-17〜18）。
+
+- 2 人分（user01、user02）を `handson_end_time = 2026-09-17T13:00:00+09:00` で apply し、時刻を過ぎたあとに見ると ALB とリスナーが消え、EC2 は 2 台とも stopped になっていた。EventBridge Scheduler の 2 つのスケジュール（EC2 停止、ALB 削除）は発火後に自分で消えていて、`plan -destroy` では state 40 件のうち ALB 系と Scheduler の 7 件が「既に無い」扱いになった
+- 受講者ロールの Bedrock Deny が効くかは見ていない（次に受講環境を立てたときに確認する）
+- 停止した EC2 は EBS の課金が続くので、2026-09-18 に `terraform destroy` で残り 30 件を消した。state は空、EC2 は terminated、孤立した EBS ボリュームは無し。手順書サイトは残した（HTTPS 200 を確認）
+- AMI `ami-0e6e145f65e038cd9` は次の apply に使うので残している
+
 ### 次の一歩
 
 AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証情報が要るので、リュウキがブラウザで認証できるタイミングで進める。
 
 1. 人数ぶんへの展開（Issue #6）。受講環境を立てたら `guide/publish-participants.sh` で受講者情報の表を置く
-2. 後片付けの仕組み（Issue #17）を実機で確認する。`handson_end_time` を 10 分後などにして apply し、時刻を過ぎたら EC2 が停止・ALB が削除・受講者ロールで Bedrock が Deny されることを見る。Scheduler の universal target の ARN（`elasticloadbalancingv2:deleteLoadBalancer`）は apply で初めて検証される
+2. 次に受講環境を立てたとき、`handson_end_time` を過ぎたあとに受講者ロールで Bedrock が Deny されることを確認する（EC2 停止と ALB 削除は確認済み）。合わせて棚卸しスクリプトの `--delete` も試す
 
 当日の運営（事前準備、リハーサル）はこのリポジトリの範囲外にした（Issue #7、#8 はクローズ）。
 
