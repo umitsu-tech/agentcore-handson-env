@@ -70,7 +70,7 @@ if [ "$MODE" = "dry-run" ]; then
   printf '%s\n' "$DATA" | python3 -c '
 import json, sys
 for r in json.load(sys.stdin)["participants"]:
-    print(f"{r[\"id\"]:8} {r[\"editor_url\"]:48} {r[\"password\"]}")
+    print("%-8s %-48s %s" % (r["id"], r["editor_url"], r["password"]))
 '
   exit 0
 fi
