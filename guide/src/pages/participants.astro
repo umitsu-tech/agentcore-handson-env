@@ -69,8 +69,11 @@ import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
   #participants th:first-child {
     width: 5rem;
   }
+  /* パスワードは英数字 20 文字（terraform/handson の random_password）。等幅 1.05rem +
+     letter-spacing 0.04em で 1 行に収めるには約 15rem 要る。コピーボタン分の余白も含めた幅にして、
+     それでも収まらない幅ではボタンを折り返す（.password-row の flex-wrap）ので横スクロールは出ない */
   #participants th:last-child {
-    width: 12rem;
+    width: 15rem;
   }
   #participants th,
   #participants td {
@@ -80,17 +83,46 @@ import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
     word-break: break-all;
     vertical-align: top;
   }
-  #participants td:first-child,
-  #participants td.password {
+  #participants td:first-child {
     white-space: nowrap;
   }
   #participants th {
     background: var(--sl-color-gray-6);
   }
-  #participants td.password {
+  #participants .password-row {
+    display: inline-flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.6rem;
+  }
+  #participants .password-text {
     font-family: var(--sl-font-mono);
     font-size: 1.05rem;
     letter-spacing: 0.04em;
+    word-break: break-all;
+  }
+  #participants .copy-button {
+    font-family: var(--sl-font);
+    font-size: 0.85rem;
+    line-height: 1;
+    padding: 0.3rem 0.55rem;
+    border: 1px solid var(--sl-color-gray-4);
+    border-radius: 4px;
+    background: var(--sl-color-gray-6);
+    color: var(--ink);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  #participants .copy-button:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  #participants .copy-feedback {
+    font-size: 0.85rem;
+    color: var(--accent);
+  }
+  #participants .copy-feedback[data-state='error'] {
+    color: var(--note-alert);
   }
   #participants tr.hit {
     background: var(--sl-color-accent-low);
@@ -148,6 +180,28 @@ import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
     return a;
   }
 
+  // パスワードをクリップボードにコピーするボタン。受講者が画面を見て手で打つと間違えるため。
+  // Clipboard API が無い・許可が無いなどで失敗しても例外を投げっぱなしにせず、
+  // ボタンの横に短く結果を出すだけにする（黙って壊れない）。
+  function copyPassword(password: string, feedback: HTMLSpanElement) {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    return async () => {
+      window.clearTimeout(timer);
+      try {
+        await navigator.clipboard.writeText(password);
+        feedback.textContent = 'コピーしました';
+        feedback.dataset.state = 'ok';
+      } catch {
+        feedback.textContent = 'コピーできませんでした';
+        feedback.dataset.state = 'error';
+      }
+      timer = window.setTimeout(() => {
+        feedback.textContent = '';
+        delete feedback.dataset.state;
+      }, 2000);
+    };
+  }
+
   function render(rows: Row[]) {
     tbody.replaceChildren();
     for (const r of rows) {
@@ -165,7 +219,22 @@ import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
       const pw = document.createElement('td');
       pw.dataset.label = 'パスワード';
       pw.className = 'password';
-      pw.textContent = r.password;
+      const pwRow = document.createElement('span');
+      pwRow.className = 'password-row';
+      const pwText = document.createElement('span');
+      pwText.className = 'password-text';
+      pwText.textContent = r.password;
+      const pwFeedback = document.createElement('span');
+      pwFeedback.className = 'copy-feedback';
+      pwFeedback.setAttribute('aria-live', 'polite');
+      const pwButton = document.createElement('button');
+      pwButton.type = 'button';
+      pwButton.className = 'copy-button';
+      pwButton.textContent = 'コピー';
+      pwButton.setAttribute('aria-label', `${r.id} のパスワードをコピー`);
+      pwButton.addEventListener('click', copyPassword(r.password, pwFeedback));
+      pwRow.append(pwText, pwButton, pwFeedback);
+      pw.append(pwRow);
       tr.append(id, editor, ui, pw);
       tbody.append(tr);
     }
