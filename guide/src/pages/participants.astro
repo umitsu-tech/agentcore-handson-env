@@ -113,9 +113,9 @@ import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
     cursor: pointer;
     white-space: nowrap;
   }
+  /* 文字色は変えない。--accent をボタンの背景（gray-6）に重ねるとコントラスト比が 4.5 を下回るため */
   #participants .copy-button:hover {
     border-color: var(--accent);
-    color: var(--accent);
   }
   #participants .copy-feedback {
     font-size: 0.85rem;
@@ -186,7 +186,6 @@ import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
   function copyPassword(password: string, feedback: HTMLSpanElement) {
     let timer: ReturnType<typeof setTimeout> | undefined;
     return async () => {
-      window.clearTimeout(timer);
       try {
         await navigator.clipboard.writeText(password);
         feedback.textContent = 'コピーしました';
@@ -195,6 +194,9 @@ import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
         feedback.textContent = 'コピーできませんでした';
         feedback.dataset.state = 'error';
       }
+      // 前のタイマーは await の後で消す。書き込み中に連打されると、await の前では
+      // 先行するクリックのタイマーがまだ作られておらず消せないため
+      window.clearTimeout(timer);
       timer = window.setTimeout(() => {
         feedback.textContent = '';
         delete feedback.dataset.state;
