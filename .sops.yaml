@@ -1,0 +1,6 @@
+# SOPS の暗号化の設定（Issue #79）。git 管理外だった設定ファイルを暗号化してコミットする。
+# 鍵は age。ここに置くのは公開鍵だけで、秘密鍵は ~/.config/sops/age/keys.txt に置く（リポジトリには入れない）。
+# 引き継ぐ人が増えたら age に公開鍵を足し、sops updatekeys <ファイル> で読める人を増やす。
+creation_rules:
+  - path_regex: terraform/.*secrets\.enc\.(json|env)$
+    age: age1l7p2lmcp8xaqyhxjrx4t9ymmppj9q3ruzry2avlepfsp5wfsnurspnhqlc
