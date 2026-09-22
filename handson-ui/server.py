@@ -35,14 +35,44 @@ AGENT_DIR = Path(
 sys.path.insert(0, str(AGENT_DIR))
 
 import boto3  # noqa: E402
+from botocore.exceptions import ClientError  # noqa: E402
 from fastapi import FastAPI  # noqa: E402
 from fastapi.responses import FileResponse, PlainTextResponse  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 from pydantic import BaseModel  # noqa: E402
 from sse_starlette.sse import EventSourceResponse  # noqa: E402
+from strands.types.exceptions import ModelThrottledException  # noqa: E402
 
 from agent import MODEL_ID, SYSTEM_PROMPT, TOOLS, build_agent  # noqa: E402
 from lib.events import to_ui_event  # noqa: E402
+
+# 受講者が次にすることを案内する文言。スロットリング（Bedrock の 429）は
+# 30 人が同時に動かすハンズオンでは起こりうるので、そのまま例外を出すのではなく
+# 先頭に案内を付ける。手元実行（_stream_local）と Runtime 経由
+# （_invoke_runtime_worker）の両方から使う
+_THROTTLE_MESSAGE = "モデルの呼び出しが混み合っています。少し待ってから、もう一度送ってください。"
+
+
+def _is_throttling_error(e: Exception) -> bool:
+    """スロットリングかどうかを判定する。
+
+    Strands は Bedrock の ThrottlingException をリトライ済みで
+    ModelThrottledException に変換してから投げる。invoke_agent_runtime 側は
+    boto3 の ClientError がそのまま届くこともあるので、両方を見る。
+    """
+    if isinstance(e, ModelThrottledException):
+        return True
+    if isinstance(e, ClientError):
+        code = e.response.get("Error", {}).get("Code", "")
+        return "Throttling" in code
+    return False
+
+
+def _error_message(e: Exception) -> str:
+    """例外を画面に出す文字列にする。スロットリングなら案内を先頭に付ける。"""
+    if _is_throttling_error(e):
+        return f"{_THROTTLE_MESSAGE}\n{e}"
+    return str(e)
 
 app = FastAPI()
 DIST_DIR = Path(__file__).parent / "frontend" / "dist"
@@ -214,11 +244,14 @@ def runtime():
 
 
 async def _stream_local(prompt: str):
-    agent = build_agent()
-    async for event in agent.stream_async(prompt):
-        payload = to_ui_event(event)
-        if payload is not None:
-            yield {"data": json.dumps(payload, ensure_ascii=False)}
+    try:
+        agent = build_agent()
+        async for event in agent.stream_async(prompt):
+            payload = to_ui_event(event)
+            if payload is not None:
+                yield {"data": json.dumps(payload, ensure_ascii=False)}
+    except Exception as e:  # noqa: BLE001 — 画面が「network error」だけになるのを避ける
+        yield {"data": json.dumps({"type": "error", "message": _error_message(e)}, ensure_ascii=False)}
 
 
 def _invoke_runtime_worker(prompt: str, info: dict, out: "queue.Queue[dict | object]", sentinel: object):
@@ -254,7 +287,7 @@ def _invoke_runtime_worker(prompt: str, info: dict, out: "queue.Queue[dict | obj
                 continue
             out.put(payload)
     except Exception as e:  # noqa: BLE001 — 画面が「network error」だけになるのを避ける
-        out.put({"type": "error", "message": str(e)})
+        out.put({"type": "error", "message": _error_message(e)})
     finally:
         out.put(sentinel)
 
