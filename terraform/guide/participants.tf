@@ -1,7 +1,8 @@
 # 受講者情報ページ（/participants.html と /participants/data.json）だけを Basic 認証で守る。
 # 手順書の他のページは誰でも開ける。認証は CloudFront Function（viewer-request）で行い、
 # ユーザー名と合言葉は tfvars（git 管理外）から渡す。
-# data.json の中身は Terraform では扱わない。../../guide/publish-participants.sh が S3 に直接置く。
+# data.json の中身はこちらでは扱わない。terraform/handson が participants.tf で S3 に直接置く
+# （受講環境と寿命を揃えるため。Issue #76）。バケット名は bucket_name の output で渡す。
 
 variable "participants_user" {
   description = "受講者情報ページの Basic 認証のユーザー名。当日その場で伝える"

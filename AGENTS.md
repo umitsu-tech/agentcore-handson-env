@@ -39,7 +39,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - Terraform の state は S3（build-ami.sh の資材バケットの `terraform-state/`）に置き、ロックは Terraform 1.10 以降の `use_lockfile` で取る。DynamoDB は使わない。バケット名は `terraform/handson/backend.hcl`（git 管理外）で渡す（Issue #40）
 - 受講者向けの手順書は Astro Starlight の静的サイト（`guide/`。本文は `guide/src/content/docs/` の MDX。原稿は curriculum から変換せず別で書く）を S3 非公開 + CloudFront OAC で配信する。S3 + OAC はフォルダ形式の URL で index.html を補わないので `build.format: 'file'` で `step1.html` のように出力し、本文中のリンクも `.html` 付きで書く。テーマはプロジェクター向けに常にライト固定（ThemeProvider / ThemeSelect を差し替え）。図は docs/images の drawio と同じ流儀で描いて `guide/public/images/` にコピーする（Issue #51）。Terraform のルートは寿命が違うので `terraform/guide/` に分け（受講環境は `terraform/handson/`）、state は同じバケットの別キー。中身の更新は `guide/publish.sh`。独自ドメインは `guide_hostname` を指定したときだけ（証明書は us-east-1 でホスト名単体を発行）（Issue #48）
 - 手順書の更新は GitHub Actions で自動配信する（`guide/**` が main に入ったら `npm ci && npm run build` して `guide/dist` を s3 sync + キャッシュ削除。`participants/*` は sync の対象外にして消さない）。認証は OIDC で、ロールは `terraform/guide` が作り、このリポジトリの main からだけ assume できる。sub は ID 無しと ID 付き（immutable subject claim）の両方を許可する。バケット名などは GitHub の Variables に置く（Issue #52）
-- 受講者情報（userNN ごとの URL とパスワードの表）は手順書サイトの `participants.html` に出す。中身の `participants/data.json` は git に入れず `guide/publish-participants.sh` が `terraform/handson` の output から組み立てて S3 に直接置く。`/participants*` だけ CloudFront Function（viewer-request）の Basic 認証で守り、ユーザー名と合言葉は `terraform/guide` の変数（tfvars、git 管理外）で渡す。合言葉 1 つで全員分が見える形はリュウキ判断で許容（当日その場で口頭で伝える。終わったら `--remove` で消す）（Issue #58）
+- 受講者情報（userNN ごとの URL とパスワードの表）は手順書サイトの `participants.html` に出す。中身の `participants/data.json` は git に入れず、`terraform/handson` が S3 のオブジェクトとして置く（`participants.tf`。tfvars の `guide_bucket_name` に手順書のバケット名を書いたときだけ）。apply で置かれ destroy で消えるので、受講環境と表の寿命が揃う。以前はスクリプト（`publish-participants.sh`）で置いていたが、destroy のあとに消し忘れて古い表が残ったので改めた（Issue #76）。`/participants*` だけ CloudFront Function（viewer-request）の Basic 認証で守り、ユーザー名と合言葉は `terraform/guide` の変数（tfvars、git 管理外）で渡す。合言葉 1 つで全員分が見える形はリュウキ判断で許容（当日その場で口頭で伝える）（Issue #58）
 - Cloudflare の `*.<base_domain>` の CNAME は Terraform（cloudflare プロバイダー v5 の `cloudflare_dns_record`）で管理し、ALB の作り直しに自動で追随させる。API トークンは環境変数 `CLOUDFLARE_API_TOKEN` で渡し、ゾーン ID だけ tfvars に書く。証明書の検証用 CNAME は手で入れたまま管理外にする（Issue #30）
 - モデルや Runtime の呼び出しが失敗したら、UI のサーバーが例外を捕まえて画面に内容を出す。手元実行でも Runtime 経由でも同じ。混み合い（スロットリング）のときは「少し待ってから、もう一度送ってください」を先に出す。Bedrock の上限は 30 人で足りるが、AgentCore の新しいセッションの作成は 1 秒あたり 25 までなので、ステップ 4 は講師が一斉に送らせず、準備できた人から送ってもらう（Issue #75）
 
@@ -53,7 +53,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - 受講環境のセットアップスクリプト（`scripts/setup-instance.sh`）と、AMI を焼く一括スクリプト（`scripts/build-ami.sh`、Issue #19）。同梱の Copilot 拡張はディレクトリごと消している（Issue #15）
 - 受講環境の Terraform（`terraform/handson/`）。AMI 前提で、`ami_id` を必須で受け取り、user_data は受講者固有の値を差し込むだけ。Cloudflare のワイルドカード CNAME も一緒に作る（Issue #30）。state は S3、ロックは `use_lockfile`（Issue #40）
 - 後片付けの仕組み（Issue #17）。棚卸しスクリプト `scripts/cleanup-participant-resources.sh`（一覧モードは確認済み、`--delete` は未確認）と、`handson_end_time` で発火する Deny・EC2 停止・ALB 削除。EC2 停止と ALB 削除は実機で発火を確認した（2026-09-17。下の記録参照）。Deny は未確認
-- 受講者向けの手順書（`guide/`、Issue #48。#51 で Astro Starlight に作り直し、mcks.log と同じ紙色のパレット、セクションごとのページ + サイドメニュー + 図 4 枚 + 画像の拡大表示）。受講者情報ページ `participants.html` と `/participants*` の Basic 認証は #58 で追加し、apply 済み（2026-09-07。認証なしは 401、他のページは今までどおり）。パスワードの列の見切れを直し、コピーボタンを付けた（#65。2026-09-23 に配信済み）。表の中身はまだ置いていない（`guide/publish-participants.sh`）。S3 非公開 + CloudFront OAC で配信し、`https://guide.handson.<base_domain>/` で HTTPS 200、HTTP は 301、S3 直アクセスは 403 まで確認済み。証明書は us-east-1 でホスト名単体を発行し、検証用と本体の CNAME は Terraform が Cloudflare に入れる。中身は GitHub Actions（OIDC、Issue #52）か `guide/publish.sh` で同期する。環境は本番まで立てたままにする
+- 受講者向けの手順書（`guide/`、Issue #48。#51 で Astro Starlight に作り直し、mcks.log と同じ紙色のパレット、セクションごとのページ + サイドメニュー + 図 4 枚 + 画像の拡大表示）。受講者情報ページ `participants.html` と `/participants*` の Basic 認証は #58 で追加し、apply 済み（2026-09-07。認証なしは 401、他のページは今までどおり）。パスワードの列の見切れを直し、コピーボタンを付けた（#65。2026-09-23 に配信済み）。表の中身は今は置いていない（受講環境を立てると置かれる）。S3 非公開 + CloudFront OAC で配信し、`https://guide.handson.<base_domain>/` で HTTPS 200、HTTP は 301、S3 直アクセスは 403 まで確認済み。証明書は us-east-1 でホスト名単体を発行し、検証用と本体の CNAME は Terraform が Cloudflare に入れる。中身は GitHub Actions（OIDC、Issue #52）か `guide/publish.sh` で同期する。環境は本番まで立てたままにする
 - コストの試算。30 人 5 時間で約 2.2 USD（t4g.small の無料トライアル適用時。無ければ約 5.4 USD。内訳は docs/operations.md）。東京で使えるモデルの単価比較は Nova 2 Lite 据え置き
 
 通し確認の記録（2026-09-05〜06）。
@@ -82,7 +82,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証情報が要るので、リュウキがブラウザで認証できるタイミングで進める。
 
 1. vCPU の上限の引き上げ（80）が通るのを待つ
-2. 通ったら 30 人分を試しに apply する（Issue #6。1〜2 時間確認して destroy、費用の目安は 1〜3 USD。apply の前に plan の差分を確認する）。確かめるのは、30 人がほぼ同時に `agentcore deploy` したときの待ち時間（CloudFormation の API にはアカウント単位の呼び出し上限がある）、`handson_end_time` を過ぎたあとに受講者ロールで Bedrock が Deny されること（EC2 停止と ALB 削除は確認済み）、棚卸しスクリプトの `--delete`。受講者情報の表は `guide/publish-participants.sh` で置く
+2. 通ったら 30 人分を試しに apply する（Issue #6。1〜2 時間確認して destroy、費用の目安は 1〜3 USD。apply の前に plan の差分を確認する）。確かめるのは、30 人がほぼ同時に `agentcore deploy` したときの待ち時間（CloudFormation の API にはアカウント単位の呼び出し上限がある）、`handson_end_time` を過ぎたあとに受講者ロールで Bedrock が Deny されること（EC2 停止と ALB 削除は確認済み）、棚卸しスクリプトの `--delete`。受講者情報の表は tfvars に `guide_bucket_name` を足して apply すれば置かれるので、表が出ることと、destroy で消えることも確かめる
 
 当日の運営（事前準備、リハーサル）はこのリポジトリの範囲外にした（Issue #7、#8 はクローズ）。
 
