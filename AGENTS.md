@@ -63,7 +63,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - Cloudflare の CNAME は ALB の作成直後に新しい DNS 名へ向き、destroy で一緒に消える。検証用 CNAME だけが残る
 - AMI `ami-0e6e145f65e038cd9`（agentcore-handson-20260906-1805、arm64、15GiB）で t4g.small と t4g.medium の `agentcore deploy` を比べ、所要時間が変わらなかった（small 99 秒、medium 112 秒）ので small のまま。表と考察は docs/architecture.md の「インスタンスタイプ」にある。Copilot 拡張の削除は効いている（プロセス 0、再起動後の使用メモリ 301MB）
 - Runtime 名（`handsonuserNN_agent`）と CloudFormation スタック（`AgentCore-handsonuserNN-default`）が受講者ごとに分かれることを 2 人分で確認した（Issue #31）
-- 確認後の環境と Runtime のスタック、古い AMI は削除済み。Cloudflare の API トークンは（当時は git 管理外の `~/.config/agentcore-handson/cloudflare.env` に置き terraform の前に `source` していたが、今は `terraform/secrets.enc.env`（SOPS で暗号化）に置き、`scripts/tf.sh` が実行中だけ渡す。Issue #79）
+- 確認後の環境と Runtime のスタック、古い AMI は削除済み。Cloudflare の API トークンは `terraform/secrets.enc.env`（SOPS で暗号化）に置き、`scripts/tf.sh` が実行中だけ渡す（Issue #79。当時は git 管理外の `~/.config/agentcore-handson/cloudflare.env` を terraform の前に `source` していた）
 
 後片付けの仕組みの確認記録（2026-09-17〜18）。
 

@@ -35,7 +35,7 @@ scripts/build-ami.sh --volume-size 20   # サイズを変えて試すとき
 scripts/build-ami.sh --prune            # 古い AMI とスナップショットも消すとき
 ```
 
-終わると新しい AMI ID が表示されます。実際に使う値は `terraform/handson/secrets.enc.json` に入っているので、表示された AMI ID をそこに書き込みます（次の項の `sops set` / `sops edit`）。
+終わると新しい AMI ID が表示され、`terraform/handson/secrets.enc.json`（SOPS で暗号化した受講環境の設定。次の項）の `ami_id` が `sops set` で書き換わります。書き換わったファイルはコミットしておきます。
 
 AMI には次のものが入ります。
 
@@ -217,6 +217,8 @@ aws ssm start-session --target <インスタンスID>
 ```bash
 sops edit terraform/handson/secrets.enc.json
 ```
+
+開いた JSON に次の 2 つのキーを足します。ほかのキーはそのまま残します。
 
 ```json
 {

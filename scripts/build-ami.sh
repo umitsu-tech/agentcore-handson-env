@@ -366,12 +366,14 @@ fi
 log "完了"
 echo "AMI 名: $AMI_NAME"
 echo "AMI ID: $AMI_ID"
-TFVARS="$REPO_ROOT/terraform/handson/terraform.tfvars"
-if [ -f "$TFVARS" ] && grep -qE '^ami_id[[:space:]]*=' "$TFVARS"; then
-  sed -i.bak -E "s|^(ami_id[[:space:]]*=[[:space:]]*)\"[^\"]*\"|\1\"$AMI_ID\"|" "$TFVARS"
-  rm -f "$TFVARS.bak"
-  echo "terraform/handson/terraform.tfvars の ami_id を $AMI_ID に書き換えました"
+# 受講環境の設定は SOPS で暗号化してある（Issue #79）。sops set なら平文のファイルを作らずに書き換えられる。
+# 秘密鍵の場所は scripts/tf.sh と同じ既定値にする
+SECRETS="$REPO_ROOT/terraform/handson/secrets.enc.json"
+export SOPS_AGE_KEY_FILE="${SOPS_AGE_KEY_FILE:-$HOME/.config/sops/age/keys.txt}"
+if [ -f "$SECRETS" ] && command -v sops > /dev/null && sops set "$SECRETS" '["ami_id"]' "\"$AMI_ID\""; then
+  echo "terraform/handson/secrets.enc.json の ami_id を $AMI_ID に書き換えました（コミットを忘れずに）"
 else
-  echo "terraform/handson/terraform.tfvars に ami_id = \"$AMI_ID\" を設定してください"
+  echo "terraform/handson/secrets.enc.json の ami_id を書き換えてください:"
+  echo "  sops set terraform/handson/secrets.enc.json '[\"ami_id\"]' '\"$AMI_ID\"'"
 fi
 FINISHED=true
