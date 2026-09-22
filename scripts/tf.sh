@@ -52,12 +52,19 @@ case "$CMD" in
       -backend-config="region=$TF_STATE_REGION"
     ;;
   plan | apply | destroy | import | refresh | console)
-    # 保存した plan ファイルを apply するときは変数を渡せない（terraform がエラーにする）
+    # 保存した plan ファイルを apply するときは変数を渡せない（terraform がエラーにする）。
+    # `-var foo=bar` のように値を空白で区切ったオプションもあるので、- で始まらないだけでは
+    # plan ファイルと決めず、実在するファイルかで見る（-chdir するのでルートからの相対パスも見る）。
+    # plan ファイルには変数の値が平文で入るので、.gitignore で除外している
     if [ "$CMD" = apply ]; then
       for arg in "${@:2}"; do
         case "$arg" in
           -*) ;;
-          *) exec terraform -chdir="$DIR" "$@" ;;
+          *)
+            if [ -f "$arg" ] || [ -f "$DIR/$arg" ]; then
+              exec terraform -chdir="$DIR" "$@"
+            fi
+            ;;
         esac
       done
     fi

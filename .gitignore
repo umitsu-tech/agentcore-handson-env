@@ -5,6 +5,9 @@
 # 実際の値は secrets.enc.json（SOPS）に入れる。ここは平文をうっかりコミットしないための網
 *.tfvars
 *.tfvars.json
+# 保存した plan（plan -out=...）には変数の値が平文で入る
+*.tfplan
+tfplan
 crash.log
 crash.*.log
 override.tf

@@ -372,8 +372,11 @@ SECRETS="$REPO_ROOT/terraform/handson/secrets.enc.json"
 export SOPS_AGE_KEY_FILE="${SOPS_AGE_KEY_FILE:-$HOME/.config/sops/age/keys.txt}"
 if [ -f "$SECRETS" ] && command -v sops > /dev/null && sops set "$SECRETS" '["ami_id"]' "\"$AMI_ID\""; then
   echo "terraform/handson/secrets.enc.json の ami_id を $AMI_ID に書き換えました（コミットを忘れずに）"
+  FINISHED=true
 else
-  echo "terraform/handson/secrets.enc.json の ami_id を書き換えてください:"
-  echo "  sops set terraform/handson/secrets.enc.json '[\"ami_id\"]' '\"$AMI_ID\"'"
+  # AMI はできているが、このまま apply すると古い AMI で立ち上がる。気づけるよう失敗で終える
+  echo "エラー: AMI はできましたが、terraform/handson/secrets.enc.json の ami_id を書き換えられませんでした。次を打ってください:" >&2
+  echo "  sops set terraform/handson/secrets.enc.json '[\"ami_id\"]' '\"$AMI_ID\"'" >&2
+  FINISHED=true
+  exit 1
 fi
-FINISHED=true
