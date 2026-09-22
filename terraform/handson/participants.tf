@@ -43,6 +43,10 @@ resource "aws_s3_object" "participants_data" {
   content_type  = "application/json; charset=utf-8"
   cache_control = "no-cache"
 
+  # パスワードを作り直すと EC2 も作り直しになる（user_data に入っているため）。表が先に
+  # 新しいパスワードになってログインできない時間ができないよう、EC2 の作成を待ってから置く
+  depends_on = [aws_instance.participant]
+
   content = jsonencode({
     generated_at = time_static.participants_generated_at[0].rfc3339
     participants = local.participant_rows
