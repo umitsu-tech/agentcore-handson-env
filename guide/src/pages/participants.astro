@@ -1,7 +1,7 @@
 ---
 // 受講者情報のページ。中身（/participants/data.json）は git に入れず、
-// guide/publish-participants.sh が S3 に直接置く。このページと data.json は
-// CloudFront 側で Basic 認証がかかっている（terraform/guide/participants.tf）。
+// terraform/handson の apply が S3 に直接置く（terraform/handson/participants.tf）。
+// このページと data.json は CloudFront 側で Basic 認証がかかっている（terraform/guide/participants.tf）。
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 ---
 

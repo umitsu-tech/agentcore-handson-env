@@ -1,7 +1,7 @@
 # 手順書（guide/）をビルドして S3 に同期し、CloudFront のキャッシュを消す。
 # guide/ の変更が main に入ったときだけ動く。手動でも実行できる（Actions タブの Run workflow）。
 # guide/publish.sh と同じことをしている。
-# 受講者情報（participants/ 配下）は同期の対象外にして消さない（guide/publish-participants.sh が置く）。
+# 受講者情報（participants/ 配下）は同期の対象外にして消さない（terraform/handson の apply が置く）。
 #
 # 必要な Variables（リポジトリの Settings → Secrets and variables → Actions → Variables）:
 #   AWS_ROLE_ARN          terraform/guide の output github_actions_role_arn

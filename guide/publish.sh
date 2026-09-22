@@ -7,7 +7,7 @@
 #   guide/publish.sh --dry-run  # ビルドして、何が上がるかだけ見る
 #
 # 同期先は terraform/guide の output から取る（terraform init 済みであること）。
-# 受講者情報（participants/ 配下）はこのスクリプトでは触らない（publish-participants.sh が置く）。
+# 受講者情報（participants/ 配下）はこのスクリプトでは触らない（terraform/handson の apply が置く）。
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"

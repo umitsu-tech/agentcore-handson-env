@@ -28,3 +28,7 @@ ami_id = "ami-00c0b0303a0921d88"
 # 当日の apply で設定する。検証のときは書かない（仕組みごと作られない）
 # handson_end_time = "2026-10-31T17:00:00+09:00"
 # handson_timezone = "Asia/Tokyo"
+
+# 受講者情報の表（/participants.html）を置く手順書サイトのバケット名。
+# terraform -chdir=terraform/guide output -raw bucket_name で分かる。未指定なら表は作らない
+# guide_bucket_name = "agentcore-handson-guide-123456789012"
