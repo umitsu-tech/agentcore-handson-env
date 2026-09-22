@@ -32,7 +32,7 @@ ALB は HTTPS:443 のリスナーを持ち、ACM で発行したワイルドカ�
 
 リスナールールはホストベースで、`user01.handson.example.com` を受講者 01 のターゲットグループに、`user02...` を 02 に、と振り分けます。受講者を増やしてもルールとターゲットグループが増えるだけで、ALB は 1 つのままです。
 
-DNS は Cloudflare で管理します。`*.handson.example.com` の CNAME を ALB の DNS 名に向けるレコードを 1 本引けば、サブドメインが何個あっても解決します。このレコードは Terraform が Cloudflare のプロバイダー経由で作るので、ALB を作り直して DNS 名が変わっても手で差し替える必要はありません。Cloudflare のプロキシ（オレンジクラウド）はワイルドカードでは有料プランが必要になるため、DNS only（グレークラウド）で運用します。TLS は ALB 上の ACM 証明書がそのまま使われます。
+DNS は Cloudflare で管理します。`*.handson.example.com` の CNAME を ALB の DNS 名に向けるレコードを 1 件作れば、サブドメインが何個あっても解決します。このレコードは Terraform が Cloudflare のプロバイダー経由で作るので、ALB を作り直して DNS 名が変わっても手で差し替える必要はありません。Cloudflare のプロキシ（オレンジクラウド）は使わず、DNS only（グレークラウド）で運用します。プロキシを通すと `user01.handson.example.com` のような 2 階層のサブドメインが Cloudflare の無料の証明書の範囲外になり、別途有料の証明書が要るためです。TLS は ALB 上の ACM 証明書がそのまま使われます。
 
 ACM の証明書検証も DNS 検証なので、Cloudflare に検証用の CNAME を 1 本追加します。この検証用の CNAME と証明書そのものは手で作り、Terraform の管理外です。
 
