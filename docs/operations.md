@@ -90,7 +90,7 @@ sops updatekeys terraform/handson/secrets.enc.json
 sops updatekeys terraform/guide/secrets.enc.json
 ```
 
-平文の `terraform.tfvars` や `backend.hcl` は `.gitignore` に残してあります。誤って暗号化前のファイルをコミットしないための網です。`plan -out=tfplan` のように保存した plan ファイルにも変数の値が平文で入るので、`*.tfplan` と `tfplan` も `.gitignore` で除外しています。保存した plan は apply が済んだら消します。
+平文の `terraform.tfvars` や `backend.hcl` は `.gitignore` に残してあります。誤って暗号化前のファイルをコミットしないための網です。`plan -out=tfplan` のように保存した plan ファイルにも変数の値が平文で入ります。よく使う名前（`*.tfplan`、`*.plan`、`tfplan`）は `.gitignore` で除外していますが、名前は自由に付けられるので、`scripts/tf.sh` は `-out` を付けたときに注意を出します。保存した plan はコミットせず、apply が済んだら消します。
 
 ### Terraform の state
 

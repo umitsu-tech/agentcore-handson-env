@@ -7,6 +7,7 @@
 *.tfvars.json
 # 保存した plan（plan -out=...）には変数の値が平文で入る
 *.tfplan
+*.plan
 tfplan
 crash.log
 crash.*.log
