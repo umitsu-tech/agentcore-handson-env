@@ -74,6 +74,21 @@ def _error_message(e: Exception) -> str:
         return f"{_THROTTLE_MESSAGE}\n{e}"
     return str(e)
 
+
+def _runtime_error_event(payload: dict) -> dict:
+    """Runtime の中で起きた例外を、画面の error イベントの形にする。
+
+    bedrock_agentcore の BedrockAgentCoreApp は、エントリポイントで例外が起きると
+    {"error": ..., "error_type": ..., "message": ...} を流して終わる。type が無いので
+    そのままだと画面に何も出ない。例外はデプロイ先で起きているので型名で判定する。
+    """
+    error_type = str(payload.get("error_type", ""))
+    detail = f"{error_type}: {payload.get('error', '')}"
+    if "Throttl" in error_type:
+        return {"type": "error", "message": f"{_THROTTLE_MESSAGE}\n{detail}"}
+    return {"type": "error", "message": detail}
+
+
 app = FastAPI()
 DIST_DIR = Path(__file__).parent / "frontend" / "dist"
 
@@ -285,6 +300,8 @@ def _invoke_runtime_worker(prompt: str, info: dict, out: "queue.Queue[dict | obj
                 payload = json.loads(data)
             except json.JSONDecodeError:
                 continue
+            if isinstance(payload, dict) and "type" not in payload and "error_type" in payload:
+                payload = _runtime_error_event(payload)
             out.put(payload)
     except Exception as e:  # noqa: BLE001 — 画面が「network error」だけになるのを避ける
         out.put({"type": "error", "message": _error_message(e)})
