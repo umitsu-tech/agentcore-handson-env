@@ -2,6 +2,7 @@
 **/.terraform/*
 *.tfstate
 *.tfstate.*
+# 実際の値は secrets.enc.json（SOPS）に入れる。ここは平文をうっかりコミットしないための網
 *.tfvars
 *.tfvars.json
 crash.log
@@ -16,7 +17,8 @@ terraform.rc
 # 例示用の tfvars はコミットする
 !*.tfvars.example
 
-# S3 バックエンドの接続情報（バケット名にアカウント ID が入る）。example だけコミットする
+# S3 バックエンドの接続情報（バケット名にアカウント ID が入る）。今は scripts/tf.sh が
+# terraform/secrets.enc.env から渡すので使っていないが、平文をうっかりコミットしないため残す
 terraform/handson/backend.hcl
 terraform/guide/backend.hcl
 

@@ -1,4 +1,5 @@
-# 実際の値を入れて terraform.tfvars という名前で保存する（tfvars は git 管理しない）
+# 実際の値は terraform/guide/secrets.enc.json（SOPS で暗号化した JSON）に入れる。
+# このファイルは変数の一覧と例で、実際に terraform.tfvars として保存する用途では使わない
 
 # 独自ドメインを付けるとき。付けないなら両方コメントのままで、CloudFront の既定ドメインで配信する
 # guide_hostname     = "guide.handson.example.com"

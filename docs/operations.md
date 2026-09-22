@@ -35,7 +35,7 @@ scripts/build-ami.sh --volume-size 20   # サイズを変えて試すとき
 scripts/build-ami.sh --prune            # 古い AMI とスナップショットも消すとき
 ```
 
-終わると新しい AMI ID が表示され、`terraform/handson/terraform.tfvars` があれば `ami_id` を書き換えます。
+終わると新しい AMI ID が表示されます。実際に使う値は `terraform/handson/secrets.enc.json` に入っているので、表示された AMI ID をそこに書き込みます（次の項の `sops set` / `sops edit`）。
 
 AMI には次のものが入ります。
 
@@ -45,6 +45,52 @@ AMI には次のものが入ります。
 - Node.js、Python、uv、AWS CLI、AWS CDK、AgentCore CLI（`npm install -g @aws/agentcore`）
 
 スクリプトが確認するのは code-server の `/healthz` とハンズオン UI の `/api/context` が応答することまでです。`agentcore deploy` が最後まで通ること、デプロイしたエージェントをハンズオン UI から呼んで動きが画面に出ることは、Terraform で 1 台立ててから確認します。
+
+### 秘密情報（SOPS）
+
+ドメイン、証明書の ARN、Cloudflare の API トークンなど、環境固有の値は SOPS（getsops/sops）で暗号化してリポジトリに入れています（Issue #79）。鍵は age を使い、暗号化されるのは値だけで、キーの名前は平文のまま読めます。
+
+```bash
+brew install sops age
+```
+
+秘密鍵は `~/.config/sops/age/keys.txt` に置きます。リポジトリには入れないので、パスワードマネージャーなどに控えておきます。macOS の sops は既定で `~/Library/Application Support/sops/age/` を探すので、後述の `scripts/tf.sh` は `SOPS_AGE_KEY_FILE` の既定値をこのパスにしています。手で `sops` を直接打つときのために、シェルの設定ファイルに次を足しておきます。
+
+```bash
+export SOPS_AGE_KEY_FILE=~/.config/sops/age/keys.txt
+```
+
+暗号化しているファイルは 3 つです。値は JSON か env 形式で、これまで HCL（`.tfvars`）で書いていたものと中身は同じです。
+
+- `terraform/secrets.enc.env`（`CLOUDFLARE_API_TOKEN`、`TF_STATE_BUCKET`、`TF_STATE_REGION`）
+- `terraform/handson/secrets.enc.json`（`terraform/handson/terraform.tfvars.example` にある変数を JSON にしたもの）
+- `terraform/guide/secrets.enc.json`（`terraform/guide/terraform.tfvars.example` にある変数を JSON にしたもの）
+
+値を確認・変更するときは `sops edit` でエディタを開きます。保存すると自動で暗号化し直されます。
+
+```bash
+sops edit terraform/handson/secrets.enc.json
+```
+
+1 つの値だけ変えるなら `sops set` も使えます。
+
+```bash
+sops set terraform/handson/secrets.enc.json '["participants"]' '["user01","user02"]'
+```
+
+中身は JSON なので、以前 HCL で書いていた例（`participants = ["user01"]` や `handson_end_time = "..."`）は、JSON の書き方（`"participants": ["user01"]`）に直して書きます。
+
+Terraform を動かすときはコマンドを直接打たず、ラッパー `scripts/tf.sh <handson|guide> <サブコマンド> ...` を通します（次項）。
+
+別のマシンで作業を引き継ぐときは、リポジトリを clone し、秘密鍵を `~/.config/sops/age/keys.txt` に置いて `scripts/tf.sh handson init` を打てば、同じ state に対して plan / apply / destroy が打てます。引き継ぐ人を増やすときは、その人の age の公開鍵を `.sops.yaml` に足し、次を 3 ファイルに打って読める人を増やします。
+
+```bash
+sops updatekeys terraform/secrets.enc.env
+sops updatekeys terraform/handson/secrets.enc.json
+sops updatekeys terraform/guide/secrets.enc.json
+```
+
+平文の `terraform.tfvars` や `backend.hcl` は `.gitignore` に残してあります。誤って暗号化前のファイルをコミットしないための網です。
 
 ### Terraform の state
 
@@ -64,21 +110,15 @@ terraform version                   # 1.10 以降であること
 aws s3api put-bucket-versioning --bucket agentcore-handson-assets-<アカウントID> --versioning-configuration Status=Enabled
 ```
 
-バケット名にはアカウント ID が入るので、`terraform/handson/versions.tf` には書かず、`terraform/handson/backend.hcl`（git 管理外）で渡します。`backend.hcl.example` を写して作り、`init` のときに指定します。
+バケット名にはアカウント ID が入るので、`terraform/handson/versions.tf` には書かず、`terraform/secrets.enc.env`（SOPS で暗号化、前項）で渡します。`init` はラッパー経由で打ちます。
 
 ```bash
-cd terraform/handson
-cp backend.hcl.example backend.hcl   # bucket をアカウントの値に直す
-terraform init -backend-config=backend.hcl
+scripts/tf.sh handson init
 ```
 
-手元に `terraform.tfstate` が残っている状態から移す場合は `terraform init -migrate-state -backend-config=backend.hcl` で S3 へコピーされます。
+`TF_STATE_BUCKET` / `TF_STATE_REGION` を `-backend-config` として渡すので、`backend.hcl` は要りません。手元に `terraform.tfstate` が残っている状態から移す場合は `scripts/tf.sh handson init -migrate-state` で S3 へコピーされます。
 
-別のマシンで引き継ぐときは、リポジトリを clone したうえで、git 管理外の 3 つを揃えれば同じ state に対して plan / apply / destroy が打てます。
-
-- `terraform/handson/backend.hcl`（上の手順で作る）
-- `terraform/handson/terraform.tfvars`（証明書の ARN、AMI ID、Cloudflare のゾーン ID など。元のマシンからコピーする）
-- 環境変数 `CLOUDFLARE_API_TOKEN`（次の項）
+別のマシンへの引き継ぎ方は「秘密情報（SOPS）」の項のとおりです。
 
 同じ state に対して 2 か所から同時に apply すると、後から始めたほうがロックの取得で止まります。止まったら先に動いているほうが終わるのを待ちます。
 
@@ -87,11 +127,9 @@ terraform init -backend-config=backend.hcl
 受講者が読む手順書（`guide/`。Astro Starlight で作る静的サイト）は S3 + CloudFront で配信します。受講環境とは寿命が違う（手順書は前もって公開して当日まで置いておく）ので、Terraform のルートを受講環境の `terraform/handson/` とは別の `terraform/guide/` に分けてあり、state も同じバケットの別のキーです。
 
 ```bash
-cd terraform/guide
-cp backend.hcl.example backend.hcl        # bucket を受講環境と同じ値にする
-terraform init -backend-config=backend.hcl
-terraform apply                           # CloudFront の作成に数分かかる
-cd ../../guide
+scripts/tf.sh guide init
+scripts/tf.sh guide apply                 # CloudFront の作成に数分かかる
+cd guide
 ./publish.sh                              # site/ を S3 に上げてキャッシュを消す
 ```
 
@@ -99,31 +137,33 @@ apply の出力 `guide_url` が受講者に配る URL です。中身を直し�
 
 ### 受講者情報の配り方
 
-手順書サイトの `/participants.html` に、受講者ごとのエディタの URL、ハンズオン UI の URL、パスワードの表を出せます（Issue #58）。このページと中身の `participants/data.json` だけは CloudFront Function の Basic 認証で守られていて、他のページは今までどおり誰でも開けます。ユーザー名と合言葉は `terraform/guide/terraform.tfvars` の `participants_user` / `participants_password` で渡し、当日その場で口頭で伝えます。Basic 認証は apply 済みで、認証なしで開くと 401 が返ります。合言葉を変えたら `terraform/guide` を apply し直します。
+手順書サイトの `/participants.html` に、受講者ごとのエディタの URL、ハンズオン UI の URL、パスワードの表を出せます（Issue #58）。このページと中身の `participants/data.json` だけは CloudFront Function の Basic 認証で守られていて、他のページは今までどおり誰でも開けます。ユーザー名と合言葉は `terraform/guide/secrets.enc.json` の `participants_user` / `participants_password` で渡し、当日その場で口頭で伝えます。Basic 認証は apply 済みで、認証なしで開くと 401 が返ります。合言葉を変えたら `sops edit terraform/guide/secrets.enc.json` で書き換えて `scripts/tf.sh guide apply` を打ち直します。
 
-表の中身は git に入れません。受講環境（`terraform/handson`）の `terraform.tfvars` に `guide_bucket_name`（手順書サイトのバケット名。`terraform -chdir=terraform/guide output -raw bucket_name` で分かります）を書いて apply すると、output と同じ値から組み立てた JSON が S3 に直接置かれます。未指定なら表そのものが作られません（受講環境と手順書を別々に検証するときなど）。
+表の中身は git に入れません。受講環境（`terraform/handson`）の `secrets.enc.json` に `guide_bucket_name`（手順書サイトのバケット名。`scripts/tf.sh guide output -raw bucket_name` で分かります）を書いて apply すると、output と同じ値から組み立てた JSON が S3 に直接置かれます。未指定なら表そのものが作られません（受講環境と手順書を別々に検証するときなど）。
 
-手順書を更新しても消えません（`publish.sh` と GitHub Actions の sync は `participants/*` を対象外にしています）。表は受講環境の Terraform が管理しているので、受講環境を `terraform destroy` すると一緒に消えます。合言葉を知っていれば全員分のパスワードが見えますが、消し忘れの心配はありません（Issue #76）。
+手順書を更新しても消えません（`publish.sh` と GitHub Actions の sync は `participants/*` を対象外にしています）。表は受講環境の Terraform が管理しているので、受講環境を `scripts/tf.sh handson destroy` すると一緒に消えます。合言葉を知っていれば全員分のパスワードが見えますが、消し忘れの心配はありません（Issue #76）。
 
-Actions の認証は OIDC で、GitHub にアクセスキーは置きません。`terraform/guide/terraform.tfvars` に `github_repository`（owner/repo）と、リポジトリと所有者の数値 ID（`gh api repos/<owner>/<repo> --jq .id` と `--jq .owner.id`）を書いて apply すると、このリポジトリの main で動くワークフローだけが assume できるロールができます。数値 ID が要るのは、2026 年 7 月以降に作られたリポジトリでは OIDC トークンの sub に ID が付く形（immutable subject claim）になるためです。apply の出力 `github_actions_role_arn` と `bucket_name`、`distribution_id` を、リポジトリの Settings → Secrets and variables → Actions → Variables に `AWS_ROLE_ARN`、`GUIDE_BUCKET`、`GUIDE_DISTRIBUTION_ID` として登録します（`gh variable set` でもよい）。GitHub の OIDC プロバイダーはアカウントに 1 つあればよく、既にある前提で参照しています。
+Actions の認証は OIDC で、GitHub にアクセスキーは置きません。`terraform/guide/secrets.enc.json` に `github_repository`（owner/repo）と、リポジトリと所有者の数値 ID（`gh api repos/<owner>/<repo> --jq .id` と `--jq .owner.id`）を書いて apply すると、このリポジトリの main で動くワークフローだけが assume できるロールができます。数値 ID が要るのは、2026 年 7 月以降に作られたリポジトリでは OIDC トークンの sub に ID が付く形（immutable subject claim）になるためです。apply の出力 `github_actions_role_arn` と `bucket_name`、`distribution_id` を、リポジトリの Settings → Secrets and variables → Actions → Variables に `AWS_ROLE_ARN`、`GUIDE_BUCKET`、`GUIDE_DISTRIBUTION_ID` として登録します（`gh variable set` でもよい）。GitHub の OIDC プロバイダーはアカウントに 1 つあればよく、既にある前提で参照しています。
 
 ワークフローの手動実行（Actions タブの Run workflow）は、ワークフローのファイルが main に入ってからでないと選べません。
 
-独自ドメイン（`guide.handson.example.com` など）を付けるときは、`terraform/guide/terraform.tfvars` に `guide_hostname` と `cloudflare_zone_id` を書いて apply します。CloudFront 用の証明書は us-east-1 で発行する決まりなので、受講環境のワイルドカード証明書（ap-northeast-1）は使えず、Terraform がホスト名単体の証明書を us-east-1 で発行し、検証用の CNAME と本体の CNAME を Cloudflare に入れます。`CLOUDFLARE_API_TOKEN` は受講環境と同じもので構いません。
+独自ドメイン（`guide.handson.example.com` など）を付けるときは、`terraform/guide/secrets.enc.json` に `guide_hostname` と `cloudflare_zone_id` を書いて apply します。CloudFront 用の証明書は us-east-1 で発行する決まりなので、受講環境のワイルドカード証明書（ap-northeast-1）は使えず、Terraform がホスト名単体の証明書を us-east-1 で発行し、検証用の CNAME と本体の CNAME を Cloudflare に入れます。Cloudflare の API トークンは `terraform/secrets.enc.env` にある受講環境と同じものが使われます。
 
-ハンズオンが終わったら `terraform/guide` で `terraform destroy` すると、バケットの中身ごと消えます。次回も同じ手順書を使うなら残しておいても構いません（費用はほぼゼロ）。
+ハンズオンが終わったら `scripts/tf.sh guide destroy` すると、バケットの中身ごと消えます。次回も同じ手順書を使うなら残しておいても構いません（費用はほぼゼロ）。
 
 ### Cloudflare の API トークン
 
 `*.handson.example.com` の CNAME を ALB の DNS 名に向けるレコードは、Terraform が Cloudflare のプロバイダー経由で作ります。ALB は `destroy` と `apply` のたびに DNS 名が変わるので、手で差し替える代わりに Terraform に追随させます。
 
-Cloudflare のダッシュボードで API トークンを発行します。「カスタムトークン」を選び、権限は「ゾーン / DNS / 編集」だけ、ゾーンリソースは `base_domain` を管理しているゾーン 1 つだけに絞ります。トークンは tfvars に書かず、`terraform` を実行するシェルの環境変数で渡します。
+Cloudflare のダッシュボードで API トークンを発行します。「カスタムトークン」を選び、権限は「ゾーン / DNS / 編集」だけ、ゾーンリソースは `base_domain` を管理しているゾーン 1 つだけに絞ります。トークンは tfvars（`secrets.enc.json`）には書かず、`terraform/secrets.enc.env` の `CLOUDFLARE_API_TOKEN` に入れます。
 
 ```bash
-export CLOUDFLARE_API_TOKEN=<発行したトークン>
+sops edit terraform/secrets.enc.env
 ```
 
-ゾーン ID はゾーンの概要ページに表示される値を `terraform.tfvars` の `cloudflare_zone_id` に書きます（秘密ではありません）。
+`scripts/tf.sh` が実行中だけこのファイルを復号して環境変数に渡すので、手で `export` や `source` をする必要はありません。
+
+ゾーン ID はゾーンの概要ページに表示される値を、`terraform/handson/secrets.enc.json`（独自ドメインを付けるなら `terraform/guide/secrets.enc.json` も）の `cloudflare_zone_id` に書きます（秘密ではありませんが、他の値とまとめて暗号化されます）。
 
 以前に手で入れた `*.handson.example.com` の CNAME が残っている場合は、最初の `apply` の前に Cloudflare 側で削除しておきます。同じ名前の CNAME は 2 本置けないので、残っていると `apply` が失敗します。証明書の検証用 CNAME は Terraform の管理外なので、そのまま残します。
 
@@ -132,9 +172,8 @@ export CLOUDFLARE_API_TOKEN=<発行したトークン>
 ### 環境の作成
 
 ```bash
-cd terraform/handson
-terraform plan
-terraform apply
+scripts/tf.sh handson plan
+scripts/tf.sh handson apply
 ```
 
 受講者数は `participants` の変数で指定します。apply が終わると、受講者ごとの URL とパスワードが出力されます。`*.handson.example.com` の CNAME も同じ apply の中で ALB に向けられます。DNS の反映に数十秒かかるので、URL を開いて確認するのは少し待ってからにします。
@@ -169,31 +208,38 @@ aws ssm start-session --target <インスタンスID>
 
 ### 終了時刻での自動停止
 
-`terraform.tfvars` に `handson_end_time` を書いて apply すると、その時刻に次の 3 つが起きます。
+`terraform/handson/secrets.enc.json` に `handson_end_time` を書いて apply すると、その時刻に次の 3 つが起きます。
 
 - 受講者の EC2 のロールに Deny が効き、Bedrock のモデル呼び出しと AgentCore Runtime の呼び出しができなくなる（IAM の `aws:CurrentTime` 条件。追加リソースはなし）
 - EventBridge Scheduler が受講者の EC2 を全台停止する
 - 同じ時刻に ALB を削除する（ALB は停止できないので削除する）
 
-```hcl
-# terraform.tfvars
-handson_end_time = "2026-10-31T17:00:00+09:00"   # 秒とオフセットまで書く
-handson_timezone = "Asia/Tokyo"                   # 既定値。オフセットと食い違わせない
+```bash
+sops edit terraform/handson/secrets.enc.json
 ```
+
+```json
+{
+  "handson_end_time": "2026-10-31T17:00:00+09:00",
+  "handson_timezone": "Asia/Tokyo"
+}
+```
+
+秒とオフセットまで書きます。`handson_timezone` は既定値で、オフセットと食い違わせないようにします。保存すると暗号化し直されるので、そのあと `scripts/tf.sh handson apply` を打ちます。
 
 apply の出力 `handson_deadline` に、壁時計の時刻と UTC の両方が出るので、意図した時刻になっているか確認します。
 
 時刻を過ぎたあとの状態と注意点です。
 
 - 止まるのは EC2 と Bedrock の呼び出しで、消えるのは ALB だけです。EBS、AMI のスナップショット、受講者が作った Runtime は残ります。Runtime は呼ばれなければ課金されません
-- ALB を Terraform の外で消すので、時刻を過ぎたあとは `terraform apply` を打ちません。apply すると ALB を作り直します。以降は `terraform destroy` の一方向です（destroy は消えたものを refresh で検知するので問題ありません）
+- ALB を Terraform の外で消すので、時刻を過ぎたあとは `scripts/tf.sh handson apply` を打ちません。apply すると ALB を作り直します。以降は `scripts/tf.sh handson destroy` の一方向です（destroy は消えたものを refresh で検知するので問題ありません）
 - 実行後のスケジュールは自動で消えます（`action_after_completion = DELETE`）。destroy のときに見つからなくても正常です
-- 終了時刻を延ばしたいときは、時刻が来る前に `handson_end_time` を書き換えて apply します。すでに過ぎてしまった場合は apply せず、手で `terraform destroy` に進みます
+- 終了時刻を延ばしたいときは、時刻が来る前に `sops edit terraform/handson/secrets.enc.json` で `handson_end_time` を書き換えて `scripts/tf.sh handson apply` します。すでに過ぎてしまった場合は apply せず、手で `scripts/tf.sh handson destroy` に進みます
 - 検証や試し焼きのときは `handson_end_time` を書かないでおくと、この仕組みは作られません
 
 ### 受講者が作ったリソースの削除
 
-`terraform destroy` で消えるのは Terraform が作ったものだけです。受講者が `agentcore deploy` で作った AgentCore Runtime、その実行ロール、CDK が作った CloudFormation スタック、Runtime のロググループは Terraform の管理外なので残ります。これらは棚卸しスクリプトで消します。
+`scripts/tf.sh handson destroy` で消えるのは Terraform が作ったものだけです。受講者が `agentcore deploy` で作った AgentCore Runtime、その実行ロール、CDK が作った CloudFormation スタック、Runtime のロググループは Terraform の管理外なので残ります。これらは棚卸しスクリプトで消します。
 
 ```bash
 scripts/cleanup-participant-resources.sh            # 一覧だけ。何も消さない
@@ -213,11 +259,10 @@ ECR は対象外です。deploy は CodeZip 方式で、受講者ごとのリポ
 ### Terraform で作ったものの削除
 
 ```bash
-cd terraform/handson
-terraform destroy
+scripts/tf.sh handson destroy
 ```
 
-EC2、ALB、ターゲットグループ、セキュリティグループ、VPC、Scheduler と、Cloudflare の `*.handson.example.com` の CNAME が消えます。自動停止で EC2 が停止済み・ALB が削除済みでも、そのまま destroy できます。state は S3 にあるので、apply したマシンでなくても `backend.hcl` と `terraform.tfvars` を揃えれば別のマシンから打てます。`CLOUDFLARE_API_TOKEN` が環境変数に入っていないと CNAME の削除で止まるので、`apply` のときと同じシェルか、トークンを入れ直したシェルで実行します。
+EC2、ALB、ターゲットグループ、セキュリティグループ、VPC、Scheduler と、Cloudflare の `*.handson.example.com` の CNAME が消えます。自動停止で EC2 が停止済み・ALB が削除済みでも、そのまま destroy できます。state は S3 にあるので、apply したマシンでなくても秘密鍵を `~/.config/sops/age/keys.txt` に置いて `scripts/tf.sh handson init` すれば別のマシンから打てます。Cloudflare の API トークンは `scripts/tf.sh` が `terraform/secrets.enc.env` から渡すので、手で環境変数を用意する必要はありません。
 
 `guide_bucket_name` を指定していれば、手順書サイトの `/participants/data.json`（受講者情報の表の中身）もこの destroy で一緒に消えます。片付けの手順に「表を消す」を別途足す必要はありません（Issue #76）。
 
