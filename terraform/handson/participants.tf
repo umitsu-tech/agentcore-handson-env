@@ -23,14 +23,15 @@ locals {
 }
 
 # ページに出す「…時点」の時刻。毎回の apply で更新されると destroy するまで差分が出続けるので、
-# timestamp() ではなく time_static を使う。triggers が変わったとき（受講者の一覧か base_domain が
-# 変わったとき）だけリソースが置き換わり、rfc3339 がそのときの時刻で更新される。
+# timestamp() ではなく time_static を使う。triggers が変わったとき（表の中身が変わったとき）だけ
+# リソースが置き換わり、rfc3339 がそのときの時刻で更新される。受講者の一覧だけでなく、
+# パスワードを作り直したときにも更新されるよう、表の中身のハッシュを見る（パスワードを含むので
+# plan では sensitive と表示される）。
 resource "time_static" "participants_generated_at" {
   count = var.guide_bucket_name != null ? 1 : 0
 
   triggers = {
-    participants = join(",", sort(var.participants))
-    base_domain  = var.base_domain
+    rows = sha256(jsonencode(local.participant_rows))
   }
 }
 
