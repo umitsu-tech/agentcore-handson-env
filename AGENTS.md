@@ -83,7 +83,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証情報が要るので、リュウキがブラウザで認証できるタイミングで進める。
 
 1. vCPU の上限の引き上げ（80）が通るのを待つ
-2. 通ったら 30 人分を試しに apply する（Issue #6。1〜2 時間確認して destroy、費用の目安は 1〜3 USD。apply の前に plan の差分を確認する）。確かめるのは、30 人がほぼ同時に `agentcore deploy` したときの待ち時間（CloudFormation の API にはアカウント単位の呼び出し上限がある）、`handson_end_time` を過ぎたあとに受講者ロールで Bedrock が Deny されること（EC2 停止と ALB 削除は確認済み）、棚卸しスクリプトの `--delete`。受講者情報の表は `secrets.enc.json` に `guide_bucket_name` を足して apply すれば置かれるので、表が出ることと、destroy で消えることも確かめる
+2. 通ったら 30 人分を試しに apply する（Issue #6。1〜2 時間確認して destroy、費用の目安は 1〜3 USD。apply の前に plan の差分を確認する）。暗号化した設定には `handson_end_time` を入れていない（9/17 の検証の値は 9/23 に取り除いた）ので、apply の前に `sops edit terraform/handson/secrets.enc.json` でその回の終了時刻を入れる。確かめるのは、30 人がほぼ同時に `agentcore deploy` したときの待ち時間（CloudFormation の API にはアカウント単位の呼び出し上限がある）、`handson_end_time` を過ぎたあとに受講者ロールで Bedrock が Deny されること（EC2 停止と ALB 削除は確認済み）、棚卸しスクリプトの `--delete`。受講者情報の表は `secrets.enc.json` に `guide_bucket_name` を足して apply すれば置かれるので、表が出ることと、destroy で消えることも確かめる
 
 当日の運営（事前準備、リハーサル）はこのリポジトリの範囲外にした（Issue #7、#8 はクローズ）。
 
