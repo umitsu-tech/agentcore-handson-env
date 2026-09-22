@@ -185,17 +185,20 @@ import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
   // ボタンの横に短く結果を出すだけにする（黙って壊れない）。
   function copyPassword(password: string, feedback: HTMLSpanElement) {
     let timer: ReturnType<typeof setTimeout> | undefined;
+    let latest = 0;
     return async () => {
+      // 書き込み中に連打されると完了の順番が入れ替わることがあるので、
+      // 何回目のクリックかを覚えておき、最後に押したぶんの結果だけを出す
+      const click = ++latest;
+      let copied = true;
       try {
         await navigator.clipboard.writeText(password);
-        feedback.textContent = 'コピーしました';
-        feedback.dataset.state = 'ok';
       } catch {
-        feedback.textContent = 'コピーできませんでした';
-        feedback.dataset.state = 'error';
+        copied = false;
       }
-      // 前のタイマーは await の後で消す。書き込み中に連打されると、await の前では
-      // 先行するクリックのタイマーがまだ作られておらず消せないため
+      if (click !== latest) return;
+      feedback.textContent = copied ? 'コピーしました' : 'コピーできませんでした';
+      feedback.dataset.state = copied ? 'ok' : 'error';
       window.clearTimeout(timer);
       timer = window.setTimeout(() => {
         feedback.textContent = '';
