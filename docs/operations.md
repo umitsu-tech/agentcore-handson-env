@@ -54,11 +54,49 @@ AMI には次のものが入ります。
 brew install sops age
 ```
 
-秘密鍵は `~/.config/sops/age/keys.txt` に置きます。リポジトリには入れないので、パスワードマネージャーなどに控えておきます。macOS の sops は既定で `~/Library/Application Support/sops/age/` を探すので、後述の `scripts/tf.sh` は `SOPS_AGE_KEY_FILE` の既定値をこのパスにしています。手で `sops` を直接打つときのために、シェルの設定ファイルに次を足しておきます。
+秘密鍵は `~/.config/sops/age/keys.txt` に置きます。リポジトリには入れないので、マシンの外に控えておきます（下の「秘密鍵を控える」）。macOS の sops は既定で `~/Library/Application Support/sops/age/` を探すので、後述の `scripts/tf.sh` は `SOPS_AGE_KEY_FILE` の既定値をこのパスにしています。手で `sops` を直接打つときのために、シェルの設定ファイルに次を足しておきます。
 
 ```bash
 export SOPS_AGE_KEY_FILE=~/.config/sops/age/keys.txt
 ```
+
+#### 秘密鍵を控える
+
+暗号化した設定を開けるのは、この秘密鍵 1 つだけです。平文の設定ファイルは手元に置いていないので、マシンが壊れると設定を開けなくなります。鍵を作ったら、すぐにマシンの外に控えます。macOS の場合の手順です。
+
+1. ファイルの中身をクリップボードにコピーします。画面には表示されません。
+
+   ```bash
+   pbcopy < ~/.config/sops/age/keys.txt
+   ```
+
+2. パスワードマネージャーのセキュアノート（1Password や Bitwarden など）に貼り付けて保存します。パスワードマネージャーを使っていなければ、macOS の「メモ」でロックをかけたメモでも構いません。中身は 3 行（作成日時、`# public key: age1...`、`AGE-SECRET-KEY-1...`）で、3 行ともそのまま保存します。
+3. クリップボードを空にします。
+
+   ```bash
+   pbcopy < /dev/null
+   ```
+
+`AGE-SECRET-KEY-` で始まる行を知っていれば、誰でも設定を復号できます。リポジトリにコミットしたり、チャットやメッセージに貼ったりはしません。
+
+#### 別のマシンに秘密鍵を戻す
+
+控えた 3 行をパスワードマネージャーからクリップボードにコピーしてから、次を打ちます。
+
+```bash
+mkdir -p ~/.config/sops/age
+pbpaste > ~/.config/sops/age/keys.txt
+chmod 600 ~/.config/sops/age/keys.txt   # 自分だけが読めるようにする
+pbcopy < /dev/null
+```
+
+戻せたかどうかは、復号できるかで確かめます。中身は表示しません。
+
+```bash
+SOPS_AGE_KEY_FILE=~/.config/sops/age/keys.txt sops decrypt terraform/secrets.enc.env > /dev/null && echo 復号できる
+```
+
+#### 設定の見方と変え方
 
 暗号化しているファイルは 3 つです。値は JSON か env 形式で、これまで HCL（`.tfvars`）で書いていたものと中身は同じです。
 
