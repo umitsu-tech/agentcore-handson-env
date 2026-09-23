@@ -12,7 +12,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - 受講者に AWS の認証情報は配らない。EC2 のインスタンスプロファイルで `agentcore deploy` まで通す
 - 入口は ALB + HTTPS。ホスト名（`userNN.handson.<ドメイン>`）で受講者ごとの EC2 に振り分ける
 - DNS は Cloudflare。ワイルドカードの CNAME を ALB に向ける（プロキシは無効）
-- EC2 は t4g.small / Amazon Linux 2023 / ARM64。1 人 1 台。ルートボリュームは 15GiB。t4g.medium と比べて `agentcore deploy` の所要時間に差が無かったので small のまま（Issue #15 で挙動を比べて決めた）
+- EC2 は t4g.small / Amazon Linux 2023 / ARM64。1 人 1 台。当日、誰かの環境が動かなくなったときは、その場で隣の人の環境を 2 人で使うことがある（Terraform の変更は要らない）。ルートボリュームは 15GiB。t4g.medium と比べて `agentcore deploy` の所要時間に差が無かったので small のまま（Issue #15 で挙動を比べて決めた）
 - 開発環境は AMI に焼いておく。user_data で毎回セットアップはしない
 - リージョンは ap-northeast-1（東京）
 - モデルは Amazon Nova 2 Lite。東京は In-Region 非対応なので `jp.amazon.nova-2-lite-v1:0` を使う
@@ -95,7 +95,6 @@ AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証�
 
 - `aws login` の認証情報が 15 分ほどで更新に失敗して切れる（AWS CLI 側の既知の不具合と同じ症状）。`terraform apply` や `build-ami.sh` のような長い操作は直前にログインし直す。認証方式そのものの見直しはこのプロジェクトの外で扱う
 - 本番でモデル制限をどうかけるか（検証の段階ではかけない方針）
-- 受講者を 2 人 1 組にするか（予備案）。EC2 の在庫、クォータ、費用などで 1 人 1 台が難しくなったときに検討する。Terraform の変更は要らず、`participants` に組の名前（`pair01` など）を並べれば、EC2・サブドメイン・受講者情報の表が組ごとにできる（AZ の振り分けは末尾の番号、Runtime 名は `handsonpair01_agent`、棚卸しは `handson` で始まる名前で拾える）。決めることは、1 つの code-server を 2 人でどう使うか（交代で打つか、1 人が打ってもう 1 人が読むか）と、手順書の書き方
 - UI のサーバーを本番でも `--reload` 付きで動かすか。1 人 1 台なので負荷は問題ないが、保存すると再起動する挙動を受講者に説明する必要がある
 
 ## 作業のルール
