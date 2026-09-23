@@ -76,7 +76,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 
 - EC2 の vCPU 上限（東京の Running On-Demand Standard、`L-1216C47A`）が 32 で、30 人分の 60 に足りない。80 への引き上げを申請した。自動承認にはならず、サポートの審査中
 - Bedrock（Nova 2 Lite のクロスリージョン推論は 1 分あたり 200 リクエスト・800 万トークン）、AgentCore（Runtime 100、アクティブなセッション 2,500）、ALB（ルールとターゲットグループが各 100）は 30 人で足りる。`agentcore deploy` は CodeZip なので CodeBuild と ECR は使わない
-- Terraform のコードは 30 人にしても直す必要がある箇所は無い。EC2 は全員が 1 つの AZ に入る（必須ではないが分ける余地はある）
+- Terraform のコードは 30 人にしても直す必要がある箇所は無い。EC2 は全員が 1 つの AZ に入っていたので、名前の番号の偶数・奇数で 2 つの AZ に分けた（Issue #83）
 
 ### 次の一歩
 

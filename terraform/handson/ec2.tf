@@ -10,7 +10,7 @@ resource "aws_instance" "participant" {
 
   ami                    = var.ami_id
   instance_type          = var.instance_type
-  subnet_id              = values(aws_subnet.public)[0].id
+  subnet_id              = aws_subnet.public[local.participant_az[each.key]].id
   vpc_security_group_ids = [aws_security_group.instance.id]
   iam_instance_profile   = aws_iam_instance_profile.instance.name
 
