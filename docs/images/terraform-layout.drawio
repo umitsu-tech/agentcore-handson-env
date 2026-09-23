@@ -16,10 +16,10 @@
                 <mxCell id="handson-life" value="寿命: 当日 apply → 終了後 destroy（終了時刻後は apply せず destroy の一方向）" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;fillColor=#FFF0E0;align=center;verticalAlign=middle;fontSize=14;fontColor=#232F3E;" parent="1" vertex="1">
                     <mxGeometry x="60" y="145" width="630" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="handson-backend" value="backend.hcl（git 管理外）&lt;br&gt;bucket = agentcore-handson-assets-&amp;lt;account&amp;gt;" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;strokeColor=#78909C;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=14;fontColor=#232F3E;" parent="1" vertex="1">
+                <mxCell id="handson-backend" value="secrets.enc.env（SOPS・共通）&lt;br&gt;state のバケット / Cloudflare トークン" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;strokeColor=#78909C;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=14;fontColor=#232F3E;" parent="1" vertex="1">
                     <mxGeometry x="60" y="200" width="320" height="58" as="geometry"/>
                 </mxCell>
-                <mxCell id="handson-tfvars" value="terraform.tfvars（git 管理外）&lt;br&gt;証明書 ARN / AMI ID / 終了時刻 など" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;strokeColor=#78909C;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=14;fontColor=#232F3E;" parent="1" vertex="1">
+                <mxCell id="handson-tfvars" value="secrets.enc.json（SOPS）&lt;br&gt;証明書 ARN / AMI ID / 終了時刻 など" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;strokeColor=#78909C;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=14;fontColor=#232F3E;" parent="1" vertex="1">
                     <mxGeometry x="395" y="200" width="295" height="58" as="geometry"/>
                 </mxCell>
                 <mxCell id="handson-label" value="作るもの" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=14;fontStyle=1;fontColor=#ED7100;" parent="1" vertex="1">
@@ -67,10 +67,10 @@
                 <mxCell id="guide-life" value="寿命: 前もって apply → 当日まで置きっぱなし（次回も使うなら destroy しなくてよい）" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;fillColor=#F3EEFF;align=center;verticalAlign=middle;fontSize=14;fontColor=#232F3E;" parent="1" vertex="1">
                     <mxGeometry x="1210" y="145" width="650" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="guide-backend" value="backend.hcl（git 管理外）&lt;br&gt;bucket = 受講環境と同じ" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;strokeColor=#78909C;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=14;fontColor=#232F3E;" parent="1" vertex="1">
+                <mxCell id="guide-backend" value="secrets.enc.env（SOPS・共通）&lt;br&gt;受講環境と同じファイル" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;strokeColor=#78909C;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=14;fontColor=#232F3E;" parent="1" vertex="1">
                     <mxGeometry x="1210" y="200" width="290" height="58" as="geometry"/>
                 </mxCell>
-                <mxCell id="guide-tfvars" value="terraform.tfvars（git 管理外）&lt;br&gt;ホスト名 / ゾーン ID / GitHub リポジトリ" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;strokeColor=#78909C;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=14;fontColor=#232F3E;" parent="1" vertex="1">
+                <mxCell id="guide-tfvars" value="secrets.enc.json（SOPS）&lt;br&gt;ホスト名 / ゾーン ID / GitHub リポジトリ" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;strokeColor=#78909C;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=14;fontColor=#232F3E;" parent="1" vertex="1">
                     <mxGeometry x="1520" y="200" width="340" height="58" as="geometry"/>
                 </mxCell>
                 <mxCell id="guide-label" value="作るもの" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=14;fontStyle=1;fontColor=#8C4FFF;" parent="1" vertex="1">

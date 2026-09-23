@@ -178,7 +178,7 @@ code-server に同梱される Copilot 拡張（`github.copilot-chat`）は起�
 
 ![Terraform の管理体系](images/terraform-layout.png)
 
-Terraform のルートは `terraform/handson/`（受講環境）と `terraform/guide/`（手順書）の 2 つです。state はどちらも資材バケット `agentcore-handson-assets-<アカウントID>` の `terraform-state/` に置き、キーを分けています。バケット名は git 管理外の `backend.hcl` で渡し、環境固有の値は `terraform.tfvars` に持たせます。
+Terraform のルートは `terraform/handson/`（受講環境）と `terraform/guide/`（手順書）の 2 つです。state はどちらも資材バケット `agentcore-handson-assets-<アカウントID>` の `terraform-state/` に置き、キーを分けています。バケット名や環境固有の値は SOPS で暗号化して `terraform/secrets.enc.env` と各ルートの `secrets.enc.json` に持たせ、`scripts/tf.sh` が実行中だけ復号して渡します（Issue #79）。
 
 `terraform/handson` が作るのは VPC、ALB、受講者ごとの EC2、受講者用と Scheduler 用の IAM ロール、Cloudflare のワイルドカード CNAME、終了時刻の EventBridge Scheduler です。当日 apply して、終わったら destroy します。
 

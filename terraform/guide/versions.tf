@@ -14,7 +14,7 @@ terraform {
   }
 
   # state は受講環境と同じ資材バケットに置き、キーだけ分ける。
-  # バケット名は backend.hcl（git 管理外）で渡す。`terraform init -backend-config=backend.hcl`
+  # バケット名は terraform/secrets.enc.env（SOPS で暗号化）で渡す。init は scripts/tf.sh guide init で打つ
   backend "s3" {
     key          = "terraform-state/agentcore-handson-guide.tfstate"
     use_lockfile = true
@@ -45,5 +45,6 @@ provider "aws" {
   }
 }
 
-# API トークンは環境変数 CLOUDFLARE_API_TOKEN から読む（受講環境と同じトークンでよい）
+# API トークンは環境変数 CLOUDFLARE_API_TOKEN から読む（受講環境と同じトークンでよい）。
+# scripts/tf.sh が terraform/secrets.enc.env から渡すので、手で source する必要はない
 provider "cloudflare" {}

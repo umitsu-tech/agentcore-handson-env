@@ -3,8 +3,8 @@ terraform {
   required_version = ">= 1.10"
 
   # state は scripts/build-ami.sh と同じ資材バケットの terraform-state/ に置く。
-  # バケット名にアカウント ID が入るので、ここには書かず backend.hcl（git 管理外）で渡す。
-  # 初回は `terraform init -backend-config=backend.hcl`（docs/operations.md）
+  # バケット名にアカウント ID が入るので、ここには書かず terraform/secrets.enc.env（SOPS で暗号化）で渡す。
+  # 初回は `scripts/tf.sh handson init`（docs/operations.md）
   backend "s3" {
     key          = "terraform-state/agentcore-handson.tfstate"
     use_lockfile = true
@@ -41,5 +41,6 @@ provider "aws" {
   }
 }
 
-# API トークンは環境変数 CLOUDFLARE_API_TOKEN から読む。tfvars には書かない
+# API トークンは環境変数 CLOUDFLARE_API_TOKEN から読む。tfvars には書かない。
+# scripts/tf.sh が terraform/secrets.enc.env から渡すので、手で source する必要はない
 provider "cloudflare" {}

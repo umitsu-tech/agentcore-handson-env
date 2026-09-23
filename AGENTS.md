@@ -36,12 +36,13 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - 後片付けは仕組みで担保する（Issue #17、実装済み）。名前が `handson` で始まるものだけを選んで消す棚卸しスクリプト `scripts/cleanup-participant-resources.sh` を本命に、終了時刻 `handson_end_time` を Terraform の変数で渡して IAM の Deny・EC2 停止（EventBridge Scheduler）・ALB 削除を時刻で発火させる。時刻後は apply せず destroy の一方向。Budgets は既存のものを使う
 - モデルは比較のうえ Nova 2 Lite に据え置く。Nova Micro や旧 Nova Lite は安いが世代が古く、オープンモデルは Converse API でのツール呼び出しが未確認。下がる幅も最大 1 USD 程度で、ツール選択の確実さを優先した
 - 受講者には code-server と UI（/proxy/3000/）の 2 つの URL を配り、workspace の README を起動時に開いて導線にする（Issue #36）
-- Terraform の state は S3（build-ami.sh の資材バケットの `terraform-state/`）に置き、ロックは Terraform 1.10 以降の `use_lockfile` で取る。DynamoDB は使わない。バケット名は `terraform/handson/backend.hcl`（git 管理外）で渡す（Issue #40）
+- Terraform の state は S3（build-ami.sh の資材バケットの `terraform-state/`）に置き、ロックは Terraform 1.10 以降の `use_lockfile` で取る。DynamoDB は使わない。バケット名は SOPS で暗号化した `terraform/secrets.enc.env` で渡し、ラッパー `scripts/tf.sh` が `init` のときに `-backend-config` として渡す（Issue #40、#79）
 - 受講者向けの手順書は Astro Starlight の静的サイト（`guide/`。本文は `guide/src/content/docs/` の MDX。原稿は curriculum から変換せず別で書く）を S3 非公開 + CloudFront OAC で配信する。S3 + OAC はフォルダ形式の URL で index.html を補わないので `build.format: 'file'` で `step1.html` のように出力し、本文中のリンクも `.html` 付きで書く。テーマはプロジェクター向けに常にライト固定（ThemeProvider / ThemeSelect を差し替え）。図は docs/images の drawio と同じ流儀で描いて `guide/public/images/` にコピーする（Issue #51）。Terraform のルートは寿命が違うので `terraform/guide/` に分け（受講環境は `terraform/handson/`）、state は同じバケットの別キー。中身の更新は `guide/publish.sh`。独自ドメインは `guide_hostname` を指定したときだけ（証明書は us-east-1 でホスト名単体を発行）（Issue #48）
 - 手順書の更新は GitHub Actions で自動配信する（`guide/**` が main に入ったら `npm ci && npm run build` して `guide/dist` を s3 sync + キャッシュ削除。`participants/*` は sync の対象外にして消さない）。認証は OIDC で、ロールは `terraform/guide` が作り、このリポジトリの main からだけ assume できる。sub は ID 無しと ID 付き（immutable subject claim）の両方を許可する。バケット名などは GitHub の Variables に置く（Issue #52）
-- 受講者情報（userNN ごとの URL とパスワードの表）は手順書サイトの `participants.html` に出す。中身の `participants/data.json` は git に入れず、`terraform/handson` が S3 のオブジェクトとして置く（`participants.tf`。tfvars の `guide_bucket_name` に手順書のバケット名を書いたときだけ）。apply で置かれ destroy で消えるので、受講環境と表の寿命が揃う。以前はスクリプト（`publish-participants.sh`）で置いていたが、destroy のあとに消し忘れて古い表が残ったので改めた（Issue #76）。`/participants*` だけ CloudFront Function（viewer-request）の Basic 認証で守り、ユーザー名と合言葉は `terraform/guide` の変数（tfvars、git 管理外）で渡す。合言葉 1 つで全員分が見える形はリュウキ判断で許容（当日その場で口頭で伝える）（Issue #58）
-- Cloudflare の `*.<base_domain>` の CNAME は Terraform（cloudflare プロバイダー v5 の `cloudflare_dns_record`）で管理し、ALB の作り直しに自動で追随させる。API トークンは環境変数 `CLOUDFLARE_API_TOKEN` で渡し、ゾーン ID だけ tfvars に書く。証明書の検証用 CNAME は手で入れたまま管理外にする（Issue #30）
+- 受講者情報（userNN ごとの URL とパスワードの表）は手順書サイトの `participants.html` に出す。中身の `participants/data.json` は git に入れず、`terraform/handson` が S3 のオブジェクトとして置く（`participants.tf`。`secrets.enc.json` の `guide_bucket_name` に手順書のバケット名を書いたときだけ）。apply で置かれ destroy で消えるので、受講環境と表の寿命が揃う。以前はスクリプト（`publish-participants.sh`）で置いていたが、destroy のあとに消し忘れて古い表が残ったので改めた（Issue #76）。`/participants*` だけ CloudFront Function（viewer-request）の Basic 認証で守り、ユーザー名と合言葉は `terraform/guide` の変数（SOPS で暗号化した `secrets.enc.json`）で渡す。合言葉 1 つで全員分が見える形はリュウキ判断で許容（当日その場で口頭で伝える）（Issue #58）
+- Cloudflare の `*.<base_domain>` の CNAME は Terraform（cloudflare プロバイダー v5 の `cloudflare_dns_record`）で管理し、ALB の作り直しに自動で追随させる。API トークンは環境変数 `CLOUDFLARE_API_TOKEN` で渡し、ゾーン ID だけ tfvars に書く。実体は SOPS で暗号化した `terraform/secrets.enc.env`（トークン）と `secrets.enc.json`（ゾーン ID）で、`scripts/tf.sh` が実行中だけ渡す（Issue #79）。証明書の検証用 CNAME は手で入れたまま管理外にする（Issue #30）
 - モデルや Runtime の呼び出しが失敗したら、UI のサーバーが例外を捕まえて画面に内容を出す。手元実行でも Runtime 経由でも同じ。混み合い（スロットリング）のときは「少し待ってから、もう一度送ってください」を先に出す。Bedrock の上限は 30 人で足りるが、AgentCore の新しいセッションの作成は 1 秒あたり 25 までなので、ステップ 4 は講師が一斉に送らせず、準備できた人から送ってもらう（Issue #75）
+- git 管理外だった設定ファイル（ドメイン、証明書 ARN、Cloudflare の API トークンなど）は SOPS で暗号化してリポジトリに入れる。鍵は age。AWS KMS は鍵 1 本ごとに月額がかかり、IAM Identity Center の一時的な認証情報で SOPS がうまく動かない報告もあるため使わない。SOPS が HCL を扱えないので tfvars は JSON にして暗号化する（`terraform/handson/secrets.enc.json` など）。Terraform には `sops exec-env` / `sops exec-file` で渡し、復号した値が state に残る SOPS の Terraform プロバイダーは使わない。手順が長くなるのでラッパー `scripts/tf.sh` を用意した（Issue #79）
 
 ### できているもの
 
@@ -62,7 +63,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - Cloudflare の CNAME は ALB の作成直後に新しい DNS 名へ向き、destroy で一緒に消える。検証用 CNAME だけが残る
 - AMI `ami-0e6e145f65e038cd9`（agentcore-handson-20260906-1805、arm64、15GiB）で t4g.small と t4g.medium の `agentcore deploy` を比べ、所要時間が変わらなかった（small 99 秒、medium 112 秒）ので small のまま。表と考察は docs/architecture.md の「インスタンスタイプ」にある。Copilot 拡張の削除は効いている（プロセス 0、再起動後の使用メモリ 301MB）
 - Runtime 名（`handsonuserNN_agent`）と CloudFormation スタック（`AgentCore-handsonuserNN-default`）が受講者ごとに分かれることを 2 人分で確認した（Issue #31）
-- 確認後の環境と Runtime のスタック、古い AMI は削除済み。Cloudflare の API トークンは git 管理外の `~/.config/agentcore-handson/cloudflare.env` に置き、terraform の前に `source` する
+- 確認後の環境と Runtime のスタック、古い AMI は削除済み。Cloudflare の API トークンは `terraform/secrets.enc.env`（SOPS で暗号化）に置き、`scripts/tf.sh` が実行中だけ渡す（Issue #79。当時は git 管理外の `~/.config/agentcore-handson/cloudflare.env` を terraform の前に `source` していた）
 
 後片付けの仕組みの確認記録（2026-09-17〜18）。
 
@@ -82,7 +83,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証情報が要るので、リュウキがブラウザで認証できるタイミングで進める。
 
 1. vCPU の上限の引き上げ（80）が通るのを待つ
-2. 通ったら 30 人分を試しに apply する（Issue #6。1〜2 時間確認して destroy、費用の目安は 1〜3 USD。apply の前に plan の差分を確認する）。確かめるのは、30 人がほぼ同時に `agentcore deploy` したときの待ち時間（CloudFormation の API にはアカウント単位の呼び出し上限がある）、`handson_end_time` を過ぎたあとに受講者ロールで Bedrock が Deny されること（EC2 停止と ALB 削除は確認済み）、棚卸しスクリプトの `--delete`。受講者情報の表は tfvars に `guide_bucket_name` を足して apply すれば置かれるので、表が出ることと、destroy で消えることも確かめる
+2. 通ったら 30 人分を試しに apply する（Issue #6。1〜2 時間確認して destroy、費用の目安は 1〜3 USD。apply の前に plan の差分を確認する）。暗号化した設定には `handson_end_time` を入れていない（9/17 の検証の値は 9/23 に取り除いた）ので、apply の前に `sops edit terraform/handson/secrets.enc.json` でその回の終了時刻を入れる。確かめるのは、30 人がほぼ同時に `agentcore deploy` したときの待ち時間（CloudFormation の API にはアカウント単位の呼び出し上限がある）、`handson_end_time` を過ぎたあとに受講者ロールで Bedrock が Deny されること（EC2 停止と ALB 削除は確認済み）、棚卸しスクリプトの `--delete`。受講者情報の表は `secrets.enc.json` に `guide_bucket_name` を足して apply すれば置かれるので、表が出ることと、destroy で消えることも確かめる
 
 当日の運営（事前準備、リハーサル）はこのリポジトリの範囲外にした（Issue #7、#8 はクローズ）。
 

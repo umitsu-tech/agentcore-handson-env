@@ -346,7 +346,22 @@ if ! $KEEP_INSTANCE; then
   INSTANCE_ID=""
 fi
 
-# --- 7. 古い AMI の掃除（--prune のときだけ） ------------------------------------
+# --- 7. 受講環境の設定に AMI ID を書き込む ------------------------------------------
+# 受講環境の設定は SOPS で暗号化してある（Issue #79）。sops set なら平文のファイルを作らずに書き換えられる。
+# 秘密鍵の場所は scripts/tf.sh と同じ既定値にする。--prune より先にやるのは、書き込みに失敗したときに
+# 設定がまだ指している古い AMI を消さないため
+SECRETS="$REPO_ROOT/terraform/handson/secrets.enc.json"
+export SOPS_AGE_KEY_FILE="${SOPS_AGE_KEY_FILE:-$HOME/.config/sops/age/keys.txt}"
+if ! { [ -f "$SECRETS" ] && command -v sops > /dev/null && sops set "$SECRETS" '["ami_id"]' "\"$AMI_ID\""; }; then
+  # AMI はできているが、このまま apply すると古い AMI で立ち上がる。気づけるよう失敗で終える
+  echo "エラー: AMI $AMI_ID はできましたが、terraform/handson/secrets.enc.json の ami_id を書き換えられませんでした。" >&2
+  echo "古い AMI は消していません。次を打ってから、必要なら --prune で掃除してください:" >&2
+  echo "  sops set terraform/handson/secrets.enc.json '[\"ami_id\"]' '\"$AMI_ID\"'" >&2
+  FINISHED=true
+  exit 1
+fi
+
+# --- 8. 古い AMI の掃除（--prune のときだけ） ------------------------------------
 if $PRUNE; then
   log "古い AMI とスナップショットを消す"
   "${AWS[@]}" ec2 describe-images --owners self --filters "Name=name,Values=${AMI_PREFIX}-*" \
@@ -362,16 +377,9 @@ if $PRUNE; then
     done
 fi
 
-# --- 8. 結果 -------------------------------------------------------------------
+# --- 9. 結果 -------------------------------------------------------------------
 log "完了"
 echo "AMI 名: $AMI_NAME"
 echo "AMI ID: $AMI_ID"
-TFVARS="$REPO_ROOT/terraform/handson/terraform.tfvars"
-if [ -f "$TFVARS" ] && grep -qE '^ami_id[[:space:]]*=' "$TFVARS"; then
-  sed -i.bak -E "s|^(ami_id[[:space:]]*=[[:space:]]*)\"[^\"]*\"|\1\"$AMI_ID\"|" "$TFVARS"
-  rm -f "$TFVARS.bak"
-  echo "terraform/handson/terraform.tfvars の ami_id を $AMI_ID に書き換えました"
-else
-  echo "terraform/handson/terraform.tfvars に ami_id = \"$AMI_ID\" を設定してください"
-fi
+echo "terraform/handson/secrets.enc.json の ami_id を $AMI_ID に書き換えました（コミットを忘れずに）"
 FINISHED=true

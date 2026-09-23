@@ -6,7 +6,8 @@
 #   guide/publish.sh            # ビルド + 同期 + キャッシュ削除
 #   guide/publish.sh --dry-run  # ビルドして、何が上がるかだけ見る
 #
-# 同期先は terraform/guide の output から取る（terraform init 済みであること）。
+# 同期先は terraform/guide の output から取る（scripts/tf.sh guide init で init 済みであること。
+# output は変数が要らないので terraform -chdir=... をそのまま呼ぶ）。
 # 受講者情報（participants/ 配下）はこのスクリプトでは触らない（terraform/handson の apply が置く）。
 set -euo pipefail
 
