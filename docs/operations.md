@@ -165,7 +165,7 @@ sops edit terraform/secrets.enc.env
 
 ゾーン ID はゾーンの概要ページに表示される値を、`terraform/handson/secrets.enc.json`（独自ドメインを付けるなら `terraform/guide/secrets.enc.json` も）の `cloudflare_zone_id` に書きます（秘密ではありませんが、他の値とまとめて暗号化されます）。
 
-以前に手で入れた `*.handson.example.com` の CNAME が残っている場合は、最初の `apply` の前に Cloudflare 側で削除しておきます。同じ名前の CNAME は 2 本置けないので、残っていると `apply` が失敗します。証明書の検証用 CNAME は Terraform の管理外なので、そのまま残します。
+以前に手で入れた `*.handson.example.com` の CNAME が残っている場合は、最初の `apply` の前に Cloudflare 側で削除しておきます。同じ名前の CNAME は 2 件置けないので、残っていると `apply` が失敗します。証明書の検証用 CNAME は Terraform の管理外なので、そのまま残します。
 
 ## 2. 当日
 
@@ -285,6 +285,7 @@ EC2、ALB、ターゲットグループ、セキュリティグループ、VPC�
 | EC2 t4g.small | 0.0216 USD / 時間 |
 | EBS gp3 | 0.096 USD / GB・月 |
 | ALB | 0.0243 USD / 時間 + 0.008 USD / LCU・時間 |
+| パブリック IPv4 アドレス | 0.005 USD / 個・時間（2026-09-23 取得。使用中でもかかる） |
 | AgentCore Runtime | 0.0895 USD / vCPU・時間、0.00945 USD / GB・時間 |
 | Nova 2 Lite 入力 | 0.000396 USD / 1K トークン |
 | Nova 2 Lite 出力 | 0.003311 USD / 1K トークン |
@@ -300,12 +301,14 @@ EC2 は t4g.small の無料トライアル（次の項）が適用される前�
 | EC2 | t4g.small 30 台 × 5 時間 = 150 時間（月 750 時間の枠内） | 0 USD | 3.24 USD |
 | EBS | 15GB × 30 台 × 5/730 か月 | 0.31 USD | 0.31 USD |
 | ALB | 0.0243 × 5 時間 + LCU | 0.16 USD | 0.16 USD |
+| パブリック IPv4（EC2） | 30 個 × 5 時間 × 0.005 | 0.75 USD | 0.75 USD |
+| パブリック IPv4（ALB） | AZ ごとに 1 個 × 2 AZ × 5 時間 × 0.005 | 0.05 USD | 0.05 USD |
 | AgentCore Runtime | 1 人 10 分 / 1vCPU / 2GB として 30 人ぶん | 0.54 USD | 0.54 USD |
 | Bedrock 入力 | 2,250K トークン | 0.89 USD | 0.89 USD |
 | Bedrock 出力 | 90K トークン | 0.30 USD | 0.30 USD |
-| **合計** | | **約 2.2 USD** | **約 5.4 USD** |
+| **合計** | | **約 3.0 USD** | **約 6.2 USD** |
 
-半日のハンズオンで 2 ドル程度、トライアルが無くても 6 ドル程度です。リハーサルを数回やっても同じ桁に収まります。t4g.medium も試しましたが `agentcore deploy` の所要時間が変わらなかった（small 99 秒、medium 112 秒）ので t4g.small にしています（Issue #15）。
+半日のハンズオンで 3 ドル程度、トライアルが無くても 6 ドル程度です。受講者の EC2 はパブリックサブネットに置いてパブリック IP を持たせているので（NAT Gateway を使わないため）、その IP のぶんが 1 台 1 時間あたり 0.005 USD かかります。リハーサルを数回やっても同じ桁に収まります。t4g.medium も試しましたが `agentcore deploy` の所要時間が変わらなかった（small 99 秒、medium 112 秒）ので t4g.small にしています（Issue #15）。
 
 ### t4g.small の無料トライアル
 
@@ -319,7 +322,7 @@ t4g.small には AWS の無料トライアルがあります。2021 年に始ま
 | 対象リージョン | ap-northeast-1（東京）を含む主要リージョン |
 | 期限 | 2026 年 12 月 31 日（毎年延長されてきたが、翌年も続く保証はない） |
 | Organizations | 支払いアカウント単位で 750 時間。メンバーアカウントごとに 750 時間ではない |
-| 無料にならないもの | EBS、ALB、データ転送、CPU クレジットの超過分、AgentCore、Bedrock |
+| 無料にならないもの | EBS、ALB、パブリック IPv4 アドレス、データ転送、CPU クレジットの超過分、AgentCore、Bedrock |
 
 このハンズオンでは 30 台 × 5 時間 = 150 時間なので、リハーサルを 2〜3 回やっても月 750 時間には収まります。同じ月にほかの用途で t4g.small を動かしている場合はその時間も合算されるので、開催月の使用量を確認しておきます。
 

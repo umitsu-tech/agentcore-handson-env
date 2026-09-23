@@ -82,7 +82,7 @@
                 <mxCell id="g-acm" value="ACM 証明書（us-east-1）&lt;br&gt;guide.handson.&amp;lt;domain&amp;gt; 単体" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#8C4FFF;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=14;fontColor=#232F3E;" parent="1" vertex="1">
                     <mxGeometry x="1520" y="295" width="340" height="48" as="geometry"/>
                 </mxCell>
-                <mxCell id="g-dns" value="Cloudflare CNAME 2 本&lt;br&gt;ACM 検証用 / 本体 → CloudFront" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#8C4FFF;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=14;fontColor=#232F3E;" parent="1" vertex="1">
+                <mxCell id="g-dns" value="Cloudflare CNAME 2 件&lt;br&gt;ACM 検証用 / 本体 → CloudFront" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#8C4FFF;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=14;fontColor=#232F3E;" parent="1" vertex="1">
                     <mxGeometry x="1210" y="351" width="290" height="48" as="geometry"/>
                 </mxCell>
                 <mxCell id="g-iam" value="IAM ロール（GitHub Actions 用）&lt;br&gt;OIDC。このリポジトリの main だけ assume 可" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#8C4FFF;fillColor=#FFFFFF;align=left;verticalAlign=middle;spacingLeft=8;fontSize=14;fontColor=#232F3E;" parent="1" vertex="1">

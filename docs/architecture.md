@@ -34,7 +34,7 @@ ALB は HTTPS:443 のリスナーを持ち、ACM で発行したワイルドカ�
 
 DNS は Cloudflare で管理します。`*.handson.example.com` の CNAME を ALB の DNS 名に向けるレコードを 1 件作れば、サブドメインが何個あっても解決します。このレコードは Terraform が Cloudflare のプロバイダー経由で作るので、ALB を作り直して DNS 名が変わっても手で差し替える必要はありません。Cloudflare のプロキシ（オレンジクラウド）は使わず、DNS only（グレークラウド）で運用します。プロキシを通すと `user01.handson.example.com` のような 2 階層のサブドメインが Cloudflare の無料の証明書の範囲外になり、別途有料の証明書が要るためです。TLS は ALB 上の ACM 証明書がそのまま使われます。
 
-ACM の証明書検証も DNS 検証なので、Cloudflare に検証用の CNAME を 1 本追加します。この検証用の CNAME と証明書そのものは手で作り、Terraform の管理外です。
+ACM の証明書検証も DNS 検証なので、Cloudflare に検証用の CNAME を 1 件追加します。この検証用の CNAME と証明書そのものは手で作り、Terraform の管理外です。
 
 ### 受講者の作業環境（EC2）
 
@@ -182,7 +182,7 @@ Terraform のルートは `terraform/handson/`（受講環境）と `terraform/g
 
 `terraform/handson` が作るのは VPC、ALB、受講者ごとの EC2、受講者用と Scheduler 用の IAM ロール、Cloudflare のワイルドカード CNAME、終了時刻の EventBridge Scheduler です。当日 apply して、終わったら destroy します。
 
-`terraform/guide` が作るのは非公開の S3 バケット、CloudFront と OAC、us-east-1 の ACM 証明書、Cloudflare の CNAME 2 本（検証用と本体）、GitHub Actions 用の IAM ロールです。前もって apply して当日まで置いておきます。手順書の中身は GitHub Actions か `guide/publish.sh` で S3 に同期するので、Terraform は触りません。
+`terraform/guide` が作るのは非公開の S3 バケット、CloudFront と OAC、us-east-1 の ACM 証明書、Cloudflare の CNAME 2 件（検証用と本体）、GitHub Actions 用の IAM ロールです。前もって apply して当日まで置いておきます。手順書の中身は GitHub Actions か `guide/publish.sh` で S3 に同期するので、Terraform は触りません。
 
 Terraform の外にあるものは次のとおりです。
 
