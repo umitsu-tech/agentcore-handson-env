@@ -217,7 +217,7 @@ scripts/run-on-participants.sh model                         # 全台で Nova 2 
 scripts/run-on-participants.sh deploy --only user01,user02   # 対象を絞る
 ```
 
-`deploy` は、受講者と同じ handson ユーザーで `agentcore deploy --yes --target default` を流します。受講者ごとの所要時間と成否に加えて、最短・最長・平均の時間を出します。失敗した台は EC2 側のログの末尾も出します。1 人で deploy したときは 100 秒前後でした（[architecture.md](architecture.md) の「インスタンスタイプ」）。作った Runtime とスタックは消さないので、試し終わったら「受講者が作ったリソースの削除」の棚卸しスクリプトで消します。
+`deploy` は、受講者と同じ handson ユーザーで `agentcore deploy --yes --target default` を流します。受講者ごとの所要時間と成否に加えて、最短・最長・平均の時間を出します。失敗した台は EC2 側のログの末尾も出します。apply の直後で user_data の初期設定（プロジェクト名の差し替え）が終わっていない台は、`not-ready` と出して deploy しません。少し待ってから、その台だけ `--only` で流し直します。1 人で deploy したときは 100 秒前後でした（[architecture.md](architecture.md) の「インスタンスタイプ」）。作った Runtime とスタックは消さないので、試し終わったら「受講者が作ったリソースの削除」の棚卸しスクリプトで消します。
 
 `model` は、全台からモデルを 1 回呼び、`allowed`（通った）、`denied`（Deny された）、`error`（それ以外の失敗）のどれかを出します。終了時刻の前後で使います（「動作確認」と「終了時刻での自動停止」）。
 

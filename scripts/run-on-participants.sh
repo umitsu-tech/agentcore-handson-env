@@ -4,7 +4,8 @@
 #
 #   deploy  全台で同時に agentcore deploy を流し、所要時間と成否を並べる。
 #           受講者が一斉に deploy したときの待ち時間を見る。作った Runtime とスタックは消さない
-#           （後片付けは scripts/cleanup-participant-resources.sh）
+#           （後片付けは scripts/cleanup-participant-resources.sh）。user_data の初期設定が
+#           終わっていない台は not-ready と出して deploy しない
 #   model   全台で Nova 2 Lite を 1 回呼び、通るかを並べる。終了時刻（handson_end_time）の前は
 #           全員がモデルを呼べること、後は受講者ロールの Deny で AccessDenied になることを見る
 #
@@ -73,8 +74,17 @@ json_escape() {
 # 失敗したときだけ末尾を出す。
 # $(...) の中にヒアドキュメントを書くと macOS の bash 3.2 が case の ) を読み違えるので read -d '' で受ける。
 if [ "$MODE" = deploy ]; then
+  # user_data（configure-instance.sh.tftpl）がプロジェクト名とアカウント ID のプレースホルダを
+  # 書き換える前に deploy すると、全台が同じ仮の名前で deploy してぶつかる。
+  # cloud-init の完了を待ち、それでもプレースホルダが残っていれば deploy しない
   read -r -d '' REMOTE <<'EOF' || true
 LOG=/tmp/run-on-participants-deploy.log
+cloud-init status --wait > /dev/null 2>&1 || true
+if grep -q handsonPARTICIPANT /home/handson/workspace/agentcore/agentcore.json; then
+  echo "RESULT not-ready 0"
+  echo "agentcore.json にプレースホルダが残っています。user_data の初期設定が終わっていません"
+  exit 1
+fi
 START=$(date +%s)
 if runuser -l handson -c 'cd ~/workspace && agentcore deploy --yes --target default' > "$LOG" 2>&1; then
   STATUS=ok
@@ -181,9 +191,16 @@ RESULTS=""
 DETAILS=""
 while IFS=$'\t' read -r name id; do
   [ -n "$id" ] || continue
-  OUT=$("${AWS[@]}" ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$id" \
-    --query StandardOutputContent --output text 2> /dev/null || true)
-  LINE=$(printf '%s\n' "$OUT" | awk '$1 == "RESULT" { print $2, $3; exit }')
+  # 全台が終わった直後は、取り出しが一時的に失敗したり空を返したりすることがあるので、
+  # RESULT の行が取れるまで何度か取り直す
+  LINE=""
+  for _ in 1 2 3 4 5; do
+    OUT=$("${AWS[@]}" ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$id" \
+      --query StandardOutputContent --output text 2> /dev/null || true)
+    LINE=$(printf '%s\n' "$OUT" | awk '$1 == "RESULT" { print $2, $3; exit }')
+    [ -n "$LINE" ] && break
+    sleep 3
+  done
   if [ -n "$LINE" ]; then
     RESULTS+="$name ${LINE}"$'\n'
   else
