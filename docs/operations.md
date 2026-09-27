@@ -207,6 +207,22 @@ sops edit terraform/secrets.enc.env
 
 以前に手で入れた `*.handson.example.com` の CNAME が残っている場合は、最初の `apply` の前に Cloudflare 側で削除しておきます。同じ名前の CNAME は 2 件置けないので、残っていると `apply` が失敗します。証明書の検証用 CNAME は Terraform の管理外なので、そのまま残します。
 
+### 人数ぶんで試す
+
+本番の前に一度、人数ぶんの受講環境を立てて、受講者が一斉に `agentcore deploy` したときの待ち時間を確かめます。受講者の手を借りずに確かめられるよう、全台の EC2 に SSM で同じコマンドを一斉に流すスクリプトを用意しています。
+
+```bash
+scripts/run-on-participants.sh deploy                        # 全台で同時に agentcore deploy
+scripts/run-on-participants.sh model                         # 全台で Nova 2 Lite を 1 回呼ぶ
+scripts/run-on-participants.sh deploy --only user01,user02   # 対象を絞る
+```
+
+`deploy` は、受講者と同じ handson ユーザーで `agentcore deploy --yes --target default` を流します。受講者ごとの所要時間と成否に加えて、最短・最長・平均の時間を出します。失敗した台は EC2 側のログの末尾も出します。1 人で deploy したときは 100 秒前後でした（[architecture.md](architecture.md) の「インスタンスタイプ」）。作った Runtime とスタックは消さないので、試し終わったら「受講者が作ったリソースの削除」の棚卸しスクリプトで消します。
+
+`model` は、全台からモデルを 1 回呼び、`allowed`（通った）、`denied`（Deny された）、`error`（それ以外の失敗）のどれかを出します。終了時刻の前後で使います（「動作確認」と「終了時刻での自動停止」）。
+
+対象は、Project タグが `agentcore-handson` の EC2 のうち、動いていて SSM につながるものだけです。1 回に 50 台まで送れます。
+
 ## 2. 当日
 
 ### 環境の作成
@@ -223,6 +239,8 @@ scripts/tf.sh handson apply
 ### 動作確認
 
 配布する前に、主催者が 1 台目の URL を開いて code-server にログインできることを確認します。ALB のターゲットグループがすべて healthy になっているかも見ておきます。
+
+全員の EC2 からモデルを呼べるかは、`scripts/run-on-participants.sh model` でまとめて確かめられます（「人数ぶんで試す」）。全台が `allowed` になれば、受講者ロールの権限と推論プロファイルの指定に問題はありません。
 
 ### 受講者への配布
 
@@ -278,6 +296,16 @@ apply の出力 `handson_deadline` に、壁時計の時刻と UTC の両方が�
 - 実行後のスケジュールは自動で消えます（`action_after_completion = DELETE`）。destroy のときに見つからなくても正常です
 - 終了時刻を延ばしたいときは、時刻が来る前に `sops edit terraform/handson/secrets.enc.json` で `handson_end_time` を書き換えて `scripts/tf.sh handson apply` します。すでに過ぎてしまった場合は apply せず、手で `scripts/tf.sh handson destroy` に進みます
 - 検証や試し焼きのときは `handson_end_time` を書かないでおくと、この仕組みは作られません
+
+Deny が効いているかは、止まった EC2 を 1 台だけ起こして確かめます。EC2 の停止と Deny は同じ時刻に発火するので、時刻を過ぎると動いている EC2 が残っていないためです。ALB は消えていますが、SSM はつながります。
+
+```bash
+aws ec2 start-instances --instance-ids <user01 のインスタンス ID>
+scripts/run-on-participants.sh model --only user01   # denied になれば Deny が効いている
+aws ec2 stop-instances --instance-ids <user01 のインスタンス ID>
+```
+
+起動してから SSM につながるまで 1〜2 分かかります。「SSM につながっていない」と出たら、少し待ってからやり直します。
 
 ### 受講者が作ったリソースの削除
 
