@@ -45,7 +45,8 @@ Amazon Bedrock AgentCore のハンズオンを開く側のための環境です�
 ├── scripts/
 │   ├── build-ami.sh              AMI を焼く
 │   ├── setup-instance.sh         AMI に入れるものを揃える（build-ami.sh が流す）
-│   └── cleanup-participant-resources.sh  受講者が作ったものを棚卸しして消す
+│   ├── cleanup-participant-resources.sh  受講者が作ったものを棚卸しして消す
+│   └── run-on-participants.sh    全台で deploy やモデル呼び出しを一斉に流す（人数ぶんの試し用）
 └── .github/workflows/
     └── publish-guide.yml         guide/ が main に入ったらビルドして自動で配信する
 ```
