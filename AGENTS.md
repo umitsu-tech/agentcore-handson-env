@@ -58,6 +58,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - 後片付けの仕組み（Issue #17）。棚卸しスクリプト `scripts/cleanup-participant-resources.sh`（一覧モードは確認済み、`--delete` は未確認）と、`handson_end_time` で発火する Deny・EC2 停止・ALB 削除。EC2 停止と ALB 削除は実機で発火を確認した（2026-09-17。下の記録参照）。Deny は未確認
 - 受講者向けの手順書（`guide/`、Issue #48。#51 で Astro Starlight に作り直し、mcks.log と同じ紙色のパレット、セクションごとのページ + サイドメニュー + 図 4 枚 + 画像の拡大表示）。受講者情報ページ `participants.html` と `/participants*` の Basic 認証は #58 で追加し、apply 済み（2026-09-07。認証なしは 401、他のページは今までどおり）。パスワードの列の見切れを直し、コピーボタンを付けた（#65。2026-09-23 に配信済み）。表の中身は今は置いていない（受講環境を立てると置かれる）。S3 非公開 + CloudFront OAC で配信し、`https://guide.handson.<base_domain>/` で HTTPS 200、HTTP は 301、S3 直アクセスは 403 まで確認済み。証明書は us-east-1 でホスト名単体を発行し、検証用と本体の CNAME は Terraform が Cloudflare に入れる。中身は GitHub Actions（OIDC、Issue #52）か `guide/publish.sh` で同期する。環境は本番まで立てたままにする
 - 設定ファイルの暗号化（SOPS、Issue #79）と、復号しながら terraform を動かす `scripts/tf.sh`。平文の設定ファイルと古いローカルの state は 2026-09-23 に手元から消した。暗号化した設定だけで `scripts/tf.sh guide plan` が No changes、`scripts/tf.sh handson plan` が 34 件の作成予定（2 人分、終了時刻なし）になることを確認済み
+- 受講者の EC2 全台に SSM で同じコマンドを一斉に流すスクリプト `scripts/run-on-participants.sh`（#93）。`deploy`（全台で同時に `agentcore deploy`）と `model`（全台で Nova 2 Lite を 1 回呼び、Deny されるかも見る）の 2 つ。偽の aws コマンドで流れを確かめ、モデル呼び出しのコマンドは手元から Bedrock に通した。実機の EC2 ではまだ流していない
 - コストの試算。30 人 5 時間で約 3.0 USD（t4g.small の無料トライアル適用時。無ければ約 6.2 USD。パブリック IPv4 の料金を #82 で足した。内訳は docs/operations.md）。東京で使えるモデルの単価比較は Nova 2 Lite 据え置き
 
 通し確認の記録（2026-09-05〜06）。
@@ -86,7 +87,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証情報が要るので、リュウキがブラウザで認証できるタイミングで進める。
 
 1. SOPS の秘密鍵（`~/.config/sops/age/keys.txt`）をマシンの外に控える（まだ。手順は docs/operations.md の「秘密鍵を控える」）。平文の設定ファイルは 2026-09-23 に手元から消したので、この鍵が無いと設定を開けない
-2. 30 人分を試しに apply する（Issue #6。1〜2 時間確認して destroy、費用の目安は 1〜3 USD。apply の前に plan の差分を確認する）。暗号化した設定には `handson_end_time` を入れていない（9/17 の検証の値は 9/23 に取り除いた）ので、apply の前に `sops edit terraform/handson/secrets.enc.json` でその回の終了時刻を入れる。確かめるのは、30 人がほぼ同時に `agentcore deploy` したときの待ち時間（CloudFormation の API にはアカウント単位の呼び出し上限がある）、`handson_end_time` を過ぎたあとに受講者ロールで Bedrock が Deny されること（EC2 停止と ALB 削除は確認済み）、棚卸しスクリプトの `--delete`。受講者情報の表は、`secrets.enc.json` に `guide_bucket_name` が入っているので apply すれば置かれる。表が出ることと、destroy で消えることも確かめる。新しい AMI（#91）で受講環境が動くと確かめたら、古い AMI `ami-0e6e145f65e038cd9` とそのスナップショットを消す
+2. 30 人分を試しに apply する（Issue #6。1〜2 時間確認して destroy、費用の目安は 1〜3 USD。apply の前に plan の差分を確認する）。暗号化した設定には `handson_end_time` を入れていない（9/17 の検証の値は 9/23 に取り除いた）ので、apply の前に `sops edit terraform/handson/secrets.enc.json` でその回の終了時刻を入れる。確かめるのは、30 人がほぼ同時に `agentcore deploy` したときの待ち時間（CloudFormation の API にはアカウント単位の呼び出し上限がある）、`handson_end_time` を過ぎたあとに受講者ロールで Bedrock が Deny されること（EC2 停止と ALB 削除は確認済み）、棚卸しスクリプトの `--delete`。一斉の deploy と Deny は `scripts/run-on-participants.sh` で確かめる（手順は docs/operations.md の「人数ぶんで試す」と「終了時刻での自動停止」、段取りは #6 のコメント）。受講者情報の表は、`secrets.enc.json` に `guide_bucket_name` が入っているので apply すれば置かれる。表が出ることと、destroy で消えることも確かめる。新しい AMI（#91）で受講環境が動くと確かめたら、古い AMI `ami-0e6e145f65e038cd9` とそのスナップショットを消す
 3. 本番の前に、受講者情報ページの合言葉を新しい値に変える（`sops edit terraform/guide/secrets.enc.json` で `participants_password` を書き換え、`scripts/tf.sh guide apply`）
 
 当日の運営（事前準備、リハーサル）はこのリポジトリの範囲外にした（Issue #7、#8 はクローズ）。
