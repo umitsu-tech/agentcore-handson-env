@@ -174,10 +174,10 @@ SENT_AT=$SECONDS
 
 # --- 3. 全台が終わるのを待つ ------------------------------------------------------
 while true; do
-  # 送った直後は一覧が空のことがあるので、空の行は数えない
+  # 終わった状態（Success、Failed、Cancelled、TimedOut）だけを数える。Cancelling はまだ終わっていない
   DONE=$("${AWS[@]}" ssm list-command-invocations --command-id "$COMMAND_ID" \
     --query 'CommandInvocations[].Status' --output text | tr '\t' '\n' \
-    | awk 'NF && $1 != "Pending" && $1 != "InProgress" && $1 != "Delayed" { n++ } END { print n + 0 }')
+    | awk '$1 ~ /^(Success|Failed|Cancelled|TimedOut)$/ { n++ } END { print n + 0 }')
   printf '\r終わった台数: %s / %s（経過 %s 秒）' "$DONE" "${#IDS[@]}" "$((SECONDS - SENT_AT))"
   [ "$DONE" -ge "${#IDS[@]}" ] && break
   sleep "$POLL_INTERVAL"
