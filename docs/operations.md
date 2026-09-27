@@ -37,6 +37,8 @@ scripts/build-ami.sh --prune            # 古い AMI とスナップショット
 
 終わると新しい AMI ID が表示され、`terraform/handson/secrets.enc.json`（SOPS で暗号化した受講環境の設定。次の項）の `ami_id` が `sops set` で書き換わります。書き換わったファイルはコミットしておきます。
 
+`handson-agent/`、`handson-ui/`、`agentcore/`、`scripts/setup-instance.sh` を変えたら、AMI を作り直します。受講者の EC2 には AMI を作った時点の中身が入り、user_data ではワークスペースを配り直さないためです。
+
 AMI には次のものが入ります。
 
 - code-server（8080 番で待ち受け）
