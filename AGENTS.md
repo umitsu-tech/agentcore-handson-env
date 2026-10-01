@@ -4,7 +4,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 
 ## 現在の状況
 
-最終更新: 2026-09-27
+最終更新: 2026-10-01
 
 ### 決まっていること
 
@@ -87,7 +87,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証情報が要るので、リュウキがブラウザで認証できるタイミングで進める。
 
 1. SOPS の秘密鍵（`~/.config/sops/age/keys.txt`）をマシンの外に控える（まだ。手順は docs/operations.md の「秘密鍵を控える」）。平文の設定ファイルは 2026-09-23 に手元から消したので、この鍵が無いと設定を開けない
-2. 協力者 2 人にハンズオンを試してもらう。受講環境の設定は 3 人分（user01〜user03。協力者に 1 台ずつと主催者の 1 台）にしてあり（#95）、3 人分の plan が 39 件の作成予定になることを確認済み。暗号化した設定に `handson_end_time` は入っていない（9/17 の検証の値は 9/23 に取り除いた）ので、日程が決まったら `sops edit terraform/handson/secrets.enc.json` でその回の終了時刻を入れ、plan の差分を確認してから apply する。協力者が来る 20〜30 分前に apply し、新しい AMI（#91）で code-server と UI が動くことを主催者の台で確かめておく。この回で、30 人分でなくても確かめられることを済ませる。終了時刻のあとに受講者ロールで Bedrock が Deny されること（EC2 停止と ALB 削除は確認済み。止まった EC2 を 1 台起こして `scripts/run-on-participants.sh model --only user01`。手順は docs/operations.md の「終了時刻での自動停止」）、棚卸しスクリプトの `--delete`、受講者情報の表が apply で出て destroy で消えること。確かめた結果は #6 に残す。費用は 3 時間で 0.5 USD 未満の見込み。新しい AMI で動くと確かめたら、古い AMI `ami-0e6e145f65e038cd9` とそのスナップショットを消す
+2. 協力者 2 人にハンズオンを試してもらう。日程は 2026-10-05（月）18:00〜20:00 JST に決まった。受講環境の設定は 3 人分（user01〜user03。協力者に 1 台ずつと主催者の 1 台）にしてあり（#95）、3 人分の plan が 39 件の作成予定になることを確認済み。暗号化した設定に `handson_end_time` は入っていない（9/17 の検証の値は 9/23 に取り除いた）ので、当日の前に `sops edit terraform/handson/secrets.enc.json` でその回の終了時刻を入れ、plan の差分を確認してから apply する。協力者が来る 20〜30 分前に apply し、新しい AMI（#91）で code-server と UI が動くことを主催者の台で確かめておく。この回で、30 人分でなくても確かめられることを済ませる。終了時刻のあとに受講者ロールで Bedrock が Deny されること（EC2 停止と ALB 削除は確認済み。止まった EC2 を 1 台起こして `scripts/run-on-participants.sh model --only user01`。手順は docs/operations.md の「終了時刻での自動停止」）、棚卸しスクリプトの `--delete`、受講者情報の表が apply で出て destroy で消えること。確かめた結果は #6 に残す。費用は 3 時間で 0.5 USD 未満の見込み。新しい AMI で動くと確かめたら、古い AMI `ami-0e6e145f65e038cd9` とそのスナップショットを消す
 3. 30 人分を試しに apply する（#6）。お金がかかる時間を約 25 分に抑える（終了時刻を apply の 25 分後にし、確認と片付けは EC2 が止まったあとにやる。費用の目安は 0.1〜0.5 USD）。`participants` を user01〜user30 にし、主に 30 人がほぼ同時に `agentcore deploy` したときの待ち時間（CloudFormation の API にはアカウント単位の呼び出し上限がある）を確かめる。一斉の deploy は `scripts/run-on-participants.sh` で流す（手順は docs/operations.md の「人数ぶんで試す」、段取りは #6 のコメント）。2 のお試しで確かめられなかった項目があれば、ここで確かめる
 4. 本番の前に、受講者情報ページの合言葉を新しい値に変える（`sops edit terraform/guide/secrets.enc.json` で `participants_password` を書き換え、`scripts/tf.sh guide apply`）
 
