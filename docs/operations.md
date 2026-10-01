@@ -294,7 +294,11 @@ apply の出力 `handson_deadline` に、壁時計の時刻と UTC の両方が�
 - 止まるのは EC2 と Bedrock の呼び出しで、消えるのは ALB だけです。EBS、AMI のスナップショット、受講者が作った Runtime は残ります。Runtime は呼ばれなければ課金されません
 - ALB を Terraform の外で消すので、時刻を過ぎたあとは `scripts/tf.sh handson apply` を打ちません。apply すると ALB を作り直します。以降は `scripts/tf.sh handson destroy` の一方向です（destroy は消えたものを refresh で検知するので問題ありません）
 - 実行後のスケジュールは自動で消えます（`action_after_completion = DELETE`）。destroy のときに見つからなくても正常です
-- 終了時刻を延ばしたいときは、時刻が来る前に `sops edit terraform/handson/secrets.enc.json` で `handson_end_time` を書き換えて `scripts/tf.sh handson apply` します。すでに過ぎてしまった場合は apply せず、手で `scripts/tf.sh handson destroy` に進みます
+- 終了時刻を延ばしたり早めたりしたいときは、時刻が来る前に `handson_end_time` を書き換えて `scripts/tf.sh handson apply` します。変わるのは受講者ロールの Deny と 2 つのスケジュールだけで、EC2 は作り直しません（終了時刻は user_data に入っていないため）。早めるときも、まだ来ていない時刻にします。すでに過ぎてしまった場合は apply せず、手で `scripts/tf.sh handson destroy` に進みます。エディタを開かずに 1 行で書き換えるなら次のようにします
+
+  ```bash
+  SOPS_AGE_KEY_FILE=~/.config/sops/age/keys.txt sops set terraform/handson/secrets.enc.json '["handson_end_time"]' '"2026-10-05T21:00:00+09:00"'
+  ```
 - 検証や試し焼きのときは `handson_end_time` を書かないでおくと、この仕組みは作られません
 
 Deny が効いているかは、止まった EC2 を 1 台だけ起こして確かめます。EC2 の停止と Deny は同じ時刻に発火するので、時刻を過ぎると動いている EC2 が残っていないためです。ALB は消えていますが、SSM はつながります。
