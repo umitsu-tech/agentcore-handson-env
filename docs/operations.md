@@ -297,7 +297,7 @@ apply の出力 `handson_deadline` に、壁時計の時刻と UTC の両方が�
 - 終了時刻を延ばしたり早めたりしたいときは、時刻が来る前に `handson_end_time` を書き換えて `scripts/tf.sh handson apply` します。変わるのは受講者ロールの Deny と 2 つのスケジュールだけで、EC2 は作り直しません（終了時刻は user_data に入っていないため）。早めるときも、まだ来ていない時刻にします。すでに過ぎてしまった場合は apply せず、手で `scripts/tf.sh handson destroy` に進みます。エディタを開かずに 1 行で書き換えるなら次のようにします
 
   ```bash
-  SOPS_AGE_KEY_FILE=~/.config/sops/age/keys.txt sops set terraform/handson/secrets.enc.json '["handson_end_time"]' '"2026-10-05T21:00:00+09:00"'
+  SOPS_AGE_KEY_FILE=~/.config/sops/age/keys.txt sops set terraform/handson/secrets.enc.json '["handson_end_time"]' '"2026-10-31T17:30:00+09:00"'
   ```
 - 検証や試し焼きのときは `handson_end_time` を書かないでおくと、この仕組みは作られません
 
