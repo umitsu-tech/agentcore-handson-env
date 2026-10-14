@@ -4,7 +4,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 
 ## 現在の状況
 
-最終更新: 2026-10-13
+最終更新: 2026-10-15
 
 ### 決まっていること
 
@@ -76,6 +76,18 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - 停止した EC2 は EBS の課金が続くので、2026-09-18 に `terraform destroy` で残り 30 件を消した。state は空、EC2 は terminated、孤立した EBS ボリュームは無し。手順書サイトは残した（HTTPS 200 を確認）
 - AMI `ami-0e6e145f65e038cd9` は、そのあとのワークスペースの変更が入っていなかったので 2026-09-27 に作り直した（#91）。古い AMI は、新しい AMI で受講環境が動くと確かめるまで残している
 
+協力者とのお試しの記録（2026-10-13〜15。#97）。
+
+- 日程は 10/5 から延期を重ねて 2026-10-14（水）14:00〜16:00 JST になり、受講環境は 1 台（user01）にした。終了時刻は 16:15
+- 前日の 10/13 20:12 JST に apply した（34 件）。code-server へのログイン、UI の画面とツール一覧、user01 からのモデル呼び出し（allowed）、ALB のヘルスチェック、受講者情報の表まで確かめた
+- 当日は 15:17 JST に user01 から `agentcore deploy` された（Runtime の CloudFormation スタックの作成時刻）
+- 16:15 JST に EC2 の停止と ALB の削除が発火し、2 つのスケジュールは自分で消えた
+- 10/15 に止まった user01 を一度だけ起こして `scripts/run-on-participants.sh model --only user01` を流し、`denied`（AccessDeniedException、explicit deny）になった。終了時刻で起きる 3 つ（EC2 停止・ALB 削除・Bedrock の Deny）を、すべて実機で確かめたことになる。確認のあと EC2 は止め直した
+- `scripts/tf.sh handson destroy` で 28 件を消した（ALB とリスナー、スケジュールの 6 件はもう無かった）。受講者情報の表（`participants/data.json`）も一緒に消えた。EC2 は terminated、孤立した EBS は無し。手順書サイトは HTTPS 200 のまま
+- 古い AMI `ami-0e6e145f65e038cd9` とスナップショット `snap-0ea4ae3828f31b220` を消した。残っている AMI は `ami-0222b0438e7a64a4d` だけ
+- 棚卸しスクリプトの `--delete` は、Claude Code の auto モードの判定で止められて流せていない。残っているのは、中身が CDK のメタデータだけの空のスタック `AgentCore-handsonuser01-default` と、ロググループ `/aws/bedrock-agentcore/runtimes/handsonuser01_agent-…` の 2 つ（課金はほぼ無い）。リュウキがターミナルから流す
+- 暗号化した設定から `handson_end_time` を外した（過ぎた時刻のまま apply すると Deny がすぐ効くため）。`participants` は user01 のまま
+
 30 人分に広げる前の事前調査の記録（2026-09-23。詳細は Issue #6 のコメント）。
 
 - EC2 の vCPU 上限（東京の Running On-Demand Standard、`L-1216C47A`）が 32 で、30 人分の 60 に足りない。80 への引き上げを申請し、2026-09-23 に承認された（サポートの審査を経て約 1 時間）
@@ -86,9 +98,8 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 
 AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証情報が要るので、リュウキがブラウザで認証できるタイミングで進める。
 
-1. 協力者 2 人にハンズオンを試してもらう。2026-10-05（月）18:00〜20:00 JST の予定が延期になり、10/7（水）午後の見込みを経て、2026-10-14（水）に決まった。使うのは 14:00〜16:00 JST で、受講環境は前後に 15 分ずつ余裕を見て 13:45〜16:15 に動かす。受講環境の設定は 3 人分（user01〜user03）にしていたが（#95）、この回は 1 台にするので `participants` を user01 だけにした。終了時刻は稼働の終わりの 16:15 とし、暗号化した設定に `handson_end_time = 2026-10-14T16:15:00+09:00` を入れた。apply の前に plan の差分を確認する。3 人分に終了時刻を入れたときの plan は 44 件だった（2026-10-06 に 10/5 20:30 の値で確認した）。1 人あたり 5 件なので、1 人分では 34 件の見込み。当日の様子で延ばしたり早めたりするときは、時刻が来る前に書き換えて apply し直す（EC2 は作り直さない。手順は docs/operations.md の「終了時刻での自動停止」）。当日の朝に慌てないよう、前日の 2026-10-13 20:12 JST に apply した（34 件の作成で見込みどおり。インスタンスは `i-086d5d1abc651ae92`）。新しい AMI（#91）で、code-server へのログイン、UI の画面とツール一覧、user01 からのモデル呼び出し（`scripts/run-on-participants.sh model --only user01` で allowed）、ALB のヘルスチェック、受講者情報の表が出ることまで確かめた。この回で、30 人分でなくても確かめられることを済ませる。終了時刻のあとに受講者ロールで Bedrock が Deny されること（EC2 停止と ALB 削除は確認済み。止まった EC2 を 1 台起こして `scripts/run-on-participants.sh model --only user01`。手順は docs/operations.md の「終了時刻での自動停止」）、棚卸しスクリプトの `--delete`、受講者情報の表が apply で出て destroy で消えること。確かめた結果は #6 に残す。費用は 3 時間で 0.5 USD 未満の見込み。新しい AMI で動くと確かめたら、古い AMI `ami-0e6e145f65e038cd9` とそのスナップショットを消す
-2. 30 人分を試しに apply する（#6）。お金がかかる時間を約 25 分に抑える（終了時刻を apply の 25 分後にし、確認と片付けは EC2 が止まったあとにやる。費用の目安は 0.1〜0.5 USD）。`participants` を user01〜user30 にし、主に 30 人がほぼ同時に `agentcore deploy` したときの待ち時間（CloudFormation の API にはアカウント単位の呼び出し上限がある）を確かめる。一斉の deploy は `scripts/run-on-participants.sh` で流す（手順は docs/operations.md の「人数ぶんで試す」、段取りは #6 のコメント）。1 のお試しで確かめられなかった項目があれば、ここで確かめる
-3. 本番の前に、受講者情報ページの合言葉を新しい値に変える（`sops edit terraform/guide/secrets.enc.json` で `participants_password` を書き換え、`scripts/tf.sh guide apply`）
+1. 30 人分を試しに apply する（#6）。お金がかかる時間を約 25 分に抑える（終了時刻を apply の 25 分後にし、確認と片付けは EC2 が止まったあとにやる。費用の目安は 0.1〜0.5 USD）。`participants` を user01〜user30 にし、主に 30 人がほぼ同時に `agentcore deploy` したときの待ち時間（CloudFormation の API にはアカウント単位の呼び出し上限がある）を確かめる。一斉の deploy は `scripts/run-on-participants.sh` で流す（手順は docs/operations.md の「人数ぶんで試す」、段取りは #6 のコメント）。お試しで確かめられなかった棚卸しスクリプトの `--delete` も、ここで確かめる
+2. 本番の前に、受講者情報ページの合言葉を新しい値に変える（`sops edit terraform/guide/secrets.enc.json` で `participants_password` を書き換え、`scripts/tf.sh guide apply`）
 
 当日の運営（事前準備、リハーサル）はこのリポジトリの範囲外にした（Issue #7、#8 はクローズ）。
 
