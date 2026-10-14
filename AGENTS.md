@@ -85,7 +85,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - 10/15 に止まった user01 を一度だけ起こして `scripts/run-on-participants.sh model --only user01` を流し、`denied`（AccessDeniedException、explicit deny）になった。終了時刻で起きる 3 つ（EC2 停止・ALB 削除・Bedrock の Deny）を、すべて実機で確かめたことになる。確認のあと EC2 は止め直した
 - `scripts/tf.sh handson destroy` で 28 件を消した（ALB とリスナー、スケジュールの 6 件はもう無かった）。受講者情報の表（`participants/data.json`）も一緒に消えた。EC2 は terminated、孤立した EBS は無し。手順書サイトは HTTPS 200 のまま
 - 古い AMI `ami-0e6e145f65e038cd9` とスナップショット `snap-0ea4ae3828f31b220` を消した。残っている AMI は `ami-0222b0438e7a64a4d` だけ
-- 棚卸しスクリプトの `--delete` は、Claude Code の auto モードの判定で止められて流せていない。残っているのは、中身が CDK のメタデータだけの空のスタック `AgentCore-handsonuser01-default` と、ロググループ `/aws/bedrock-agentcore/runtimes/handsonuser01_agent-…` の 2 つ（課金はほぼ無い）。リュウキがターミナルから流す
+- 棚卸しスクリプトの `--delete` は、Claude Code の auto モードの判定で止められて流せていない（30 人分の試しで確かめる）。代わりに、作り直すときに再利用されるものは残し、重複するものだけを手で消した。ロググループ `/aws/bedrock-agentcore/runtimes/handsonuser01_agent-k290Ra24lZ-DEFAULT` は Runtime の ID が名前に入っていて再利用されないので消した（保持期間は無期限だった）。スタック `AgentCore-handsonuser01-default`（Runtime は当日 15:24 JST に消えていて中身は CDK のメタデータだけ）は名前が受講者ごとに固定で、次の `agentcore deploy` でそのまま更新されるので残した。`CDKToolkit`（cdk bootstrap）も残した
 - 暗号化した設定から `handson_end_time` を外した（過ぎた時刻のまま apply すると Deny がすぐ効くため）。`participants` は user01 のまま
 
 30 人分に広げる前の事前調査の記録（2026-09-23。詳細は Issue #6 のコメント）。
