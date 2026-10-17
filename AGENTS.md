@@ -105,8 +105,9 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 
 AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証情報が要るので、リュウキがブラウザで認証できるタイミングで進める。
 
-1. 30 人分を試しに apply する（#6）。お金がかかる時間を約 25 分に抑える（終了時刻を apply の 25 分後にし、確認と片付けは EC2 が止まったあとにやる。費用の目安は 0.1〜0.5 USD）。`participants` を user01〜user30 にし、主に 30 人がほぼ同時に `agentcore deploy` したときの待ち時間（CloudFormation の API にはアカウント単位の呼び出し上限がある）を確かめる。一斉の deploy は `scripts/run-on-participants.sh` で流す（手順は docs/operations.md の「人数ぶんで試す」、段取りは #6 のコメント）。お試しで確かめられなかった棚卸しスクリプトの `--delete` も、ここで確かめる
-2. 本番の前に、受講者情報ページの合言葉を新しい値に変える（`sops edit terraform/guide/secrets.enc.json` で `participants_password` を書き換え、`scripts/tf.sh guide apply`）
+1. 協力者とのお試しで受けたフィードバックに対応する（#99。中身はこれから Issue に足す）
+2. 30 人分を試しに apply する（#6）。お金がかかる時間を約 25 分に抑える（終了時刻を apply の 25 分後にし、確認と片付けは EC2 が止まったあとにやる。費用の目安は 0.1〜0.5 USD）。`participants` を user01〜user30 にし、主に 30 人がほぼ同時に `agentcore deploy` したときの待ち時間（CloudFormation の API にはアカウント単位の呼び出し上限がある）を確かめる。一斉の deploy は `scripts/run-on-participants.sh` で流す（手順は docs/operations.md の「人数ぶんで試す」、段取りは #6 のコメント）。お試しで確かめられなかった棚卸しスクリプトの `--delete` も、ここで確かめる
+3. 本番の前に、受講者情報ページの合言葉を新しい値に変える（`sops edit terraform/guide/secrets.enc.json` で `participants_password` を書き換え、`scripts/tf.sh guide apply`）
 
 当日の運営（事前準備、リハーサル）はこのリポジトリの範囲外にした（Issue #7、#8 はクローズ）。
 
