@@ -92,6 +92,8 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 
 - リュウキの依頼で、前回と同じ形（user01 の 1 台、AMI `ami-0222b0438e7a64a4d`）で 2026-10-17 2:19 JST に apply した（34 件）。`handson_end_time` は `2026-10-17T12:00:00+09:00`
 - ALB のターゲットは healthy、code-server は `/login` への 302、UI（/proxy/3000/）も 302、`participants.html` は認証なしで 401、手順書は 200。`scripts/run-on-participants.sh model --only user01` は `allowed`
+- 12:00 JST の終了時刻で EC2 は 12:00:36 に停止し、ALB は削除され、user01 の URL はつながらなくなった（Bedrock の Deny は 10/15 に確認済みなので今回は EC2 を起こして確かめていない）
+- リュウキの了承で 2026-10-17 14:30 ごろに destroy した（28 件。ALB・リスナー・スケジュールは終了時刻の仕組みで先に消えていた）。state は空、EC2 は terminated、孤立した EBS と VPC は無し、手順書サイトは 200。暗号化した設定から `handson_end_time` を外した
 
 30 人分に広げる前の事前調査の記録（2026-09-23。詳細は Issue #6 のコメント）。
 
@@ -102,8 +104,6 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 ### 次の一歩
 
 AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証情報が要るので、リュウキがブラウザで認証できるタイミングで進める。
-
-0. 2026-10-17 12:00 JST に user01 が止まったあと、停止・ALB 削除・Deny を確かめて、中身を見せてから destroy する。終わったら暗号化した設定から `handson_end_time` を外す
 
 1. 30 人分を試しに apply する（#6）。お金がかかる時間を約 25 分に抑える（終了時刻を apply の 25 分後にし、確認と片付けは EC2 が止まったあとにやる。費用の目安は 0.1〜0.5 USD）。`participants` を user01〜user30 にし、主に 30 人がほぼ同時に `agentcore deploy` したときの待ち時間（CloudFormation の API にはアカウント単位の呼び出し上限がある）を確かめる。一斉の deploy は `scripts/run-on-participants.sh` で流す（手順は docs/operations.md の「人数ぶんで試す」、段取りは #6 のコメント）。お試しで確かめられなかった棚卸しスクリプトの `--delete` も、ここで確かめる
 2. 本番の前に、受講者情報ページの合言葉を新しい値に変える（`sops edit terraform/guide/secrets.enc.json` で `participants_password` を書き換え、`scripts/tf.sh guide apply`）
