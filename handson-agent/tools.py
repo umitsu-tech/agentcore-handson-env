@@ -60,13 +60,15 @@ def get_equipment_status(equipment_id: str) -> dict:
     return {"error": "not_found", "equipment_id": equipment_id}
 
 
-# ここに自分のツールを足してみましょう（ハンズオンの 2 番目のステップ）。
+# ここから下は、ハンズオンの 2 番目のステップで足すツールです。
 #
-# たとえば、カテゴリを渡すと「いま借りられるもの」だけを返すツールを作ると、
+# カテゴリを渡すと「いま借りられるもの」だけを返すので、
 # 「モニター借りたいんだけど空いてる？」に一発で答えられるようになります。
-#
 # ここでもツールはデータを返すだけにして、日本語にするのはモデルに任せます。
 #
+# 「# @tool」の行から最後の「#     ]」の行までを選んで Ctrl+/（Mac は Cmd+/）を押すと、
+# コメントが外れます。保存したら、agent.py の TOOLS のコメントも外してください。
+
 # @tool
 # def find_available(category: str) -> list[dict]:
 #     """指定したカテゴリで、いま貸出可能な備品を探す。
@@ -77,6 +79,9 @@ def get_equipment_status(equipment_id: str) -> dict:
 #     Returns:
 #         貸出可能な備品のデータの一覧（id, name, category, status, borrower, due_date）
 #     """
-#     ...
-#
-# 書けたら agent.py の TOOLS に足すのを忘れずに。
+#     return [
+#         item
+#         for item in _load_equipment()
+#         if item["category"] == category
+#         and item["status"] == "貸出可"
+#     ]
