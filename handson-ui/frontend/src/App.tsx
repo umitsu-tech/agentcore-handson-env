@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { askAgent, fetchContext, fetchRuntime } from './api'
+import { AgentLoadError, askAgent, fetchContext, fetchRuntime } from './api'
 import { ContextPanel } from './components/ContextPanel'
 import { Timeline } from './components/Timeline'
 import type { AgentContext, AskTarget, RuntimeInfo, Step } from './types'
@@ -16,6 +16,7 @@ const nextId = () => `s${sequence++}`
 export function App() {
   const [context, setContext] = useState<AgentContext | null>(null)
   const [contextError, setContextError] = useState<string | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [runtime, setRuntime] = useState<RuntimeInfo | null>(null)
   const [target, setTarget] = useState<AskTarget>('local')
   const [steps, setSteps] = useState<Step[]>([])
@@ -26,7 +27,14 @@ export function App() {
   useEffect(() => {
     fetchContext()
       .then(setContext)
-      .catch((e: unknown) => setContextError(String(e)))
+      .catch((e: unknown) => {
+        if (e instanceof AgentLoadError) {
+          setLoadError(e.message)
+          setContextError('エージェントのコードを読み込めていません')
+        } else {
+          setContextError(String(e))
+        }
+      })
   }, [])
 
   useEffect(() => {
@@ -160,6 +168,14 @@ export function App() {
         <h1>エージェントの動きを見る</h1>
         <p>質問を投げると、モデルが何を考えて、どのツールを呼んで、何が返ってきたのかが順番に出ます。</p>
       </header>
+
+      {/* 折りたたみの中に出すと気づかれないので、書き間違いは一番上に開いた形で出す */}
+      {loadError && (
+        <div className="load-error" role="alert">
+          <p className="load-error-title">エージェントのコードを読み込めませんでした</p>
+          <pre className="block">{loadError}</pre>
+        </div>
+      )}
 
       <ContextPanel context={context} error={contextError} />
 

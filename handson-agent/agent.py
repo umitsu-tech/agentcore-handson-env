@@ -31,9 +31,12 @@ Markdownの記号（** や # や - など）は使わず、ふつうの文章で
 """
 
 # モデルに渡すツールの一覧。ここに並べたものだけがモデルから見えます。
+# ハンズオンの 2 番目のステップで、3 行目のコメントを外します（行を選んで Ctrl+/、Mac は Cmd+/）。
+# 先に tools.py の find_available のコメントを外して保存してから、こちらを外してください。
 TOOLS = [
     tools.search_equipment,
     tools.get_equipment_status,
+    # tools.find_available,
 ]
 
 

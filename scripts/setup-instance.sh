@@ -99,7 +99,9 @@ fi
 
 # 初回起動時の Welcome タブ・拡張機能のおすすめ・ワークスペース信頼ダイアログなど、
 # 受講者を迷わせる表示を抑える。startupEditor は README にして、開いた瞬間に
-# workspace/README.md（このスクリプトが書く）が表示されるようにする
+# workspace/README.md（このスクリプトが書く）が表示されるようにする。
+# highlightModifiedTabs は未保存のタブの上に色の線を出す。保存できたか分かりにくいという
+# 声があり、保存し忘れるとハンズオン UI に新しいツールが出ないため（#99）
 install -d -o handson -g handson /home/handson/.local/share/code-server/User
 cat > /home/handson/.local/share/code-server/User/settings.json <<'SETTINGS'
 {
@@ -110,6 +112,7 @@ cat > /home/handson/.local/share/code-server/User/settings.json <<'SETTINGS'
   "security.workspace.trust.enabled": false,
   "update.mode": "none",
   "chat.disableAIFeatures": true,
+  "workbench.editor.highlightModifiedTabs": true,
   "remote.portsAttributes": {
     "3000": {
       "label": "ハンズオン UI"

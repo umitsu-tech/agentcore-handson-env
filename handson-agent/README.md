@@ -39,6 +39,9 @@ uv run python local.py
 
 `tools.py` に `@tool` を付けた関数を書いて、`agent.py` の `TOOLS` に足します。
 
+ハンズオンで足す `find_available` は、`tools.py` の一番下と `agent.py` の `TOOLS` に
+コメントで用意してあります。`tools.py` のほうから先にコメントを外して保存してください。
+
 関数の説明文（docstring）はそのままモデルに渡ります。モデルはこの説明を読んで
 「今の質問にはこのツールが要る」と判断するので、説明文を変えるとモデルの
 選び方も変わります。
