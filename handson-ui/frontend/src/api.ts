@@ -3,8 +3,16 @@ import type { AgentContext, AgentEvent, AskTarget, RuntimeInfo } from './types'
 // code-server の /proxy/3000/ 配下で開くので、パスは現在地からの相対で組む
 const base = location.pathname.endsWith('/') ? location.pathname : `${location.pathname}/`
 
+/** handson-agent/ のコードを読み込めなかったとき（受講者の書き間違い）に投げる。
+ *  サーバーは落ちずに 503 と理由（どのファイルの何行目か）を返すので、画面の上に目立つ形で出す。 */
+export class AgentLoadError extends Error {}
+
 export async function fetchContext(): Promise<AgentContext> {
   const res = await fetch(`${base}api/context`)
+  if (res.status === 503) {
+    const body = await res.json().catch(() => null)
+    if (typeof body?.detail === 'string') throw new AgentLoadError(body.detail)
+  }
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
   return res.json()
 }

@@ -13,6 +13,8 @@ code-server の /proxy/3000/ 経由でブラウザから開きます。
 import パスに足して、agent.py と tools.py をそのまま読みます。受講者が tools.py を
 書き換えると uvicorn の --reload が拾ってサーバーを再読み込みするので、画面のツール一覧も
 次に開いたときには変わっています。場所を変えるときは環境変数 HANDSON_AGENT_DIR で指定します。
+受講者の書き間違いで agent.py や tools.py を読み込めないときも、サーバーは落とさずに
+どのファイルの何行目かを画面に出します。
 
 この画面はチャット窓ではありません。モデルに何が渡って、モデルが何を返して、
 どのツールがどんな引数で呼ばれて、何が返ってきたのかを順に積んでいきます。
@@ -25,6 +27,7 @@ import os
 import queue
 import sys
 import threading
+import traceback
 import uuid
 from pathlib import Path
 from typing import Literal
@@ -36,15 +39,54 @@ sys.path.insert(0, str(AGENT_DIR))
 
 import boto3  # noqa: E402
 from botocore.exceptions import ClientError  # noqa: E402
-from fastapi import FastAPI  # noqa: E402
+from fastapi import FastAPI, HTTPException  # noqa: E402
 from fastapi.responses import FileResponse, PlainTextResponse  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 from pydantic import BaseModel  # noqa: E402
 from sse_starlette.sse import EventSourceResponse  # noqa: E402
 from strands.types.exceptions import ModelThrottledException  # noqa: E402
 
-from agent import MODEL_ID, SYSTEM_PROMPT, TOOLS, build_agent  # noqa: E402
 from lib.events import to_ui_event  # noqa: E402
+
+
+def _describe_load_error(e: Exception) -> str:
+    """agent.py や tools.py を読み込めなかった理由を、受講者が直せる形の文にする。
+
+    受講者が保存したファイルの書き間違い（カンマ抜け、関数を足す前に TOOLS だけ
+    書き換えた、など）で起きるので、handson-agent/ の中のどのファイルの何行目かを先に出す。
+    """
+    filename, lineno, code = None, None, None
+    if isinstance(e, SyntaxError) and e.filename:
+        filename, lineno, code = e.filename, e.lineno, e.text
+        detail = f"{type(e).__name__}: {e.msg}"
+    else:
+        for frame in reversed(traceback.extract_tb(e.__traceback__)):
+            if Path(frame.filename).resolve().is_relative_to(AGENT_DIR.resolve()):
+                filename, lineno, code = frame.filename, frame.lineno, frame.line
+                break
+        detail = f"{type(e).__name__}: {e}"
+
+    lines = []
+    if filename:
+        where = Path(filename).resolve().relative_to(AGENT_DIR.resolve())
+        lines.append(f"{AGENT_DIR.name}/{where} の {lineno} 行目でエラーが起きています。")
+    lines.append(detail)
+    if code and code.strip():
+        lines.append(f"    {code.strip()}")
+    lines.append("直して保存してから、ハンズオン UI のページを再読み込みしてください。")
+    return "\n".join(lines)
+
+
+# uvicorn の --reload は、読み込みに失敗したワーカーを落としたまま次の保存を待つ。
+# そのあいだもソケットは開いているので、画面は返事の無いまま読み込み中で止まってしまう（#99）。
+# ここで例外を捕まえてサーバーは動かし続け、API から理由を返す
+try:
+    from agent import MODEL_ID, SYSTEM_PROMPT, TOOLS, build_agent  # noqa: E402
+except Exception as e:  # noqa: BLE001 — SyntaxError も AttributeError も同じように画面へ出す
+    MODEL_ID, SYSTEM_PROMPT, TOOLS, build_agent = "", "", [], None
+    AGENT_LOAD_ERROR: str | None = _describe_load_error(e)
+else:
+    AGENT_LOAD_ERROR = None
 
 # 受講者が次にすることを案内する文言。スロットリング（Bedrock の 429）は
 # 30 人が同時に動かすハンズオンでは起こりうるので、そのまま例外を出すのではなく
@@ -238,6 +280,8 @@ def context():
     ツールの説明文（docstring）がそのままモデルに渡っていることを
     受講者に見てもらうのが狙いです。
     """
+    if AGENT_LOAD_ERROR:
+        raise HTTPException(status_code=503, detail=AGENT_LOAD_ERROR)
     return {
         "model_id": MODEL_ID,
         "system_prompt": SYSTEM_PROMPT,
@@ -259,6 +303,9 @@ def runtime():
 
 
 async def _stream_local(prompt: str):
+    if AGENT_LOAD_ERROR:
+        yield {"data": json.dumps({"type": "error", "message": AGENT_LOAD_ERROR}, ensure_ascii=False)}
+        return
     try:
         agent = build_agent()
         async for event in agent.stream_async(prompt):
