@@ -121,7 +121,8 @@ AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証�
 2026-10-29 の 12 人分の勉強会で、このリポジトリの目的は果たした。30 人分の試し（#6）はやらないことにしてクローズした。
 
 - リポジトリは 2026-10-29 に public に切り替えた（#104）。切り替えのときに secret scanning と push protection をオンにした
-- 手順書サイト（`terraform/guide`）は当面残す。消すときは `scripts/tf.sh guide destroy`
+- 手順書サイト（`terraform/guide`）は、参加者が見返せるように期限を決めずに残す。消すときは `scripts/tf.sh guide destroy` に加えて、`.github/workflows/publish-guide.yml` の自動配信も止める（止めないと、`guide/` を変えたときに配信先が無くて失敗する）
+- 受講者情報ページの表の中身（`participants/data.json`）は destroy で消えていて、今は枠だけのページが残っている。合言葉は 2026-10-29 の参加者が知っているので、次に受講環境を立てるときは先に変える（`sops edit terraform/guide/secrets.enc.json` で `participants_password` を書き換え、`scripts/tf.sh guide apply`）
 
 当日の運営（事前準備、リハーサル）はこのリポジトリの範囲外にした（Issue #7、#8 はクローズ）。
 
