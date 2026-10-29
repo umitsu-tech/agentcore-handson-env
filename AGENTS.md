@@ -4,7 +4,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 
 ## 現在の状況
 
-最終更新: 2026-10-23
+最終更新: 2026-10-29
 
 ### 決まっていること
 
@@ -55,12 +55,12 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - 構成図とドキュメント（README.md、docs/architecture.md、docs/curriculum.md、docs/operations.md、docs/images/ の構成図・流れ図・Terraform の管理体系図）
 - Strands Agent の雛形（`handson-agent/`）。モデル呼び出し、Nova 2 Lite のツール選択、Runtime へのデプロイまで確認済み。ツールはデータ（dict / list）を返す
 - ハンズオン UI（`handson-ui/`、React + Vite + FastAPI）。周ごとの見出しと折りたたみ、入力と出力の 2 色、ツールの結果の JSON 表示、Markdown 記号の抑制、ラベルの補足。手元と Runtime のどちらでも同じ画面で動く。モデルや Runtime の呼び出しが失敗したら、内容を画面に出す（混み合いのときは日本語の案内付き、#75）。受講者の書き間違いで `agent.py` や `tools.py` を読み込めないときも、サーバーは落ちずに、どのファイルの何行目かを画面の一番上に出す（#99）
-- 受講環境のセットアップスクリプト（`scripts/setup-instance.sh`）と、AMI を焼く一括スクリプト（`scripts/build-ami.sh`、Issue #19）。同梱の Copilot 拡張はディレクトリごと消している（Issue #15）。今の AMI は 2026-10-23 に作り直した `ami-07072ebbe06316b68`（agentcore-handson-20261023-1616。#99 の変更が入っている。#101）で、`terraform/handson/secrets.enc.json` の `ami_id` がこれを指す。1 つ前の `ami-0222b0438e7a64a4d`（2026-09-27、#91）とスナップショット `snap-0659d69268fe20213` は、新しい AMI で受講環境が動くと確かめるまで残している
+- 受講環境のセットアップスクリプト（`scripts/setup-instance.sh`）と、AMI を焼く一括スクリプト（`scripts/build-ami.sh`、Issue #19）。同梱の Copilot 拡張はディレクトリごと消している（Issue #15）。今の AMI は 2026-10-23 に作り直した `ami-07072ebbe06316b68`（agentcore-handson-20261023-1616。#99 の変更が入っている。#101）で、`terraform/handson/secrets.enc.json` の `ami_id` がこれを指す。1 つ前の `ami-0222b0438e7a64a4d`（2026-09-27、#91）とスナップショット `snap-0659d69268fe20213` は、新しい AMI で 12 人分が動いたのを確かめて 2026-10-29 に消した
 - 受講環境の Terraform（`terraform/handson/`）。AMI 前提で、`ami_id` を必須で受け取り、user_data は受講者固有の値を差し込むだけ。Cloudflare のワイルドカード CNAME も一緒に作る（Issue #30）。state は S3、ロックは `use_lockfile`（Issue #40）
-- 後片付けの仕組み（Issue #17）。棚卸しスクリプト `scripts/cleanup-participant-resources.sh`（一覧モードは確認済み、`--delete` は未確認）と、`handson_end_time` で発火する Deny・EC2 停止・ALB 削除。EC2 停止と ALB 削除は実機で発火を確認した（2026-09-17。下の記録参照）。Deny は未確認
+- 後片付けの仕組み（Issue #17）。棚卸しスクリプト `scripts/cleanup-participant-resources.sh`（一覧モードと `--delete` のどちらも実機で確認済み。`--delete` は 2026-10-29）と、`handson_end_time` で発火する Deny・EC2 停止・ALB 削除。EC2 停止と ALB 削除は 2026-09-17、Deny は 2026-10-15 に実機で確かめた（下の記録参照）
 - 受講者向けの手順書（`guide/`、Issue #48。#51 で Astro Starlight に作り直し、mcks.log と同じ紙色のパレット、セクションごとのページ + サイドメニュー + 図 4 枚 + 画像の拡大表示）。受講者情報ページ `participants.html` と `/participants*` の Basic 認証は #58 で追加し、apply 済み（2026-09-07。認証なしは 401、他のページは今までどおり）。パスワードの列の見切れを直し、コピーボタンを付けた（#65。2026-09-23 に配信済み）。表の中身は今は置いていない（受講環境を立てると置かれる）。S3 非公開 + CloudFront OAC で配信し、`https://guide.handson.<base_domain>/` で HTTPS 200、HTTP は 301、S3 直アクセスは 403 まで確認済み。証明書は us-east-1 でホスト名単体を発行し、検証用と本体の CNAME は Terraform が Cloudflare に入れる。中身は GitHub Actions（OIDC、Issue #52）か `guide/publish.sh` で同期する。環境は本番まで立てたままにする
 - 設定ファイルの暗号化（SOPS、Issue #79）と、復号しながら terraform を動かす `scripts/tf.sh`。秘密鍵（`~/.config/sops/age/keys.txt`）は 2026-10-13 にマシンの外へ控え、公開鍵が `.sops.yaml` と一致することを確かめた。平文の設定ファイルと古いローカルの state は 2026-09-23 に手元から消した。暗号化した設定だけで `scripts/tf.sh guide plan` が No changes、`scripts/tf.sh handson plan` が 34 件の作成予定（2 人分、終了時刻なし）になることを確認済み
-- 受講者の EC2 全台に SSM で同じコマンドを一斉に流すスクリプト `scripts/run-on-participants.sh`（#93）。`deploy`（全台で同時に `agentcore deploy`）と `model`（全台で Nova 2 Lite を 1 回呼び、Deny されるかも見る）の 2 つ。偽の aws コマンドで流れを確かめ、モデル呼び出しのコマンドは手元から Bedrock に通した。実機の EC2 ではまだ流していない
+- 受講者の EC2 全台に SSM で同じコマンドを一斉に流すスクリプト `scripts/run-on-participants.sh`（#93）。`deploy`（全台で同時に `agentcore deploy`）と `model`（全台で Nova 2 Lite を 1 回呼び、Deny されるかも見る）の 2 つ。偽の aws コマンドで流れを確かめ、モデル呼び出しのコマンドは手元から Bedrock に通した。`model` は 2026-10-29 に実機の 12 台で流した（12/12 allowed）。`deploy` は実機ではまだ流していない
 - コストの試算。30 人 5 時間で約 3.0 USD（t4g.small の無料トライアル適用時。無ければ約 6.2 USD。パブリック IPv4 の料金を #82 で足した。内訳は docs/operations.md）。東京で使えるモデルの単価比較は Nova 2 Lite 据え置き
 
 通し確認の記録（2026-09-05〜06）。
@@ -87,7 +87,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - 10/15 に止まった user01 を一度だけ起こして `scripts/run-on-participants.sh model --only user01` を流し、`denied`（AccessDeniedException、explicit deny）になった。終了時刻で起きる 3 つ（EC2 停止・ALB 削除・Bedrock の Deny）を、すべて実機で確かめたことになる。確認のあと EC2 は止め直した
 - `scripts/tf.sh handson destroy` で 28 件を消した（ALB とリスナー、スケジュールの 6 件はもう無かった）。受講者情報の表（`participants/data.json`）も一緒に消えた。EC2 は terminated、孤立した EBS は無し。手順書サイトは HTTPS 200 のまま
 - 古い AMI `ami-0e6e145f65e038cd9` とスナップショット `snap-0ea4ae3828f31b220` を消した。残っている AMI は `ami-0222b0438e7a64a4d` だけ
-- 棚卸しスクリプトの `--delete` は、Claude Code の auto モードの判定で止められて流せていない（30 人分の試しで確かめる）。代わりに、作り直すときに再利用されるものは残し、重複するものだけを手で消した。ロググループ `/aws/bedrock-agentcore/runtimes/handsonuser01_agent-k290Ra24lZ-DEFAULT` は Runtime の ID が名前に入っていて再利用されないので消した（保持期間は無期限だった）。スタック `AgentCore-handsonuser01-default`（Runtime は当日 15:24 JST に消えていて中身は CDK のメタデータだけ）は名前が受講者ごとに固定で、次の `agentcore deploy` でそのまま更新されるので残した。`CDKToolkit`（cdk bootstrap）も残した
+- 棚卸しスクリプトの `--delete` は、このときは Claude Code の auto モードの判定で止められて流せなかった（2026-10-29 に流せた。下の記録参照）。代わりに、作り直すときに再利用されるものは残し、重複するものだけを手で消した。ロググループ `/aws/bedrock-agentcore/runtimes/handsonuser01_agent-k290Ra24lZ-DEFAULT` は Runtime の ID が名前に入っていて再利用されないので消した（保持期間は無期限だった）。スタック `AgentCore-handsonuser01-default`（Runtime は当日 15:24 JST に消えていて中身は CDK のメタデータだけ）は名前が受講者ごとに固定で、次の `agentcore deploy` でそのまま更新されるので残した。`CDKToolkit`（cdk bootstrap）も残した
 - 暗号化した設定から `handson_end_time` を外した（過ぎた時刻のまま apply すると Deny がすぐ効くため）。`participants` は user01 のまま
 
 2026-10-17 の稼働（user01 の 1 台、終了時刻 12:00 JST）。
@@ -96,6 +96,17 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - ALB のターゲットは healthy、code-server は `/login` への 302、UI（/proxy/3000/）も 302、`participants.html` は認証なしで 401、手順書は 200。`scripts/run-on-participants.sh model --only user01` は `allowed`
 - 12:00 JST の終了時刻で EC2 は 12:00:36 に停止し、ALB は削除され、user01 の URL はつながらなくなった（Bedrock の Deny は 10/15 に確認済みなので今回は EC2 を起こして確かめていない）
 - リュウキの了承で 2026-10-17 14:30 ごろに destroy した（28 件。ALB・リスナー・スケジュールは終了時刻の仕組みで先に消えていた）。state は空、EC2 は terminated、孤立した EBS と VPC は無し、手順書サイトは 200。暗号化した設定から `handson_end_time` を外した
+
+2026-10-29 の勉強会（12 台、17:00〜21:15 JST。#103）。
+
+- 12 人分（user01〜user12、AMI `ami-07072ebbe06316b68`）を `handson_end_time = 2026-10-29T21:15:00+09:00` で 16:59 JST に apply した（89 件、3 分 17 秒）。ターゲットグループは 12/12 healthy、`scripts/run-on-participants.sh model` は 12/12 allowed（全体 6 秒）。code-server で Ctrl+/ が効くことと、未保存のタブに色の線が出ることも確かめた（#99）
+- apply の前に、10/17 の稼働で残っていた user01 の deploy の分（スタック・Runtime・ロール・ロググループ）を `scripts/cleanup-participant-resources.sh --delete` で消した（40 秒）。10/17 は destroy だけで棚卸しを流しておらず、今回の user01 の deploy と同じ名前でぶつかるところだった。destroy の前に必ず棚卸しを流す
+- 当日は 8 人が `agentcore deploy` し、7 人が Runtime を呼んだ（合計 13 回）。Bedrock の呼び出しは 140 回（入力 16.3 万・出力 5.9 千トークン）
+- 21:15 JST の終了時刻で EC2 12 台は 21:15:21 に停止し、ALB とスケジュール 2 つは消えた。Bedrock の Deny は 10/15 に確認済みなので、今回は EC2 を起こして確かめていない
+- 23:25 JST に棚卸しの `--delete` でスタック 8 個とロググループ 8 個を消した（1 分。残っていた Runtime 3 個とその実行ロールはスタックと一緒に消えた）。続けて `scripts/tf.sh handson destroy` で 72 件を消した（38 秒。apply の 89 件のうち ALB・リスナー・ルール・スケジュールの 17 件は先に消えていた）。EC2 は terminated、VPC は無し。棚卸しの一覧モードで 4 種類とも「なし」を確かめた
+- 1 つ前の AMI `ami-0222b0438e7a64a4d` とスナップショット `snap-0659d69268fe20213` を消した。残っている AMI は `ami-07072ebbe06316b68` だけ
+- 費用は CloudWatch の使用量に docs/operations.md の単価を掛けた見積もりで、t4g.small の無料トライアルが無い前提で約 1.8 USD。内訳は EC2 1.09（50.6 時間）、EBS 0.15、ALB 約 0.12、パブリック IPv4 0.30、Runtime 0.03、Bedrock 0.08 USD
+- 暗号化した設定から `handson_end_time` を外した。`participants` は user01〜user12 のまま
 
 30 人分に広げる前の事前調査の記録（2026-09-23。詳細は Issue #6 のコメント）。
 
@@ -107,9 +118,8 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 
 AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証情報が要るので、リュウキがブラウザで認証できるタイミングで進める。
 
-1. 新しい AMI `ami-07072ebbe06316b68` で受講環境を立てたときに（次の 30 人分の試しでもよい）、code-server で Ctrl+/ が効くことと、未保存のタブに色の線が出ることを確かめる（#99 で入れた設定）。動いたら 1 つ前の AMI `ami-0222b0438e7a64a4d` とスナップショット `snap-0659d69268fe20213` を消す
-2. 30 人分を試しに apply する（#6）。お金がかかる時間を約 25 分に抑える（終了時刻を apply の 25 分後にし、確認と片付けは EC2 が止まったあとにやる。費用の目安は 0.1〜0.5 USD）。`participants` を user01〜user30 にし、主に 30 人がほぼ同時に `agentcore deploy` したときの待ち時間（CloudFormation の API にはアカウント単位の呼び出し上限がある）を確かめる。一斉の deploy は `scripts/run-on-participants.sh` で流す（手順は docs/operations.md の「人数ぶんで試す」、段取りは #6 のコメント）。お試しで確かめられなかった棚卸しスクリプトの `--delete` も、ここで確かめる
-3. 本番の前に、受講者情報ページの合言葉を新しい値に変える（`sops edit terraform/guide/secrets.enc.json` で `participants_password` を書き換え、`scripts/tf.sh guide apply`）
+1. 30 人分を試しに apply する（#6）。お金がかかる時間を約 25 分に抑える（終了時刻を apply の 25 分後にし、確認と片付けは EC2 が止まったあとにやる。費用の目安は 0.1〜0.5 USD）。`participants` を user01〜user30 にし、主に 30 人がほぼ同時に `agentcore deploy` したときの待ち時間（CloudFormation の API にはアカウント単位の呼び出し上限がある）を確かめる。一斉の deploy は `scripts/run-on-participants.sh` で流す（手順は docs/operations.md の「人数ぶんで試す」、段取りは #6 のコメント）
+2. 本番の前に、受講者情報ページの合言葉を新しい値に変える（`sops edit terraform/guide/secrets.enc.json` で `participants_password` を書き換え、`scripts/tf.sh guide apply`）
 
 当日の運営（事前準備、リハーサル）はこのリポジトリの範囲外にした（Issue #7、#8 はクローズ）。
 
