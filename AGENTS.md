@@ -120,8 +120,8 @@ AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証�
 
 2026-10-29 の 12 人分の勉強会で、このリポジトリの目的は果たした。30 人分の試し（#6）はやらないことにしてクローズした。
 
-1. リポジトリを public に切り替える（#104）
-2. 手順書サイト（`terraform/guide`）は当面残す。消すときは `scripts/tf.sh guide destroy`
+- リポジトリは 2026-10-29 に public に切り替えた（#104）。切り替えのときに secret scanning と push protection をオンにした
+- 手順書サイト（`terraform/guide`）は当面残す。消すときは `scripts/tf.sh guide destroy`
 
 当日の運営（事前準備、リハーサル）はこのリポジトリの範囲外にした（Issue #7、#8 はクローズ）。
 
@@ -134,7 +134,7 @@ AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証�
 
 - 作業の区切りごとに、この「現在の状況」を更新してコミットする。別の場所でセッションを再開しても状況が分かるようにするため
 - `handson-agent/`、`handson-ui/`、`agentcore/`、`scripts/setup-instance.sh` を変えたら、受講環境を立てる前に AMI を作り直す（`scripts/build-ami.sh`）。受講者の EC2 には AMI を作った時点の中身が入り、user_data では配り直さないため
-- 将来的にパブリックリポジトリにする想定で書く。個人名、社名、内部だけで通じる文脈は書かない
+- パブリックリポジトリなので、個人名、社名、内部だけで通じる文脈は書かない
 - ドメイン名などの環境固有の値はドキュメントに直接書かず、`example.com` のような例示に置き換える。実際の値は Terraform の変数に持たせる
 - コミットメッセージは 1 行の日本語で簡潔に
 
