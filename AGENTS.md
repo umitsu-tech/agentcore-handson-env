@@ -41,7 +41,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - Terraform の state は S3（build-ami.sh の資材バケットの `terraform-state/`）に置き、ロックは Terraform 1.10 以降の `use_lockfile` で取る。DynamoDB は使わない。バケット名は SOPS で暗号化した `terraform/secrets.enc.env` で渡し、ラッパー `scripts/tf.sh` が `init` のときに `-backend-config` として渡す（Issue #40、#79）
 - 受講者向けの手順書は Astro Starlight の静的サイト（`guide/`。本文は `guide/src/content/docs/` の MDX。原稿は curriculum から変換せず別で書く）を S3 非公開 + CloudFront OAC で配信する。S3 + OAC はフォルダ形式の URL で index.html を補わないので `build.format: 'file'` で `step1.html` のように出力し、本文中のリンクも `.html` 付きで書く。テーマはプロジェクター向けに常にライト固定（ThemeProvider / ThemeSelect を差し替え）。図は docs/images の drawio と同じ流儀で描いて `guide/public/images/` にコピーする（Issue #51）。Terraform のルートは寿命が違うので `terraform/guide/` に分け（受講環境は `terraform/handson/`）、state は同じバケットの別キー。中身の更新は `guide/publish.sh`。独自ドメインは `guide_hostname` を指定したときだけ（証明書は us-east-1 でホスト名単体を発行）（Issue #48）
 - 手順書の更新は GitHub Actions で自動配信する（`guide/**` が main に入ったら `npm ci && npm run build` して `guide/dist` を s3 sync + キャッシュ削除。`participants/*` は sync の対象外にして消さない）。認証は OIDC で、ロールは `terraform/guide` が作り、このリポジトリの main からだけ assume できる。sub は ID 無しと ID 付き（immutable subject claim）の両方を許可する。バケット名などは GitHub の Variables に置く（Issue #52）
-- 受講者情報（userNN ごとの URL とパスワードの表）は手順書サイトの `participants.html` に出す。中身の `participants/data.json` は git に入れず、`terraform/handson` が S3 のオブジェクトとして置く（`participants.tf`。`secrets.enc.json` の `guide_bucket_name` に手順書のバケット名を書いたときだけ）。apply で置かれ destroy で消えるので、受講環境と表の寿命が揃う。以前はスクリプト（`publish-participants.sh`）で置いていたが、destroy のあとに消し忘れて古い表が残ったので改めた（Issue #76）。`/participants*` だけ CloudFront Function（viewer-request）の Basic 認証で守り、ユーザー名と合言葉は `terraform/guide` の変数（SOPS で暗号化した `secrets.enc.json`）で渡す。合言葉 1 つで全員分が見える形はリュウキ判断で許容（当日その場で口頭で伝える）（Issue #58）
+- 受講者情報（userNN ごとの URL とパスワードの表）は手順書サイトの `participants.html` に出す。中身の `participants/data.json` は git に入れず、`terraform/handson` が S3 のオブジェクトとして置く（`participants.tf`。`secrets.enc.json` の `guide_bucket_name` に手順書のバケット名を書いたときだけ）。apply で置かれ destroy で消えるので、受講環境と表の寿命が揃う。以前はスクリプト（`publish-participants.sh`）で置いていたが、destroy のあとに消し忘れて古い表が残ったので改めた（Issue #76）。`/participants*` だけ CloudFront Function（viewer-request）の Basic 認証で守り、ユーザー名と合言葉は `terraform/guide` の変数（SOPS で暗号化した `secrets.enc.json`）で渡す。合言葉 1 つで全員分が見える形は主催者の判断で許容（当日その場で口頭で伝える）（Issue #58）
 - Cloudflare の `*.<base_domain>` の CNAME は Terraform（cloudflare プロバイダー v5 の `cloudflare_dns_record`）で管理し、ALB の作り直しに自動で追随させる。API トークンは環境変数 `CLOUDFLARE_API_TOKEN` で渡し、ゾーン ID だけ tfvars に書く。実体は SOPS で暗号化した `terraform/secrets.enc.env`（トークン）と `secrets.enc.json`（ゾーン ID）で、`scripts/tf.sh` が実行中だけ渡す（Issue #79）。証明書の検証用 CNAME は手で入れたまま管理外にする（Issue #30）
 - モデルや Runtime の呼び出しが失敗したら、UI のサーバーが例外を捕まえて画面に内容を出す。手元実行でも Runtime 経由でも同じ。混み合い（スロットリング）のときは「少し待ってから、もう一度送ってください」を先に出す。Bedrock の上限は 30 人で足りるが、AgentCore の新しいセッションの作成は 1 秒あたり 25 までなので、ステップ 4 は講師が一斉に送らせず、準備できた人から送ってもらう（Issue #75）
 - git 管理外だった設定ファイル（ドメイン、証明書 ARN、Cloudflare の API トークンなど）は SOPS で暗号化してリポジトリに入れる。鍵は age。AWS KMS は鍵 1 本ごとに月額がかかり、IAM Identity Center の一時的な認証情報で SOPS がうまく動かない報告もあるため使わない。SOPS が HCL を扱えないので tfvars は JSON にして暗号化する（`terraform/handson/secrets.enc.json` など）。Terraform には `sops exec-env` / `sops exec-file` で渡し、復号した値が state に残る SOPS の Terraform プロバイダーは使わない。手順が長くなるのでラッパー `scripts/tf.sh` を用意した（Issue #79）
@@ -92,10 +92,10 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 
 2026-10-17 の稼働（user01 の 1 台、終了時刻 12:00 JST）。
 
-- リュウキの依頼で、前回と同じ形（user01 の 1 台、AMI `ami-0222b0438e7a64a4d`）で 2026-10-17 2:19 JST に apply した（34 件）。`handson_end_time` は `2026-10-17T12:00:00+09:00`
+- 前回と同じ形（user01 の 1 台、AMI `ami-0222b0438e7a64a4d`）で 2026-10-17 2:19 JST に apply した（34 件）。`handson_end_time` は `2026-10-17T12:00:00+09:00`
 - ALB のターゲットは healthy、code-server は `/login` への 302、UI（/proxy/3000/）も 302、`participants.html` は認証なしで 401、手順書は 200。`scripts/run-on-participants.sh model --only user01` は `allowed`
 - 12:00 JST の終了時刻で EC2 は 12:00:36 に停止し、ALB は削除され、user01 の URL はつながらなくなった（Bedrock の Deny は 10/15 に確認済みなので今回は EC2 を起こして確かめていない）
-- リュウキの了承で 2026-10-17 14:30 ごろに destroy した（28 件。ALB・リスナー・スケジュールは終了時刻の仕組みで先に消えていた）。state は空、EC2 は terminated、孤立した EBS と VPC は無し、手順書サイトは 200。暗号化した設定から `handson_end_time` を外した
+- 2026-10-17 14:30 ごろに destroy した（28 件。ALB・リスナー・スケジュールは終了時刻の仕組みで先に消えていた）。state は空、EC2 は terminated、孤立した EBS と VPC は無し、手順書サイトは 200。暗号化した設定から `handson_end_time` を外した
 
 2026-10-29 の勉強会（12 台、17:00〜21:15 JST。#103）。
 
@@ -116,7 +116,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 
 ### 次の一歩
 
-AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証情報が要るので、リュウキがブラウザで認証できるタイミングで進める。
+AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証情報が要るので、主催者がブラウザで認証できるタイミングで進める。
 
 1. 30 人分を試しに apply する（#6）。お金がかかる時間を約 25 分に抑える（終了時刻を apply の 25 分後にし、確認と片付けは EC2 が止まったあとにやる。費用の目安は 0.1〜0.5 USD）。`participants` を user01〜user30 にし、主に 30 人がほぼ同時に `agentcore deploy` したときの待ち時間（CloudFormation の API にはアカウント単位の呼び出し上限がある）を確かめる。一斉の deploy は `scripts/run-on-participants.sh` で流す（手順は docs/operations.md の「人数ぶんで試す」、段取りは #6 のコメント）
 2. 本番の前に、受講者情報ページの合言葉を新しい値に変える（`sops edit terraform/guide/secrets.enc.json` で `participants_password` を書き換え、`scripts/tf.sh guide apply`）
