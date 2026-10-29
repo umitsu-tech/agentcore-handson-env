@@ -4,7 +4,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 
 ## 現在の状況
 
-最終更新: 2026-10-17
+最終更新: 2026-10-23
 
 ### 決まっていること
 
@@ -50,12 +50,12 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 
 ### できているもの
 
-すべて main にマージ済み（2026-09-27 時点）。
+すべて main にマージ済み（2026-10-23 時点）。
 
 - 構成図とドキュメント（README.md、docs/architecture.md、docs/curriculum.md、docs/operations.md、docs/images/ の構成図・流れ図・Terraform の管理体系図）
 - Strands Agent の雛形（`handson-agent/`）。モデル呼び出し、Nova 2 Lite のツール選択、Runtime へのデプロイまで確認済み。ツールはデータ（dict / list）を返す
-- ハンズオン UI（`handson-ui/`、React + Vite + FastAPI）。周ごとの見出しと折りたたみ、入力と出力の 2 色、ツールの結果の JSON 表示、Markdown 記号の抑制、ラベルの補足。手元と Runtime のどちらでも同じ画面で動く。モデルや Runtime の呼び出しが失敗したら、内容を画面に出す（混み合いのときは日本語の案内付き、#75）
-- 受講環境のセットアップスクリプト（`scripts/setup-instance.sh`）と、AMI を焼く一括スクリプト（`scripts/build-ami.sh`、Issue #19）。同梱の Copilot 拡張はディレクトリごと消している（Issue #15）。今の AMI は 2026-09-27 に作り直した `ami-0222b0438e7a64a4d`（agentcore-handson-20260927-2049。#46、#60、#75 の変更が入っている。#91）で、`terraform/handson/secrets.enc.json` の `ami_id` がこれを指す
+- ハンズオン UI（`handson-ui/`、React + Vite + FastAPI）。周ごとの見出しと折りたたみ、入力と出力の 2 色、ツールの結果の JSON 表示、Markdown 記号の抑制、ラベルの補足。手元と Runtime のどちらでも同じ画面で動く。モデルや Runtime の呼び出しが失敗したら、内容を画面に出す（混み合いのときは日本語の案内付き、#75）。受講者の書き間違いで `agent.py` や `tools.py` を読み込めないときも、サーバーは落ちずに、どのファイルの何行目かを画面の一番上に出す（#99）
+- 受講環境のセットアップスクリプト（`scripts/setup-instance.sh`）と、AMI を焼く一括スクリプト（`scripts/build-ami.sh`、Issue #19）。同梱の Copilot 拡張はディレクトリごと消している（Issue #15）。今の AMI は 2026-10-23 に作り直した `ami-07072ebbe06316b68`（agentcore-handson-20261023-1616。#99 の変更が入っている。#101）で、`terraform/handson/secrets.enc.json` の `ami_id` がこれを指す。1 つ前の `ami-0222b0438e7a64a4d`（2026-09-27、#91）とスナップショット `snap-0659d69268fe20213` は、新しい AMI で受講環境が動くと確かめるまで残している
 - 受講環境の Terraform（`terraform/handson/`）。AMI 前提で、`ami_id` を必須で受け取り、user_data は受講者固有の値を差し込むだけ。Cloudflare のワイルドカード CNAME も一緒に作る（Issue #30）。state は S3、ロックは `use_lockfile`（Issue #40）
 - 後片付けの仕組み（Issue #17）。棚卸しスクリプト `scripts/cleanup-participant-resources.sh`（一覧モードは確認済み、`--delete` は未確認）と、`handson_end_time` で発火する Deny・EC2 停止・ALB 削除。EC2 停止と ALB 削除は実機で発火を確認した（2026-09-17。下の記録参照）。Deny は未確認
 - 受講者向けの手順書（`guide/`、Issue #48。#51 で Astro Starlight に作り直し、mcks.log と同じ紙色のパレット、セクションごとのページ + サイドメニュー + 図 4 枚 + 画像の拡大表示）。受講者情報ページ `participants.html` と `/participants*` の Basic 認証は #58 で追加し、apply 済み（2026-09-07。認証なしは 401、他のページは今までどおり）。パスワードの列の見切れを直し、コピーボタンを付けた（#65。2026-09-23 に配信済み）。表の中身は今は置いていない（受講環境を立てると置かれる）。S3 非公開 + CloudFront OAC で配信し、`https://guide.handson.<base_domain>/` で HTTPS 200、HTTP は 301、S3 直アクセスは 403 まで確認済み。証明書は us-east-1 でホスト名単体を発行し、検証用と本体の CNAME は Terraform が Cloudflare に入れる。中身は GitHub Actions（OIDC、Issue #52）か `guide/publish.sh` で同期する。環境は本番まで立てたままにする
@@ -107,7 +107,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 
 AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証情報が要るので、リュウキがブラウザで認証できるタイミングで進める。
 
-1. 協力者とのお試しで受けたフィードバックに対応する（#99。中身はこれから Issue に足す）
+1. 新しい AMI `ami-07072ebbe06316b68` で受講環境を立てたときに（次の 30 人分の試しでもよい）、code-server で Ctrl+/ が効くことと、未保存のタブに色の線が出ることを確かめる（#99 で入れた設定）。動いたら 1 つ前の AMI `ami-0222b0438e7a64a4d` とスナップショット `snap-0659d69268fe20213` を消す
 2. 30 人分を試しに apply する（#6）。お金がかかる時間を約 25 分に抑える（終了時刻を apply の 25 分後にし、確認と片付けは EC2 が止まったあとにやる。費用の目安は 0.1〜0.5 USD）。`participants` を user01〜user30 にし、主に 30 人がほぼ同時に `agentcore deploy` したときの待ち時間（CloudFormation の API にはアカウント単位の呼び出し上限がある）を確かめる。一斉の deploy は `scripts/run-on-participants.sh` で流す（手順は docs/operations.md の「人数ぶんで試す」、段取りは #6 のコメント）。お試しで確かめられなかった棚卸しスクリプトの `--delete` も、ここで確かめる
 3. 本番の前に、受講者情報ページの合言葉を新しい値に変える（`sops edit terraform/guide/secrets.enc.json` で `participants_password` を書き換え、`scripts/tf.sh guide apply`）
 
