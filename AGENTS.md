@@ -55,7 +55,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - 構成図とドキュメント（README.md、docs/architecture.md、docs/curriculum.md、docs/operations.md、docs/images/ の構成図・流れ図・Terraform の管理体系図）
 - Strands Agent の雛形（`handson-agent/`）。モデル呼び出し、Nova 2 Lite のツール選択、Runtime へのデプロイまで確認済み。ツールはデータ（dict / list）を返す
 - ハンズオン UI（`handson-ui/`、React + Vite + FastAPI）。周ごとの見出しと折りたたみ、入力と出力の 2 色、ツールの結果の JSON 表示、Markdown 記号の抑制、ラベルの補足。手元と Runtime のどちらでも同じ画面で動く。モデルや Runtime の呼び出しが失敗したら、内容を画面に出す（混み合いのときは日本語の案内付き、#75）。受講者の書き間違いで `agent.py` や `tools.py` を読み込めないときも、サーバーは落ちずに、どのファイルの何行目かを画面の一番上に出す（#99）
-- 受講環境のセットアップスクリプト（`scripts/setup-instance.sh`）と、AMI を焼く一括スクリプト（`scripts/build-ami.sh`、Issue #19）。同梱の Copilot 拡張はディレクトリごと消している（Issue #15）。今の AMI は 2026-10-23 に作り直した `ami-07072ebbe06316b68`（agentcore-handson-20261023-1616。#99 の変更が入っている。#101）で、`terraform/handson/secrets.enc.json` の `ami_id` がこれを指す。1 つ前の `ami-0222b0438e7a64a4d`（2026-09-27、#91）とスナップショット `snap-0659d69268fe20213` は、新しい AMI で 12 人分が動いたのを確かめて 2026-10-29 に消した
+- 受講環境のセットアップスクリプト（`scripts/setup-instance.sh`）と、AMI を焼く一括スクリプト（`scripts/build-ami.sh`、Issue #19）。同梱の Copilot 拡張はディレクトリごと消している（Issue #15）。最後の AMI は 2026-10-23 に作り直した `ami-07072ebbe06316b68`（agentcore-handson-20261023-1616。#99 の変更が入っている。#101）で、2026-10-29 の開催のあとにスナップショット `snap-0ff2212a1e10bfff9` ごと消した。`terraform/handson/secrets.enc.json` の `ami_id` はこの消した AMI を指したままなので、次に受講環境を立てるときは `scripts/build-ami.sh` で焼き直して `ami_id` を差し替える。1 つ前の `ami-0222b0438e7a64a4d`（2026-09-27、#91）とスナップショット `snap-0659d69268fe20213` は、新しい AMI で 12 人分が動いたのを確かめて 2026-10-29 に消した
 - 受講環境の Terraform（`terraform/handson/`）。AMI 前提で、`ami_id` を必須で受け取り、user_data は受講者固有の値を差し込むだけ。Cloudflare のワイルドカード CNAME も一緒に作る（Issue #30）。state は S3、ロックは `use_lockfile`（Issue #40）
 - 後片付けの仕組み（Issue #17）。棚卸しスクリプト `scripts/cleanup-participant-resources.sh`（一覧モードと `--delete` のどちらも実機で確認済み。`--delete` は 2026-10-29）と、`handson_end_time` で発火する Deny・EC2 停止・ALB 削除。EC2 停止と ALB 削除は 2026-09-17、Deny は 2026-10-15 に実機で確かめた（下の記録参照）
 - 受講者向けの手順書（`guide/`、Issue #48。#51 で Astro Starlight に作り直し、mcks.log と同じ紙色のパレット、セクションごとのページ + サイドメニュー + 図 4 枚 + 画像の拡大表示）。受講者情報ページ `participants.html` と `/participants*` の Basic 認証は #58 で追加し、apply 済み（2026-09-07。認証なしは 401、他のページは今までどおり）。パスワードの列の見切れを直し、コピーボタンを付けた（#65。2026-09-23 に配信済み）。表の中身は今は置いていない（受講環境を立てると置かれる）。S3 非公開 + CloudFront OAC で配信し、`https://guide.handson.<base_domain>/` で HTTPS 200、HTTP は 301、S3 直アクセスは 403 まで確認済み。証明書は us-east-1 でホスト名単体を発行し、検証用と本体の CNAME は Terraform が Cloudflare に入れる。中身は GitHub Actions（OIDC、Issue #52）か `guide/publish.sh` で同期する。環境は本番まで立てたままにする
@@ -104,7 +104,7 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 - 当日は 8 人が `agentcore deploy` し、7 人が Runtime を呼んだ（合計 13 回）。Bedrock の呼び出しは 140 回（入力 16.3 万・出力 5.9 千トークン）
 - 21:15 JST の終了時刻で EC2 12 台は 21:15:21 に停止し、ALB とスケジュール 2 つは消えた。Bedrock の Deny は 10/15 に確認済みなので、今回は EC2 を起こして確かめていない
 - 23:25 JST に棚卸しの `--delete` でスタック 8 個とロググループ 8 個を消した（1 分。残っていた Runtime 3 個とその実行ロールはスタックと一緒に消えた）。続けて `scripts/tf.sh handson destroy` で 72 件を消した（38 秒。apply の 89 件のうち ALB・リスナー・ルール・スケジュールの 17 件は先に消えていた）。EC2 は terminated、VPC は無し。棚卸しの一覧モードで 4 種類とも「なし」を確かめた
-- 1 つ前の AMI `ami-0222b0438e7a64a4d` とスナップショット `snap-0659d69268fe20213` を消した。残っている AMI は `ami-07072ebbe06316b68` だけ
+- 1 つ前の AMI `ami-0222b0438e7a64a4d` とスナップショット `snap-0659d69268fe20213` を消した。続けて、30 人分の試しをやめてこの開催で一区切りにしたので、`ami-07072ebbe06316b68` とスナップショット `snap-0ff2212a1e10bfff9` も消した。手順書サイトは残している
 - 費用は CloudWatch の使用量に docs/operations.md の単価を掛けた見積もりで、t4g.small の無料トライアルが無い前提で約 1.8 USD。内訳は EC2 1.09（50.6 時間）、EBS 0.15、ALB 約 0.12、パブリック IPv4 0.30、Runtime 0.03、Bedrock 0.08 USD
 - 暗号化した設定から `handson_end_time` を外した。`participants` は user01〜user12 のまま
 
@@ -121,7 +121,7 @@ AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証�
 2026-10-29 の 12 人分の勉強会で、このリポジトリの目的は果たした。30 人分の試し（#6）はやらないことにしてクローズした。
 
 1. リポジトリを public に切り替える（#104）
-2. AWS に残っているもの（手順書サイトの `terraform/guide`、AMI `ami-07072ebbe06316b68` とそのスナップショット）を残すか消すかを決める
+2. 手順書サイト（`terraform/guide`）は当面残す。消すときは `scripts/tf.sh guide destroy`
 
 当日の運営（事前準備、リハーサル）はこのリポジトリの範囲外にした（Issue #7、#8 はクローズ）。
 
