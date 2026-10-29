@@ -118,16 +118,17 @@ Amazon Bedrock AgentCore のハンズオン環境を Terraform で構築する�
 
 AWS の変更操作（AMI 作成、apply、destroy）は `aws login` の認証情報が要るので、主催者がブラウザで認証できるタイミングで進める。
 
-1. 30 人分を試しに apply する（#6）。お金がかかる時間を約 25 分に抑える（終了時刻を apply の 25 分後にし、確認と片付けは EC2 が止まったあとにやる。費用の目安は 0.1〜0.5 USD）。`participants` を user01〜user30 にし、主に 30 人がほぼ同時に `agentcore deploy` したときの待ち時間（CloudFormation の API にはアカウント単位の呼び出し上限がある）を確かめる。一斉の deploy は `scripts/run-on-participants.sh` で流す（手順は docs/operations.md の「人数ぶんで試す」、段取りは #6 のコメント）
-2. 本番の前に、受講者情報ページの合言葉を新しい値に変える（`sops edit terraform/guide/secrets.enc.json` で `participants_password` を書き換え、`scripts/tf.sh guide apply`）
+2026-10-29 の 12 人分の勉強会で、このリポジトリの目的は果たした。30 人分の試し（#6）はやらないことにしてクローズした。
+
+1. リポジトリを public に切り替える（#104）
+2. AWS に残っているもの（手順書サイトの `terraform/guide`、AMI `ami-07072ebbe06316b68` とそのスナップショット）を残すか消すかを決める
 
 当日の運営（事前準備、リハーサル）はこのリポジトリの範囲外にした（Issue #7、#8 はクローズ）。
 
 ### 未確定
 
 - `aws login` の認証情報が 15 分ほどで更新に失敗して切れる（AWS CLI 側の既知の不具合と同じ症状）。`terraform apply` や `build-ami.sh` のような長い操作は直前にログインし直す。認証方式そのものの見直しはこのプロジェクトの外で扱う
-- 本番でモデル制限をどうかけるか（検証の段階ではかけない方針）
-- UI のサーバーを本番でも `--reload` 付きで動かすか。1 人 1 台なので負荷は問題ないが、保存すると再起動する挙動を受講者に説明する必要がある
+- モデル制限と UI のサーバーの `--reload` は、検証の段階の設定（制限なし、`--reload` 付き）を変えずに 2026-10-29 に開催した。次に開くことがあれば改めて判断する
 
 ## 作業のルール
 
