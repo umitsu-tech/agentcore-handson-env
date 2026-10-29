@@ -27,7 +27,7 @@ Amazon Bedrock AgentCore のハンズオンを開く側のための環境です�
 ```
 .
 ├── README.md                     このファイル
-├── CLAUDE.md                     作業ルールと現在の状況
+├── AGENTS.md                     作業ルールと現在の状況（CLAUDE.md はこれを読み込むだけ）
 ├── docs/
 │   ├── curriculum.md             ハンズオンの中身と組み立て
 │   ├── architecture.md           構成の詳細と、そう決めた理由
@@ -37,7 +37,7 @@ Amazon Bedrock AgentCore のハンズオンを開く側のための環境です�
 │   ├── handson/                  受講環境（VPC、ALB、EC2、Cloudflare の CNAME、自動停止）
 │   └── guide/                    手順書の配信（S3、CloudFront、証明書、Actions 用のロール）
 ├── guide/
-│   ├── site/                     受講者向けの手順書（HTML 直書き）
+│   ├── src/                      受講者向けの手順書（Astro Starlight。本文は src/content/docs/ の MDX）
 │   └── publish.sh                手順書を S3 に同期してキャッシュを消す
 ├── handson-agent/                受講者が触る Strands Agent の雛形
 ├── handson-ui/                   エージェントの動きを見せる画面（React + FastAPI）
@@ -71,4 +71,8 @@ Terraform は受講環境と手順書で寿命が違うので、ルートを 2 �
 
 ## ステータス
 
-受講環境、AMI、手順書の配信、後片付けの仕組みまで main に入っています。1 人分の通し確認は済んでいて、残りは手順書の中身と見た目、人数ぶんへの展開、自動停止の当日想定での確認です。作業は [Issue](../../issues) で管理しています。
+受講環境、AMI、手順書の配信、後片付けの仕組みまで main に入っています。2026-10-29 に 12 人分の環境で勉強会を開き、終了時刻での自動停止と後片付けまで通しました。開発はここで一区切りです。これまでの作業の経緯は [Issue](../../issues?q=is%3Aissue) と [PR](../../pulls?q=is%3Apr) に残しています。
+
+## ライセンス
+
+[MIT License](LICENSE) です。
